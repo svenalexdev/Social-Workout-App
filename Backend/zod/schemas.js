@@ -1,5 +1,4 @@
 import { z } from 'zod/v4';
-import { _isoDuration } from 'zod/v4/core';
 
 const userSchema = z.object({
   name: z.string('Name must be string').min(2, 'Name must be at least 2 characters'),
@@ -22,9 +21,9 @@ const planSchema = z.object({
   exercise: z.array(
     z.object({
       sets: z.number().min(1),
-      reps: z.number.min(1),
-      weight: z.number.min(1),
-      restTime: z.number.min(1)
+      reps: z.number().min(1),
+      weight: z.number().min(1),
+      restTime: z.number().min(1)
     })
   )
 });
