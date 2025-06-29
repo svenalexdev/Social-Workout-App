@@ -11,7 +11,7 @@ const userSchema = z.object({
       age: z.number().min(1)
     })
   ),
-  lastlogin: z.date()
+  lastlogin: z.date().optional()
 });
 
 const planSchema = z.object({
@@ -28,15 +28,15 @@ const planSchema = z.object({
   )
 });
 
-const loSchema = z.object({
+const logSchema = z.object({
   userId: z.string().min(1),
   planId: z.string().min(1),
-  date: z.date(),
+  date: z.date().optional(),
   exercise: z.array(
     z.object({
-      exerciseId: z.number().min(1),
+      exerciseId: z.string().min(1),
       name: z.string('Name must be string'),
-      bodypart: z.string('Body part must be string'),
+      bodyParts: z.string('Body part must be string'),
       equipment: z.string('Equipment must be string'),
       weight: z.number().min(1),
       setsCompleted: z.number().min(1),
@@ -47,4 +47,4 @@ const loSchema = z.object({
   duration: z.number().min(1)
 });
 
-export { userSchema, planSchema, loSchema };
+export { userSchema, planSchema, logSchema };

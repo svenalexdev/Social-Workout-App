@@ -3,7 +3,7 @@ const { Schema, model } = mongoose;
 
 const planSchema = new Schema(
   {
-    userId: { type: Schema.Types.ObjectId },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     name: { type: String, required: [true, 'Plan name is required'] },
     isPublic: { type: Boolean, required: [true] },
     exercise: [

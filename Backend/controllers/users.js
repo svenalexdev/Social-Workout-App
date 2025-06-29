@@ -1,5 +1,5 @@
 import { isValidObjectId } from "mongoose";
-import User from "../models/User.js";
+import User from '../models/User.js'
 import * as bcrypt from 'bcrypt';
 
 const getUsers = async (req, res) => {
