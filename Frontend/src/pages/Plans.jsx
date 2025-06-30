@@ -61,7 +61,11 @@ const Plans = () => {
   const [showAllPlans, setShowAllPlans] = useState();
 
   const GoToCreatePlan = () => {
-    navigate('createplan');
+    navigate('/createplan');
+  };
+
+  const GoToStartRoutine = () => {
+    navigate('/exercisingplan');
   };
 
   useEffect(() => {
@@ -83,12 +87,15 @@ const Plans = () => {
 
         <h3 className="text-lg font-semibold mb-2">My Pinned Plans</h3>
 
-        <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto">
+        <div className="flex flex-col gap-4 max-h-[310px] overflow-y-auto">
           {plans.map(plan => (
-            <div className="bg-black text-white p-4 rounded-md">
+            <div key={plan._id} className="bg-black text-white p-4 rounded-md">
               <h4 className="font-semibold mb-1">{plan.title}</h4>
               <p className="text-sm mb-3">{plan.exercises.slice(0, 3).join(' ')}</p>
-              <button className="bg-[#3b82f6] text-white px-3 py-1 text-sm rounded hover:bg-blue-700">
+              <button
+                onClick={GoToStartRoutine}
+                className="bg-[#3b82f6] text-white px-3 py-1 text-sm rounded hover:bg-blue-700"
+              >
                 Start Routine
               </button>
             </div>
