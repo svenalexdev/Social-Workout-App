@@ -23,22 +23,46 @@ import { useNavigate } from 'react-router';
 // mock data to be replaced with API fetch
 function CreatePlan() {
   let mockExercises = [
-    'Ab Wheel',
-    'Back Extension',
-    'Ball Slams',
-    'Battle Ropes',
-    'Bench Dip',
-    'Bench Press',
-    'Bicep Curl',
-    'Burpee',
-    'Chest Dip',
-    'Deadlift',
-    'Front Raise',
-    'Hip Thrust',
-    'Incline Curl',
-    'Jump Squat',
-    'Kettlebell Swing',
-    'Leg Press'
+    {
+      bodyPart: 'waist',
+      equipment: 'body weight',
+      gifUrl: 'https://v2.exercisedb.io/image/yy7vvVaXPByinG',
+      id: '0001',
+      name: '3/4 sit-up',
+      target: 'abs',
+      secondaryMuscles: ['hip flexors', 'lower back'],
+      instructions: [
+        'Lie flat on your back with your knees bent and feet flat on the ground.',
+        'Place your hands behind your head with your elbows pointing outwards.',
+        'Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.',
+        'Pause for a moment at the top, then slowly lower your upper body back down to the starting position.',
+        'Repeat for the desired number of repetitions.'
+      ],
+      description:
+        'The 3/4 sit-up is an abdominal exercise performed with body weight. It involves curling the torso up to a 45-degree angle, engaging the abs, hip flexors, and lower back. This movement is commonly used to build core strength and stability.',
+      difficulty: 'beginner',
+      category: 'strength'
+    },
+    {
+      bodyPart: 'chest',
+      equipment: 'leverage machine',
+      gifUrl: 'https://v2.exercisedb.io/image/De5q-sI-iu8vAI',
+      id: '0009',
+      name: 'assisted chest dip (kneeling)',
+      target: 'pectorals',
+      secondaryMuscles: ['triceps', 'shoulders'],
+      instructions: [
+        'Adjust the machine to your desired height and secure your knees on the pad.',
+        'Grasp the handles with your palms facing down and your arms fully extended.',
+        'Lower your body by bending your elbows until your upper arms are parallel to the floor.',
+        'Pause for a moment, then push yourself back up to the starting position.',
+        'Repeat for the desired number of repetitions.'
+      ],
+      description:
+        'The assisted chest dip (kneeling) is a chest-focused exercise performed on a leverage machine, where the user kneels on a pad for support. This machine-assisted variation helps reduce the load, making it accessible for those building strength or learning proper dip technique.',
+      difficulty: 'beginner',
+      category: 'strength'
+    }
   ];
 
   const [showExercises, setShowExercises] = useState(false);
@@ -54,6 +78,7 @@ function CreatePlan() {
   useEffect(() => {
     if (selectedExercise) {
       localStorage.setItem('exercises', JSON.stringify(selectedExercise));
+      console.log(selectedExercise);
     }
   }, [selectedExercise]);
 
@@ -62,13 +87,7 @@ function CreatePlan() {
   //   const exercises = JSON.parse(localStorage.getItem('exercises')) || [];
   // };
 
-  const createdPlan = {
-    userId: localStorage.getItem(''),
-    name: localStorage.getItem(''),
-    isPublic: localStorage.getItem(''), // boolean switch yes/no FE
-    exercises: localStorage.getItem('')
-  };
-  // await createPlan(createdPlan); // CRUD
+  // // await createPlan(createdPlan); // CRUD
 
   return (
     <div>
@@ -93,25 +112,28 @@ function CreatePlan() {
           <div className="flex justify-end">
             {/* localStorage to save chosen exercises */}
             <button onClick={() => setShowExercises(!showExercises)} className="btn btn-primary text-lg">
-              Add (number)
+              Add ({selectedExercise.length})
             </button>
           </div>
           <ul>
             {mockExercises.map(mockExercise => (
               <li
-                key={mockExercise}
+                key={mockExercise.id}
                 // select several exercises in list - if click on already selected, deselect
                 onClick={() => {
                   setSelectedExercise(prev =>
-                    prev.includes(mockExercise) ? prev.filter(item => item !== mockExercise) : [...prev, mockExercise]
+                    prev.some(item => item.id === mockExercise.id)
+                      ? prev.filter(item => item.id !== mockExercise.id)
+                      : [...prev, mockExercise]
                   );
                 }}
                 // mark selected exercise with color
                 className={`text-xl font-bold mt-2 ${
-                  selectedExercise.includes(mockExercise) ? 'bg-green-800' : 'hover:bg-slate-600'
+                  selectedExercise.some(item => item.id === mockExercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
                 }`}
               >
-                {mockExercise}
+                {mockExercise.name} <br />
+                <span className="text-sm">{mockExercise.bodyPart}</span>
               </li>
             ))}
           </ul>
