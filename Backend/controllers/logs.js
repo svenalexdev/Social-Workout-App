@@ -13,7 +13,7 @@ const createLog = async (req, res) => {
 
   const found = await Plan.findById(planId);
 
-  if(!found) throw new Error('UserId or PlanId not found',{cause:401});
+  if (!found) throw new Error('UserId or PlanId not found', { cause: 401 });
   const logs = await Log.create(req.sanitizedBody);
   res.json(logs);
 };

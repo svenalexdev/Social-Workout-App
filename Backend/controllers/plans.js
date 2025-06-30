@@ -1,6 +1,6 @@
 import { isValidObjectId } from 'mongoose';
 import Plan from '../models/Plan.js';
-import User from '../models/User.js'
+import User from '../models/User.js';
 
 const getPlan = async (req, res) => {
   const plans = await Plan.find();
@@ -10,10 +10,10 @@ const getPlan = async (req, res) => {
 const createPlan = async (req, res) => {
   const { userId } = req.sanitizedBody;
 
-  const found = await User.findById( userId );
+  const found = await User.findById(userId);
 
   if (!found) {
-     return res.status(400).json({message:'User ID does not exist'});
+    return res.status(400).json({ message: 'User ID does not exist' });
   }
   const plans = await Plan.create(req.sanitizedBody);
   res.json(plans);
