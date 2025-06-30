@@ -20,6 +20,7 @@ const planSchema = z.object({
   isPublic: z.boolean(),
   exercise: z.array(
     z.object({
+      exerciseId: z.string().min(1),
       sets: z.number().min(1),
       reps: z.number().min(1),
       weight: z.number().min(1),

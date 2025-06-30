@@ -1,6 +1,7 @@
 import { isValidObjectId } from 'mongoose';
 import Plan from '../models/Plan.js';
 import User from '../models/User.js';
+import { planSchema } from '../zod/schemas.js';
 
 const getPlan = async (req, res) => {
   const plans = await Plan.find();
@@ -21,12 +22,12 @@ const createPlan = async (req, res) => {
 
 const getPlanById = async (req, res) => {
   const { id } = req.params;
+
   if (!isValidObjectId(id)) throw new Error('Invalid id', { cause: 400 });
 
   const plans = await Plan.findById(id);
 
-  if (!plans) throw new Error('User not found', { cause: 404 });
-
+  if (!plans) throw new Error('Plan not found', { cause: 404 });
   res.json(plans);
 };
 
@@ -52,4 +53,29 @@ const deletePlan = async (req, res) => {
   res.json({ message: 'plans deleted' });
 };
 
-export { getPlan, createPlan, getPlanById, updatePlan, deletePlan };
+const getPlanByUserId = async (req, res) => {
+  const { id } = req.params;
+
+  if (!isValidObjectId(id)) throw new Error('Invalid id', { cause: 400 });
+
+  const plans = await Plan.find({ userId: id }).populate('userId');
+  // console.log(plans);
+
+  if (!plans) throw new Error('plan not found', { cause: 404 });
+
+  const { userId: user } = plans[0];
+
+  // userId is remove because of repetation
+  const cleanedPlans = plans.map(plan => {
+    const planObj = plan.toObject();
+    delete planObj.userId;
+    return planObj;
+  });
+
+  res.json({
+    user,
+    plans: cleanedPlans
+  });
+};
+
+export { getPlan, createPlan, getPlanById, updatePlan, deletePlan, getPlanByUserId };

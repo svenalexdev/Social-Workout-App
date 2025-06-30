@@ -22,7 +22,7 @@ const getLogById = async (req, res) => {
   const { id } = req.params;
   if (!isValidObjectId(id)) throw new Error('Invalid id', { cause: 400 });
 
-  const logs = await Log.findById(id);
+  const logs = await Log.findById(id).populate('userId');
 
   if (!logs) throw new Error('User not found', { cause: 404 });
 
@@ -49,4 +49,13 @@ const deleteLog = async (req, res) => {
   res.json({ message: 'Logs deleted' });
 };
 
-export { getLog, createLog, getLogById, updateLog, deleteLog };
+const getLogByUserId = async (req, res) => {
+  const { id } = req.params;
+  if (!isValidObjectId(id)) throw new Error('Invalid id', { cause: 400 });
+
+  const logs = await Log.find({ userId: id }).populate('userId');
+
+  if (!logs) throw new Error('User id not found', { cause: 404 });
+  res.json(logs);
+};
+export { getLog, createLog, getLogById, updateLog, deleteLog, getLogByUserId };
