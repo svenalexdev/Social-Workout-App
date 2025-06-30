@@ -119,7 +119,7 @@ function CreatePlan() {
             {mockExercises.map(mockExercise => (
               <li
                 key={mockExercise.id}
-                // select several exercises in list - if click on already selected, deselect
+                // select several exercises in list - if already selected, deselect
                 onClick={() => {
                   setSelectedExercise(prev =>
                     prev.some(item => item.id === mockExercise.id)
