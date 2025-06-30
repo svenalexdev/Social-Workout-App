@@ -120,13 +120,13 @@ function CreatePlan() {
               <li
                 key={mockExercise.id}
                 // select several exercises in list - if already selected, deselect
-                onClick={() => {
+                onClick={() =>
                   setSelectedExercise(prev =>
                     prev.some(item => item.id === mockExercise.id)
                       ? prev.filter(item => item.id !== mockExercise.id)
-                      : [...prev, mockExercise]
-                  );
-                }}
+                      : [...prev, { id: mockExercise.id, sets: 0, reps: 0, weight: 0, restTime: 0 }]
+                  )
+                }
                 // mark selected exercise with color
                 className={`text-xl font-bold mt-2 ${
                   selectedExercise.some(item => item.id === mockExercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
