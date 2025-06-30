@@ -4,22 +4,23 @@ import { useNavigate } from 'react-router';
 // What is needed
 // 2
 // - X button top left that navigates back to general workout plan area (useNavigate)
-// - headline in the top middle that changes according to naming
+// - headline in the top middle
 // - Save button top right to save created plan / template (localStorage / CRUD push to database?)
 // - another headline
 // - edit button next to this headline to change name (useState, useEffect? change headline in top as well)
-// - add exercises button that opens up 2.1 view (useState, useEffect?)
+// - add exercises button that opens up 2.1 view (useState?)
 // - add AI button (no functionality yet + if add exercise button is used, make it disappear)
 // 2.1
 // - create mock data exercises
-// - open up list of mock exercises (if time: check popup functionality)
+// - open up list of mock exercises (if time: check popup/modal functionality)
 // - on click of exercise, activate "add" button (localStorage?)
-// - when clicking on add button, list the chosen exercise in 2 (localStorage?)
-// - search field
-// - any body part button (mock data body parts?) that opens up dropdown?
+// - when clicking on add button, list the chosen exercise in 2(.2) (localStorage?)
+// - search field?
+// (- any body part button (mock data body parts?) that opens up dropdown?
 // - any category button (mock data body parts?) that opens up dropdown?
-// - sort button
+// - sort button)
 
+// mock data to be replaced with API fetch
 function CreatePlan() {
   let mockExercises = [
     'Ab Wheel',
@@ -40,17 +41,34 @@ function CreatePlan() {
     'Leg Press'
   ];
 
-  // const [planName, setPlanName] = useState();
-
   const [showExercises, setShowExercises] = useState(false);
-  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [selectedExercise, setSelectedExercise] = useState([]);
+  // const [planName, setPlanName] = useState();
 
   const navigate = useNavigate();
   const handleGoBack = () => {
     navigate('/plans');
   };
 
-  const displayMockExercises = () => {};
+  // store selected exercise to localStorage
+  useEffect(() => {
+    if (selectedExercise) {
+      localStorage.setItem('exercises', JSON.stringify(selectedExercise));
+    }
+  }, [selectedExercise]);
+
+  // const handleAddExercises = e => {
+  //   e.preventDefault();
+  //   const exercises = JSON.parse(localStorage.getItem('exercises')) || [];
+  // };
+
+  const createdPlan = {
+    userId: localStorage.getItem(''),
+    name: localStorage.getItem(''),
+    isPublic: localStorage.getItem(''), // boolean switch yes/no FE
+    exercises: localStorage.getItem('')
+  };
+  // await createPlan(createdPlan); // CRUD
 
   return (
     <div>
@@ -82,12 +100,15 @@ function CreatePlan() {
             {mockExercises.map(mockExercise => (
               <li
                 key={mockExercise}
-                // mark selected exercise with color
+                // select several exercises in list - if click on already selected, deselect
                 onClick={() => {
-                  setSelectedExercise(mockExercise);
+                  setSelectedExercise(prev =>
+                    prev.includes(mockExercise) ? prev.filter(item => item !== mockExercise) : [...prev, mockExercise]
+                  );
                 }}
+                // mark selected exercise with color
                 className={`text-xl font-bold mt-2 ${
-                  selectedExercise === mockExercise ? 'bg-green-800' : 'hover:bg-slate-600'
+                  selectedExercise.includes(mockExercise) ? 'bg-green-800' : 'hover:bg-slate-600'
                 }`}
               >
                 {mockExercise}
