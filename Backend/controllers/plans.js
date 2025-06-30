@@ -63,12 +63,11 @@ const getPlanByUserId = async (req, res) => {
 
   if (!plans) throw new Error('plan not found', { cause: 404 });
 
-  // res.json(plans);
   const { userId: user } = plans[0];
 
-  // Strip userId from each plan to avoid repetition
+  // userId is remove because of repetation
   const cleanedPlans = plans.map(plan => {
-    const planObj = plan.toObject(); // plain JS object
+    const planObj = plan.toObject();
     delete planObj.userId;
     return planObj;
   });
