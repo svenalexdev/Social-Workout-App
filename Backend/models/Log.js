@@ -3,12 +3,12 @@ import { Schema, model } from 'mongoose';
 
 const logSchemas = new Schema(
   {
-    userId: { type: Schema.Types.ObjectId },
-    planId: { type: Schema.Types.ObjectId },
-    date: { type: Date, required: [true, 'Date is required'] },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    planId: { type: Schema.Types.ObjectId, ref: 'Plan', required: true },
+    date: { type: Date },
     exercise: [
       {
-        exerciseId: { type: Schema.Types.ObjectId },
+        exerciseId: { type: String },
         name: { type: String, required: [true, 'Exercise name is required Ex:Deadlift'] },
         bodyParts: { type: String, required: [true, 'Bodypart is requires'] },
         equipment: { type: String },
