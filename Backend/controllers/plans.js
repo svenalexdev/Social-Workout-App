@@ -58,23 +58,20 @@ const getPlanByUserId = async (req, res) => {
 
   if (!isValidObjectId(id)) throw new Error('Invalid id', { cause: 400 });
 
-  const plans = await Plan.find({ userId: id }).populate('userId');
+  const plans = await Plan.find({ userId: id });
   // console.log(plans);
 
   if (!plans) throw new Error('plan not found', { cause: 404 });
 
-  const { userId: user } = plans[0];
-
-  // userId is remove because of repetation
-  const cleanedPlans = plans.map(plan => {
+   const Plans = plans.map(plan => {
     const planObj = plan.toObject();
     delete planObj.userId;
     return planObj;
   });
 
   res.json({
-    user,
-    plans: cleanedPlans
+    userId: id,
+    Plans
   });
 };
 
