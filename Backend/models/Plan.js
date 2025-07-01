@@ -8,11 +8,19 @@ const planSchema = new Schema(
     isPublic: { type: Boolean, required: [true] },
     exercise: [
       {
-        exerciseId: {  type: String },
+        exerciseId: { type: String },
         sets: { type: Number },
         reps: { type: Number },
         weight: { type: Number },
-        restTime: { type: Number }
+        restTime: { type: Number },
+        name: { type: String },
+        description: { type: String },
+        gifUrl: { type: String },
+        target: { type: String },
+        equipment: { type: String },
+        bodyPart: { type: String },
+        secondaryMuscles: [{ type: String }],
+        instructions: [{ type: String }]
       }
     ]
   },
