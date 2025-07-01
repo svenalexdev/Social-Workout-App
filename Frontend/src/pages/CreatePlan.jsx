@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
-const baseURL = 'http://localhost:8080/plans';
+const baseURL = `${import.meta.env.VITE_BACKEND_URL}/plans`;
 
 // What is needed
 // 2
@@ -142,7 +142,7 @@ function CreatePlan() {
         alert('Error while saving!');
       }
     } catch (error) {
-      alert('Network error!')
+      alert('Network error!');
       console.error(error);
     }
   };
@@ -150,21 +150,19 @@ function CreatePlan() {
   // Useeffect to auto-save plan
   useEffect(() => {
     const plan = {
-      userID: 0,
+      userId: '686400ade4f4ac1e8afaaec9',
       name: planName,
       isPublic: isPublic, // adding toggle still needed
-      exercises: editableExercises.map(e => ({
-        exerciseID: e.id,
-        sets: e.sets,
-        reps: e.reps,
-        weight: e.weight,
-        restTime: e.restTime
+      exercise: editableExercises.map(e => ({
+        exerciseId: e.id?.toString() ?? '',
+        sets: Number(e.sets) || 1,
+        reps: Number(e.reps) || 1,
+        weight: Number(e.weight) || 1,
+        restTime: Number(e.restTime) || 1
       }))
     };
     localStorage.setItem('plan', JSON.stringify(plan));
   }, [planName, editableExercises, isPublic]);
-
-  // // await createPlan(createdPlan); // CRUD
 
   return !createPlan ? (
     <div>
