@@ -2,41 +2,27 @@ import { useState, useEffect } from 'react';
 import { getExercise } from '../utils/fetch';
 
 function ExercisingPlan() {
-  // Mock workout data - replace with actual data from backend
-  const mockWorkout = {
-    _id: '686254dc03026a9db1f761fe',
-    userId: '68615b866087fc7630c8694f',
-    name: 'Legs Workout',
-    isPublic: true,
-    exercise: [
-      {
-        exerciseId: '0001',
-        sets: 3,
-        reps: 5,
-        weight: 60,
-        restTime: 30,
-        _id: '686254dc03026a9db1f761ff'
-      },
-      {
-        exerciseId: '0003',
-        sets: 3,
-        reps: 5,
-        weight: 60,
-        restTime: 30,
-        _id: '686254dc03026a9db1f761fc'
-      },
-      {
-        exerciseId: '0002',
-        sets: 3,
-        reps: 5,
-        weight: 60,
-        restTime: 30,
-        _id: '686254dc03026a9db1f76200'
-      }
-    ],
-    createdAt: '2025-06-30T09:11:56.425Z',
-    updatedAt: '2025-06-30T09:11:56.425Z',
-    __v: 0
+  // State management
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [timer, setTimer] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [workoutSession, setWorkoutSession] = useState(null);
+  const [setInputs, setSetInputs] = useState({});
+  const [collapsedExercises, setCollapsedExercises] = useState({});
+  const [workoutData, setWorkoutData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const getData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getExercise('6863c0f9f232b632dc50f181');
+      setWorkoutData(data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching workout data:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Exercise name mapping (you can expand this or fetch from backend)
@@ -46,47 +32,52 @@ function ExercisingPlan() {
     '0003': 'Push Up'
   };
 
-  // State management
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [timer, setTimer] = useState(0);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [workoutSession, setWorkoutSession] = useState(null);
-  const [setInputs, setSetInputs] = useState({});
-  const [collapsedExercises, setCollapsedExercises] = useState({});
-
   // Initialize or restore workout session
   useEffect(() => {
-    const sessionKey = `workout_session_${mockWorkout._id}`;
-    const savedSession = localStorage.getItem(sessionKey);
+    const initializeWorkout = async () => {
+      // Fetch workout data first
+      const data = await getData();
 
-    if (savedSession) {
-      const session = JSON.parse(savedSession);
-      setWorkoutSession(session);
-      setCurrentExerciseIndex(session.currentExerciseIndex || 0);
-      setSetInputs(session.setInputs || {});
-      setCollapsedExercises(session.collapsedExercises || {});
-    } else {
-      // Create new session with default collapsed state
-      const initialCollapsedState = {};
-      mockWorkout.exercise.forEach((exercise, index) => {
-        // Collapse all exercises except the first one
-        initialCollapsedState[exercise.exerciseId] = index !== 0;
-      });
+      if (!data) {
+        console.error('Failed to fetch workout data');
+        return;
+      }
 
-      const newSession = {
-        workoutSessionId: `session_${Date.now()}`,
-        workoutId: mockWorkout._id,
-        startTime: new Date().toISOString(),
-        currentExerciseIndex: 0,
-        completedSets: [],
-        setInputs: {},
-        collapsedExercises: initialCollapsedState
-      };
-      setWorkoutSession(newSession);
-      setCollapsedExercises(initialCollapsedState);
-      saveToLocalStorage(newSession);
-      setIsTimerRunning(true);
-    }
+      const sessionKey = `workout_session_${data._id}`;
+      const savedSession = localStorage.getItem(sessionKey);
+
+      if (savedSession) {
+        const session = JSON.parse(savedSession);
+        setWorkoutSession(session);
+        setCurrentExerciseIndex(session.currentExerciseIndex || 0);
+        setSetInputs(session.setInputs || {});
+        setCollapsedExercises(session.collapsedExercises || {});
+      } else {
+        // Create new session with default collapsed state
+        const initialCollapsedState = {};
+        console.log(data.exercise, data);
+        data.exercise.forEach((exercise, index) => {
+          // Collapse all exercises except the first one
+          initialCollapsedState[exercise.exerciseId] = index !== 0;
+        });
+
+        const newSession = {
+          workoutSessionId: `session_${Date.now()}`,
+          workoutId: data._id,
+          startTime: new Date().toISOString(),
+          currentExerciseIndex: 0,
+          completedSets: [],
+          setInputs: {},
+          collapsedExercises: initialCollapsedState
+        };
+        setWorkoutSession(newSession);
+        setCollapsedExercises(initialCollapsedState);
+        saveToLocalStorage(newSession, data._id);
+        setIsTimerRunning(true);
+      }
+    };
+
+    initializeWorkout();
   }, []);
 
   // Timer effect
@@ -103,8 +94,9 @@ function ExercisingPlan() {
   }, [isTimerRunning, timer]);
 
   // Save session to localStorage
-  const saveToLocalStorage = session => {
-    const sessionKey = `workout_session_${mockWorkout._id}`;
+  const saveToLocalStorage = (session, workoutId = workoutData?._id) => {
+    if (!workoutId) return;
+    const sessionKey = `workout_session_${workoutId}`;
     localStorage.setItem(sessionKey, JSON.stringify(session));
   };
 
@@ -117,7 +109,8 @@ function ExercisingPlan() {
 
   // Check if an exercise is completed (all sets done)
   const isExerciseCompleted = exerciseId => {
-    const exercise = mockWorkout.exercise.find(ex => ex.exerciseId === exerciseId);
+    if (!workoutData) return false;
+    const exercise = workoutData.exercise.find(ex => ex.exerciseId === exerciseId);
     if (!exercise) return false;
 
     const completedSetsForExercise = workoutSession.completedSets?.filter(set => set.exerciseId === exerciseId) || [];
@@ -127,14 +120,14 @@ function ExercisingPlan() {
 
   // Auto-progress to next exercise when current one is completed
   useEffect(() => {
-    if (!workoutSession) return;
+    if (!workoutSession || !workoutData) return;
 
-    const currentExercise = mockWorkout.exercise[currentExerciseIndex];
+    const currentExercise = workoutData.exercise[currentExerciseIndex];
     if (currentExercise && isExerciseCompleted(currentExercise.exerciseId)) {
       // Current exercise is completed, move to next
       const nextIndex = currentExerciseIndex + 1;
 
-      if (nextIndex < mockWorkout.exercise.length) {
+      if (nextIndex < workoutData.exercise.length) {
         // Move to next exercise
         const newCollapsedState = { ...collapsedExercises };
 
@@ -142,7 +135,7 @@ function ExercisingPlan() {
         newCollapsedState[currentExercise.exerciseId] = true;
 
         // Expand next exercise
-        const nextExercise = mockWorkout.exercise[nextIndex];
+        const nextExercise = workoutData.exercise[nextIndex];
         newCollapsedState[nextExercise.exerciseId] = false;
 
         setCurrentExerciseIndex(nextIndex);
@@ -155,7 +148,7 @@ function ExercisingPlan() {
       }
       // Note: Removed automatic workout completion alert
     }
-  }, [workoutSession?.completedSets, currentExerciseIndex]);
+  }, [workoutSession?.completedSets, currentExerciseIndex, workoutData]);
 
   // Handle input changes for weight and reps
   const handleInputChange = (exerciseId, setNumber, field, value) => {
@@ -189,7 +182,7 @@ function ExercisingPlan() {
       // Add the completed set
       const key = `${exerciseId}_${setNumber}`;
       const setData = setInputs[key] || {};
-      const currentExercise = mockWorkout.exercise.find(ex => ex.exerciseId === exerciseId);
+      const currentExercise = workoutData.exercise.find(ex => ex.exerciseId === exerciseId);
 
       const completedSet = {
         exerciseId: exerciseId,
@@ -235,18 +228,22 @@ function ExercisingPlan() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (!workoutSession) {
+  if (!workoutSession || isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
-  const currentExercise = mockWorkout.exercise[currentExerciseIndex];
+  if (!workoutData) {
+    return <div className="flex justify-center items-center h-screen text-red-500">Error loading workout data</div>;
+  }
+
+  const currentExercise = workoutData.exercise[currentExerciseIndex];
   const currentExerciseName = exerciseNames[currentExercise.exerciseId] || `Exercise ${currentExercise.exerciseId}`;
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
       {/* Header */}
       <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">{mockWorkout.name}</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">{workoutData.name}</h1>
       </div>
 
       {/* Fixed Timer & Date Bar */}
@@ -267,7 +264,7 @@ function ExercisingPlan() {
 
       {/* All Exercises in Order */}
       <div className="space-y-4">
-        {mockWorkout.exercise.map((exercise, index) => {
+        {workoutData.exercise.map((exercise, index) => {
           const exerciseName = exerciseNames[exercise.exerciseId] || `Exercise ${exercise.exerciseId}`;
           const isCurrent = index === currentExerciseIndex;
           const isCollapsed = collapsedExercises[exercise.exerciseId];
