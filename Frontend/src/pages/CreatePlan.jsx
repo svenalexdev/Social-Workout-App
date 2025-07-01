@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { Switch } from '@headlessui/react';
+const baseURL = 'http://localhost:8080/plans';
 
 // What is needed
 // 2
@@ -69,7 +71,19 @@ function CreatePlan() {
   const [showExercises, setShowExercises] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState([]);
   const [createPlan, setCreatePlan] = useState(false);
-  // const [planName, setPlanName] = useState();
+  const [editableExercises, setEditableExercises] = useState([]);
+  const [planName, setPlanName] = useState('New Template');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isPublic, setIsPublic] = useState(false);
+
+  // Handler to save title name on blur or Enter
+  const handleNameBlur = () => setIsEditingName(false);
+  const handleNameChange = e => setPlanName(e.target.value);
+  const handleNameKeyDown = e => {
+    if (e.key === 'Enter') {
+      setIsEditingName(false);
+    }
+  };
 
   // Site navigation
   const navigate = useNavigate();
@@ -85,35 +99,135 @@ function CreatePlan() {
     }
   }, [selectedExercise]);
 
-  // const handleAddExercises = e => {
-  //   e.preventDefault();
-  //   const exercises = JSON.parse(localStorage.getItem('exercises')) || [];
-  // };
+  // Load exercises from localStorage when createPlan = true
+  useEffect(() => {
+    if (createPlan) {
+      const stored = JSON.parse(localStorage.getItem('exercises')) || [];
+      setEditableExercises(stored);
+    }
+  }, [createPlan]);
+
+  // Capitalizing first letter
+  const capitalizeFirstLetter = str => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
+  //Handler to update exercise data or state when an input changes
+  const handleExerciseChange = (idx, field, value) => {
+    setEditableExercises(prev => {
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], [field]: Number(value) };
+      return updated;
+    });
+  };
+
+  // Save button handler to get localStorage, POST information and delete it afterwards
+  const handleSaveButton = async () => {
+    const plan = JSON.parse(localStorage.getItem('plan'));
+    console.log('Plan to save:', plan);
+    if (!plan) {
+      alert('No plan found!');
+      return;
+    }
+    try {
+      const response = await fetch(baseURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(plan)
+      });
+      if (response.ok) {
+        alert('Plan saved successfully!');
+        localStorage.removeItem('plan');
+      } else {
+        alert('Error while saving!');
+      }
+    } catch (error) {
+      alert('Network error!')
+      console.error(error);
+    }
+  };
+
+  // Useeffect to auto-save plan
+  useEffect(() => {
+    const plan = {
+      userID: 0,
+      name: planName,
+      isPublic: isPublic, // adding toggle still needed
+      exercises: editableExercises.map(e => ({
+        exerciseID: e.id,
+        sets: e.sets,
+        reps: e.reps,
+        weight: e.weight,
+        restTime: e.restTime
+      }))
+    };
+    localStorage.setItem('plan', JSON.stringify(plan));
+  }, [planName, editableExercises, isPublic]);
 
   // // await createPlan(createdPlan); // CRUD
 
-  return (
+  return !createPlan ? (
     <div>
       <div className="flex justify-around items-center">
         <button onClick={handleGoBack} className="btn btn-primary text-lg">
           X
         </button>
-        <h1 className="text-center font-bold text-lg">New Template</h1>
-        <button className="btn btn-primary text-lg">Save</button>
+        <h1 className="text-center font-bold text-lg">{planName}</h1>
+        <button onClick={handleSaveButton} className="btn btn-primary text-lg">
+          Save
+        </button>
       </div>
-      <div className="flex mt-12 items-center justify-center">
-        <h2 className="text-2xl font-bold p-3">New Template</h2>
-        <button className="btn btn-primary text-lg">Edit</button>
+      <div className="flex mt-12 ml-6 items-center">
+        {isEditingName ? (
+          <input
+            type="text"
+            value={planName}
+            onChange={handleNameChange}
+            onBlur={handleNameBlur}
+            onKeyDown={handleNameKeyDown}
+            autoFocus
+            className="text-2xl font-bold p-3 bg-gray-700 rounded"
+          />
+        ) : (
+          <h2
+            className="text-2xl font-bold p-3"
+            onClick={() => {
+              setIsEditingName(true);
+            }}
+          >
+            {planName}
+          </h2>
+        )}
+      </div>
+      <div className="flex items-center space-x-2 ml-8 mb-2">
+        <Switch
+          checked={isPublic}
+          onChange={setIsPublic}
+          className={`${isPublic ? 'bg-blue-600' : 'bg-gray-200'}
+            relative inline-flex h-6 w-11 items-center rounded-full`}
+        >
+          <span
+            className={`${isPublic ? 'translate-x-6' : 'translate-x-1'}
+              inline-block h-4 w-4 transform rounded-full bg-white transition`}
+          />
+        </Switch>
+        <span className="text-sm font-medium">{isPublic ? 'Public' : 'Private'}</span>
       </div>
       <div className="flex justify-center mt-8">
         <button onClick={() => setShowExercises(!showExercises)} className="btn btn-primary w-xs text-lg">
-          Add exercises manually
+          Add exercises
         </button>
       </div>
       {showExercises && (
         <div className="mt-10 bg-slate-700 p-3 px-5 ml-3 mr-3 rounded-2xl">
           <div className="flex justify-end">
-            <button onClick={() => setShowExercises(!showExercises)} className="btn btn-primary text-lg">
+            <button
+              onClick={() => {
+                setCreatePlan(true);
+                setShowExercises(false);
+              }}
+              className="btn btn-primary text-lg"
+            >
               Add ({selectedExercise.length})
             </button>
           </div>
@@ -134,8 +248,8 @@ function CreatePlan() {
                   selectedExercise.some(item => item.id === mockExercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
                 }`}
               >
-                {mockExercise.name} <br />
-                <span className="text-sm">{mockExercise.bodyPart}</span>
+                {capitalizeFirstLetter(mockExercise.name)} <br />
+                <span className="text-sm">{capitalizeFirstLetter(mockExercise.bodyPart)}</span>
               </li>
             ))}
           </ul>
@@ -145,6 +259,138 @@ function CreatePlan() {
         <button className="btn btn-primary h-35 w-35 text-lg">
           Create Plan <br /> with AI
         </button>
+      </div>
+    </div>
+  ) : (
+    <div>
+      <div className="flex justify-around items-center">
+        <button onClick={handleGoBack} className="btn btn-primary text-lg">
+          X
+        </button>
+        <h1 className="text-center font-bold text-lg">{planName}</h1>
+        <button onClick={handleSaveButton} className="btn btn-primary text-lg">
+          Save
+        </button>
+      </div>
+      <div className="flex mt-12 ml-6 items-center">
+        {isEditingName ? (
+          <input
+            type="text"
+            value={planName}
+            onChange={handleNameChange}
+            onBlur={handleNameBlur}
+            onKeyDown={handleNameKeyDown}
+            autoFocus
+            className="text-2xl font-bold p-3 bg-gray-700 rounded"
+          />
+        ) : (
+          <h2 className="text-2xl font-bold p-3 cursor-pointer" onClick={() => setIsEditingName(true)}>
+            {planName}
+          </h2>
+        )}
+      </div>
+      <div className="flex items-center space-x-2 ml-8 mb-2">
+        <Switch
+          checked={isPublic}
+          onChange={setIsPublic}
+          className={`${isPublic ? 'bg-blue-600' : 'bg-gray-200'}
+            relative inline-flex h-6 w-11 items-center rounded-full`}
+        >
+          <span
+            className={`${isPublic ? 'translate-x-6' : 'translate-x-1'}
+              inline-block h-4 w-4 transform rounded-full bg-white transition`}
+          />
+        </Switch>
+        <span className="text-sm font-medium">{isPublic ? 'Public' : 'Private'}</span>
+      </div>
+      <div className="flex justify-center mt-8">
+        <button onClick={() => setShowExercises(!showExercises)} className="btn btn-primary w-xs text-lg">
+          Add exercises
+        </button>
+      </div>
+      {showExercises && (
+        <div className="mt-10 bg-slate-700 p-3 px-5 ml-3 mr-3 rounded-2xl">
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                // Merge new selections with current editableExercises to avoid duplicates
+                setEditableExercises(prev => {
+                  const newExercises = selectedExercise.filter(sel => !prev.some(e => e.id === sel.id));
+                  return [...prev, ...newExercises];
+                });
+                setShowExercises(false); // Close the modal
+              }}
+              className="btn btn-primary text-lg"
+            >
+              Add ({selectedExercise.length})
+            </button>
+          </div>
+          <ul>
+            {mockExercises.map(mockExercise => (
+              <li
+                key={mockExercise.id}
+                // Select several exercises in the list - if already selected, deselect
+                onClick={() =>
+                  setSelectedExercise(prev =>
+                    prev.some(item => item.id === mockExercise.id)
+                      ? prev.filter(item => item.id !== mockExercise.id)
+                      : [...prev, { id: mockExercise.id, sets: 0, reps: 0, weight: 0, restTime: 0 }]
+                  )
+                }
+                // Mark a selected exercise with color
+                className={`text-xl font-bold mt-2 ${
+                  selectedExercise.some(item => item.id === mockExercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
+                }`}
+              >
+                {capitalizeFirstLetter(mockExercise.name)} <br />
+                <span className="text-sm">{capitalizeFirstLetter(mockExercise.bodyPart)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <div>
+        {editableExercises.map((exercise, idx) => (
+          <div key={exercise.id} className="ml-2 mr-2 mt-5 mb-6 p-3 rounded-lg bg-gray-800">
+            <div className="font-bold text-lg mb-2">{exercise.id}</div>
+            <div className="grid grid-cols-4 gap-2 text-xs font-semibold text-gray-300 mb-1">
+              <span>Sets</span>
+              <span>Reps</span>
+              <span>Weight</span>
+              <span>Rest</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <input
+                type="number"
+                value={exercise.sets?.toString() ?? ''}
+                onChange={e => handleExerciseChange(idx, 'sets', e.target.value)}
+                className="bg-gray-700 rounded px-2 py-1 text-center"
+                min={0}
+              />
+              <input
+                type="number"
+                value={exercise.reps?.toString() ?? ''}
+                onChange={e => handleExerciseChange(idx, 'reps', e.target.value)}
+                className="bg-gray-700 rounded px-2 py-1 text-center"
+                min={0}
+              />
+              <input
+                type="number"
+                value={exercise.weight?.toString() ?? ''}
+                onChange={e => handleExerciseChange(idx, 'weight', e.target.value)}
+                className="bg-gray-700 rounded px-2 py-1 text-center"
+                min={0}
+              />
+              <input
+                type="number"
+                value={exercise.restTime?.toString() ?? ''}
+                onChange={e => handleExerciseChange(idx, 'restTime', e.target.value)}
+                className="bg-gray-700 rounded px-2 py-1 text-center"
+                min={0}
+              />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
