@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { Switch } from '@headlessui/react';
+const baseURL = 'http://localhost:8080/plans';
 
 // What is needed
 // 2
@@ -72,8 +74,9 @@ function CreatePlan() {
   const [editableExercises, setEditableExercises] = useState([]);
   const [planName, setPlanName] = useState('New Template');
   const [isEditingName, setIsEditingName] = useState(false);
+  const [isPublic, setIsPublic] = useState(false);
 
-  // Handler to save name on blur or Enter
+  // Handler to save title name on blur or Enter
   const handleNameBlur = () => setIsEditingName(false);
   const handleNameChange = e => setPlanName(e.target.value);
   const handleNameKeyDown = e => {
@@ -118,24 +121,47 @@ function CreatePlan() {
     });
   };
 
+  // Save button handler to get localStorage, POST information and delete it afterwards
+  const handleSaveButton = async () => {
+const plan = JSON.parse(localStorage.getItem('plans'));
+if (!plan) {
+  alert('No plan found!');
+  return;
+}
+try {
+  const response = await fetch(baseURL, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(plan)
+});
+if (response.ok) {
+  alert('Plan saved successfully!')
+  localStorage.removeItem('plan')
+} else {
+  alert('Error while saving!')
+}
+} catch (error) {
+  console.error(error)
+}
+  };
+
   // Useeffect to auto-save plan
   useEffect(() => {
-    if (createPlan) {
-      const plan = {
-        userID: 0,
-        name: planName,
-        isPublic: false, // adding toggle still needed
-        exercises: editableExercises.map(e => ({
-          exerciseID: e.id,
-          sets: e.sets,
-          reps: e.reps,
-          weight: e.weight,
-          restTime: e.restTime
-        }))
-      };
-      localStorage.setItem('plan', JSON.stringify(plan));
-    }
-  }, [planName, editableExercises, createPlan]);
+    const plan = {
+      userID: 0,
+      name: planName,
+      isPublic: isPublic, // adding toggle still needed
+      exercises: editableExercises.map(e => ({
+        exerciseID: e.id,
+        sets: e.sets,
+        reps: e.reps,
+        weight: e.weight,
+        restTime: e.restTime
+      }))
+    };
+    localStorage.setItem('plan', JSON.stringify(plan));
+  }, [planName, editableExercises, isPublic]);
 
   // // await createPlan(createdPlan); // CRUD
 
@@ -145,10 +171,10 @@ function CreatePlan() {
         <button onClick={handleGoBack} className="btn btn-primary text-lg">
           X
         </button>
-        <h1 className="text-center font-bold text-lg">New Template</h1>
-        <button className="btn btn-primary text-lg">Save</button>
+        <h1 className="text-center font-bold text-lg">{planName}</h1>
+        <button onClick={handleSaveButton} className="btn btn-primary text-lg">Save</button>
       </div>
-      <div className="flex mt-12 items-center justify-center">
+      <div className="flex mt-12 ml-6 items-center">
         {isEditingName ? (
           <input
             type="text"
@@ -170,9 +196,23 @@ function CreatePlan() {
           </h2>
         )}
       </div>
+      <div className="flex items-center space-x-2 ml-8 mb-2">
+        <Switch
+          checked={isPublic}
+          onChange={setIsPublic}
+          className={`${isPublic ? 'bg-blue-600' : 'bg-gray-200'}
+            relative inline-flex h-6 w-11 items-center rounded-full`}
+        >
+          <span
+            className={`${isPublic ? 'translate-x-6' : 'translate-x-1'}
+              inline-block h-4 w-4 transform rounded-full bg-white transition`}
+          />
+        </Switch>
+        <span className="text-sm font-medium">{isPublic ? 'Public' : 'Private'}</span>
+      </div>
       <div className="flex justify-center mt-8">
         <button onClick={() => setShowExercises(!showExercises)} className="btn btn-primary w-xs text-lg">
-          Add exercises manually
+          Add exercises
         </button>
       </div>
       {showExercises && (
@@ -181,7 +221,7 @@ function CreatePlan() {
             <button
               onClick={() => {
                 setCreatePlan(true);
-                setShowExercises(false)
+                setShowExercises(false);
               }}
               className="btn btn-primary text-lg"
             >
@@ -227,7 +267,7 @@ function CreatePlan() {
         <h1 className="text-center font-bold text-lg">{planName}</h1>
         <button className="btn btn-primary text-lg">Save</button>
       </div>
-      <div className="flex mt-12 items-center justify-center">
+      <div className="flex mt-12 ml-6 items-center">
         {isEditingName ? (
           <input
             type="text"
@@ -244,9 +284,23 @@ function CreatePlan() {
           </h2>
         )}
       </div>
+      <div className="flex items-center space-x-2 ml-8 mb-2">
+        <Switch
+          checked={isPublic}
+          onChange={setIsPublic}
+          className={`${isPublic ? 'bg-blue-600' : 'bg-gray-200'}
+            relative inline-flex h-6 w-11 items-center rounded-full`}
+        >
+          <span
+            className={`${isPublic ? 'translate-x-6' : 'translate-x-1'}
+              inline-block h-4 w-4 transform rounded-full bg-white transition`}
+          />
+        </Switch>
+        <span className="text-sm font-medium">{isPublic ? 'Public' : 'Private'}</span>
+      </div>
       <div className="flex justify-center mt-8">
         <button onClick={() => setShowExercises(!showExercises)} className="btn btn-primary w-xs text-lg">
-          Add exercises manually
+          Add exercises
         </button>
       </div>
       {showExercises && (
@@ -303,28 +357,28 @@ function CreatePlan() {
             <div className="grid grid-cols-4 gap-2">
               <input
                 type="number"
-                value={exercise.sets}
+                value={exercise.sets?.toString() ?? ''}
                 onChange={e => handleExerciseChange(idx, 'sets', e.target.value)}
                 className="bg-gray-700 rounded px-2 py-1 text-center"
                 min={0}
               />
               <input
                 type="number"
-                value={exercise.reps}
+                value={exercise.reps?.toString() ?? ''}
                 onChange={e => handleExerciseChange(idx, 'reps', e.target.value)}
                 className="bg-gray-700 rounded px-2 py-1 text-center"
                 min={0}
               />
               <input
                 type="number"
-                value={exercise.weight}
+                value={exercise.weight?.toString() ?? ''}
                 onChange={e => handleExerciseChange(idx, 'weight', e.target.value)}
                 className="bg-gray-700 rounded px-2 py-1 text-center"
                 min={0}
               />
               <input
                 type="number"
-                value={exercise.restTime}
+                value={exercise.restTime?.toString() ?? ''}
                 onChange={e => handleExerciseChange(idx, 'restTime', e.target.value)}
                 className="bg-gray-700 rounded px-2 py-1 text-center"
                 min={0}
