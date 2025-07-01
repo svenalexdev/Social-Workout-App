@@ -1,8 +1,29 @@
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router';
+import { toast } from 'react-toastify';
+import { signin } from '../data/auth.js';
 
 const LoginSignup = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [{ email, password }, setForm] = useState({ email: '', password: '' });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async e => {
+    try {
+      e.preventDefault();
+      if (!email || !password) throw new Error('All fields are required');
+      setLoading(true);
+
+      const { message } = await signin({ email, password });
+      toast.success(message || 'Welcome Back');
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
