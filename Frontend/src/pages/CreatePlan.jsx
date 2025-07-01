@@ -65,16 +65,19 @@ function CreatePlan() {
     }
   ];
 
+  // State management
   const [showExercises, setShowExercises] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState([]);
+  const [createPlan, setCreatePlan] = useState(false);
   // const [planName, setPlanName] = useState();
 
+  // Site navigation
   const navigate = useNavigate();
   const handleGoBack = () => {
     navigate('/plans');
   };
 
-  // store selected exercise to localStorage
+  // Storing a selected exercise to localStorage
   useEffect(() => {
     if (selectedExercise) {
       localStorage.setItem('exercises', JSON.stringify(selectedExercise));
@@ -110,7 +113,6 @@ function CreatePlan() {
       {showExercises && (
         <div className="mt-10 bg-slate-700 p-3 px-5 ml-3 mr-3 rounded-2xl">
           <div className="flex justify-end">
-            {/* localStorage to save chosen exercises */}
             <button onClick={() => setShowExercises(!showExercises)} className="btn btn-primary text-lg">
               Add ({selectedExercise.length})
             </button>
@@ -119,15 +121,15 @@ function CreatePlan() {
             {mockExercises.map(mockExercise => (
               <li
                 key={mockExercise.id}
-                // select several exercises in list - if already selected, deselect
-                onClick={() => {
+                // Select several exercises in the list - if already selected, deselect
+                onClick={() =>
                   setSelectedExercise(prev =>
                     prev.some(item => item.id === mockExercise.id)
                       ? prev.filter(item => item.id !== mockExercise.id)
-                      : [...prev, mockExercise]
-                  );
-                }}
-                // mark selected exercise with color
+                      : [...prev, { id: mockExercise.id, sets: 0, reps: 0, weight: 0, restTime: 0 }]
+                  )
+                }
+                // Mark a selected exercise with color
                 className={`text-xl font-bold mt-2 ${
                   selectedExercise.some(item => item.id === mockExercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
                 }`}
