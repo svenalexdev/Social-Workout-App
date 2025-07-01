@@ -5,6 +5,7 @@ import Plans from './pages/Plans';
 import CreatePlan from './pages/CreatePlan';
 import ExercisingPlan from './pages/ExercisingPlan';
 import AllPlans from './pages/AllPlans';
+import LoginSignup from './pages/LoginSignup';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Route path="createplan" element={<CreatePlan />} />
             <Route path="exercisingplan" element={<ExercisingPlan />} />
             <Route path="seeallmyplans" element={<AllPlans />} />
+            <Route path="signin" element={<LoginSignup />} />
           </Route>
           {/* <Route path='*' element={<NotFound />} /> */}
         </Routes>
