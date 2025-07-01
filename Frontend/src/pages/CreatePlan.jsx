@@ -123,27 +123,28 @@ function CreatePlan() {
 
   // Save button handler to get localStorage, POST information and delete it afterwards
   const handleSaveButton = async () => {
-const plan = JSON.parse(localStorage.getItem('plans'));
-if (!plan) {
-  alert('No plan found!');
-  return;
-}
-try {
-  const response = await fetch(baseURL, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'
-  },
-  body: JSON.stringify(plan)
-});
-if (response.ok) {
-  alert('Plan saved successfully!')
-  localStorage.removeItem('plan')
-} else {
-  alert('Error while saving!')
-}
-} catch (error) {
-  console.error(error)
-}
+    const plan = JSON.parse(localStorage.getItem('plan'));
+    console.log('Plan to save:', plan);
+    if (!plan) {
+      alert('No plan found!');
+      return;
+    }
+    try {
+      const response = await fetch(baseURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(plan)
+      });
+      if (response.ok) {
+        alert('Plan saved successfully!');
+        localStorage.removeItem('plan');
+      } else {
+        alert('Error while saving!');
+      }
+    } catch (error) {
+      alert('Network error!')
+      console.error(error);
+    }
   };
 
   // Useeffect to auto-save plan
@@ -172,7 +173,9 @@ if (response.ok) {
           X
         </button>
         <h1 className="text-center font-bold text-lg">{planName}</h1>
-        <button onClick={handleSaveButton} className="btn btn-primary text-lg">Save</button>
+        <button onClick={handleSaveButton} className="btn btn-primary text-lg">
+          Save
+        </button>
       </div>
       <div className="flex mt-12 ml-6 items-center">
         {isEditingName ? (
@@ -265,7 +268,9 @@ if (response.ok) {
           X
         </button>
         <h1 className="text-center font-bold text-lg">{planName}</h1>
-        <button className="btn btn-primary text-lg">Save</button>
+        <button onClick={handleSaveButton} className="btn btn-primary text-lg">
+          Save
+        </button>
       </div>
       <div className="flex mt-12 ml-6 items-center">
         {isEditingName ? (
