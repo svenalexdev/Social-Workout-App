@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import axios from 'axios';
 
 // object array data
 const mockPlans = [
@@ -58,13 +59,31 @@ const mockPlans = [
 const Plans = () => {
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
-  const [showAllPlans, setShowAllPlans] = useState();
+  const [recommendedPlans, setRecommendedPlans] = useState([]);
 
   const GoToCreatePlan = () => {
-    navigate('createplan');
+    navigate('/createplan');
+  };
+
+  const GoToStartRoutine = () => {
+    navigate('/exercisingplan');
+  };
+
+  const GoToSeeAllMyPlans = () => {
+    navigate('/seeallmyplans');
   };
 
   useEffect(() => {
+    // axios
+    //   .get('https://finalproject-backend-y98m.onrender.com/plans')
+    //   .then(response => {
+    //     const publicPlans = response.data.filter(plan => plan.isPublic);
+    //     setRecommendedPlans(publicPlans.slice(0, 4));
+    //   })
+    //   .catch(error => {
+    //     console.error('Error fetching recommended plans:', error);
+    //   });
+
     setPlans(mockPlans);
   }, []);
 
@@ -83,12 +102,15 @@ const Plans = () => {
 
         <h3 className="text-lg font-semibold mb-2">My Pinned Plans</h3>
 
-        <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto">
+        <div className="flex flex-col gap-4 max-h-[450px] overflow-y-auto">
           {plans.map(plan => (
-            <div className="bg-black text-white p-4 rounded-md">
+            <div key={plan._id} className="bg-black text-white p-4 rounded-md">
               <h4 className="font-semibold mb-1">{plan.title}</h4>
               <p className="text-sm mb-3">{plan.exercises.slice(0, 3).join(' ')}</p>
-              <button className="bg-[#3b82f6] text-white px-3 py-1 text-sm rounded hover:bg-blue-700">
+              <button
+                onClick={GoToStartRoutine}
+                className="bg-[#3b82f6] text-white px-3 py-1 text-sm rounded hover:bg-blue-700"
+              >
                 Start Routine
               </button>
             </div>
@@ -97,7 +119,7 @@ const Plans = () => {
 
         <div className="flex justify-center mt-4">
           <button
-            onClick={() => setShowAllPlans(true)}
+            onClick={GoToSeeAllMyPlans}
             className="bg-[#3b82f6] hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm"
           >
             See All My Plans
@@ -108,29 +130,21 @@ const Plans = () => {
       <div>
         <h2 className="text-xl font-bold mb-3">Recommended Plans</h2>
 
-        <div className="bg-[#d8d8d8] p-4 rounded-lg mb-4 text-xl">
-          <h3 className="font-semibold underline">Back Workout</h3>
-          <p>
-            •Pull-Ups – 4 sets of 8–12 reps
-            <br />
-            •Bent-Over Barbell Rows – 4 sets of 10 reps
-            <br />
-            •Lat Pulldown (Wide Grip) – 3 sets of 12 reps
-          </p>
+        <div className="bg-[#d8d8d8] p-4 rounded-lg text-black">
+          <div className="flex gap-4">
+            <div className="bg-[#f8f8f8] p-3 rounded-md text-sm w-1/2">
+              <p className="font-semibold text-xl">Strong 5x5 - Workout B</p>
+              <p className="text-xl">Squat (Barbell), Overhead Press (Barbell), Deadlift (Barbell)</p>
+            </div>
+
+            <div className="bg-[#f8f8f8] p-3 rounded-md text-sm w-1/2">
+              <p className="font-semibold text-xl">Legs</p>
+              <p className="text-xl">Squat (Barbell), Leg Extension (Machine), Flat Leg Raise, Calf Raise</p>
+            </div>
+          </div>
         </div>
 
-        {/* <div className="bg-[#d8d8d8] p-4 rounded-lg mb-4 text-xl">
-          <h3 className="font-semibold">Shoulders</h3>
-          <p>
-            •Shoulder Press (Barbell)
-            <br />
-            •Overhead Press (Barbell)
-            <br />
-            •Deadlift (Barbell)
-          </p>
-        </div> */}
-
-        <div className="bg-[#d8d8d8] p-4 rounded-lg w-full text-black">
+        <div className="bg-[#d8d8d8] p-4 rounded-lg text-black">
           <div className="flex gap-4">
             <div className="bg-[#f8f8f8] p-3 rounded-md text-sm w-1/2">
               <p className="font-semibold text-xl">Strong 5x5 - Workout B</p>
