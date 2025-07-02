@@ -31,17 +31,37 @@ async function enrichExercises(exercises) {
 
         const details = response.data;
 
-        // Merge the plan exercise data with API details
+        // Ensure setDetails array exists and is properly structured
+        let setDetails = ex.setDetails || [];
+
+        // If no setDetails provided but we have old format (weight/reps), convert it
+        if (setDetails.length === 0 && ex.weight && ex.reps && ex.sets) {
+          setDetails = Array.from({ length: ex.sets }, (_, index) => ({
+            setNumber: index + 1,
+            weight: ex.weight,
+            reps: ex.reps
+          }));
+        }
+
+        // Create exerciseDetails array with API data
+        const exerciseDetails = [
+          {
+            name: details.name,
+            description: details.description,
+            gifUrl: details.gifUrl,
+            target: details.target,
+            equipment: details.equipment,
+            bodyPart: details.bodyPart,
+            secondaryMuscles: details.secondaryMuscles,
+            instructions: details.instructions
+          }
+        ];
+
+        // Return exercise with setDetails and exerciseDetails structure
         return {
           ...ex,
-          name: details.name,
-          description: details.description,
-          gifUrl: details.gifUrl,
-          target: details.target,
-          equipment: details.equipment,
-          bodyPart: details.bodyPart,
-          secondaryMuscles: details.secondaryMuscles,
-          instructions: details.instructions
+          setDetails,
+          exerciseDetails
         };
       } catch (error) {
         console.error(`Error fetching exercise details for ${ex.exerciseId}:`, error.message);
@@ -124,4 +144,42 @@ const getPlanByUserId = async (req, res) => {
   });
 };
 
-export { getPlan, createPlan, getPlanById, updatePlan, deletePlan, getPlanByUserId };
+// Update plan based on workout session results
+const updatePlanFromWorkout = async (req, res) => {
+  const { id } = req.params; // Plan ID
+  const { completedSets, exerciseUpdates } = req.body;
+
+  if (!isValidObjectId(id)) throw new Error('Invalid id', { cause: 400 });
+
+  try {
+    const plan = await Plan.findById(id);
+    if (!plan) throw new Error('Plan not found', { cause: 404 });
+
+    // Update setDetails based on workout performance
+    if (exerciseUpdates && Array.isArray(exerciseUpdates)) {
+      exerciseUpdates.forEach(update => {
+        const exerciseIndex = plan.exercise.findIndex(ex => ex.exerciseId === update.exerciseId);
+        if (exerciseIndex !== -1) {
+          // Update specific sets based on completed workout
+          update.setUpdates.forEach(setUpdate => {
+            const setIndex = plan.exercise[exerciseIndex].setDetails.findIndex(
+              set => set.setNumber === setUpdate.setNumber
+            );
+            if (setIndex !== -1) {
+              plan.exercise[exerciseIndex].setDetails[setIndex].weight = setUpdate.weight;
+              plan.exercise[exerciseIndex].setDetails[setIndex].reps = setUpdate.reps;
+            }
+          });
+        }
+      });
+    }
+
+    const updatedPlan = await plan.save();
+    res.json(updatedPlan);
+  } catch (error) {
+    console.error('Error updating plan from workout:', error);
+    res.status(500).json({ error: 'Failed to update plan from workout results' });
+  }
+};
+
+export { getPlan, createPlan, getPlanById, updatePlan, deletePlan, getPlanByUserId, updatePlanFromWorkout };

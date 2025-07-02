@@ -32,7 +32,6 @@ function ExercisingPlan() {
 
       const data = await res.json();
       setWorkoutData(data);
-      console.log(data);
       return data;
     } catch (error) {
       console.error('Error fetching workout data:', error);
@@ -195,6 +194,42 @@ function ExercisingPlan() {
     updateSession({ setInputs: newInputs });
   };
 
+  // Get default weight/reps for a set from setDetails or fallback
+  const getSetDefaults = (exercise, setNumber) => {
+    // Look for setDetails first (new structure)
+    if (exercise.setDetails && exercise.setDetails.length > 0) {
+      const setDetail = exercise.setDetails.find(detail => detail.setNumber === setNumber);
+      if (setDetail) {
+        return { weight: setDetail.weight, reps: setDetail.reps };
+      }
+    }
+
+    // Fallback to old structure or defaults
+    return {
+      weight: exercise.weight || 0,
+      reps: exercise.reps || 0
+    };
+  };
+
+  // Get exercise details from exerciseDetails array (new structure)
+  const getExerciseDetails = exercise => {
+    if (exercise.exerciseDetails && exercise.exerciseDetails.length > 0) {
+      return exercise.exerciseDetails[0]; // Take the first (and likely only) exercise details
+    }
+
+    // Fallback to old structure if exerciseDetails doesn't exist
+    return {
+      name: exercise.name,
+      description: exercise.description,
+      gifUrl: exercise.gifUrl,
+      target: exercise.target,
+      equipment: exercise.equipment,
+      bodyPart: exercise.bodyPart,
+      secondaryMuscles: exercise.secondaryMuscles,
+      instructions: exercise.instructions
+    };
+  };
+
   // Complete a set (individual set completion)
   const toggleSetCompletion = (exerciseId, setNumber) => {
     const completedSetId = `${exerciseId}_${setNumber}`;
@@ -214,12 +249,13 @@ function ExercisingPlan() {
       const key = `${exerciseId}_${setNumber}`;
       const setData = setInputs[key] || {};
       const currentExercise = workoutData.exercise.find(ex => ex.exerciseId === exerciseId);
+      const setDefaults = getSetDefaults(currentExercise, setNumber);
 
       const completedSet = {
         exerciseId: exerciseId,
         setNumber: setNumber,
-        weight: setData.weight || currentExercise.weight,
-        reps: setData.reps || currentExercise.reps,
+        weight: setData.weight || setDefaults.weight,
+        reps: setData.reps || setDefaults.reps,
         completedAt: new Date().toISOString()
       };
 
@@ -243,13 +279,76 @@ function ExercisingPlan() {
   };
 
   // Finish workout manually
-  const finishWorkout = () => {
+  const finishWorkout = async () => {
     setIsTimerRunning(false);
     updateSession({
       completedAt: new Date().toISOString()
     });
-    alert('🎉 Workout completed! Great job!');
-    // You could also navigate to a completion page or reset the workout here
+
+    // Check if user wants to update the plan with workout results
+    const shouldUpdatePlan = confirm(
+      '🎉 Workout completed! Would you like to update your plan with the weights and reps you just completed?'
+    );
+
+    if (shouldUpdatePlan) {
+      await updatePlanFromWorkout();
+    } else {
+      alert('🎉 Workout completed! Great job!');
+    }
+  };
+
+  // Update plan with workout results
+  const updatePlanFromWorkout = async () => {
+    try {
+      const BACKEND_URL = import.meta.env.VITE_API_URL;
+
+      // Group completed sets by exercise and prepare update data
+      const exerciseUpdates = [];
+      const exerciseGroups = {};
+
+      // Group completed sets by exercise
+      workoutSession.completedSets.forEach(completedSet => {
+        if (!exerciseGroups[completedSet.exerciseId]) {
+          exerciseGroups[completedSet.exerciseId] = [];
+        }
+        exerciseGroups[completedSet.exerciseId].push(completedSet);
+      });
+
+      // Create update data for each exercise
+      Object.keys(exerciseGroups).forEach(exerciseId => {
+        const sets = exerciseGroups[exerciseId];
+        const setUpdates = sets.map(set => ({
+          setNumber: set.setNumber,
+          weight: parseFloat(set.weight) || 0,
+          reps: parseInt(set.reps) || 0
+        }));
+
+        exerciseUpdates.push({
+          exerciseId,
+          setUpdates
+        });
+      });
+
+      const response = await fetch(`${BACKEND_URL}/plans/${workoutData._id}/update-from-workout`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          exerciseUpdates,
+          completedSets: workoutSession.completedSets
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update plan');
+      }
+
+      alert('✅ Plan updated successfully with your workout results!');
+    } catch (error) {
+      console.error('Error updating plan:', error);
+      alert('❌ Failed to update plan. Your workout is still saved!');
+    }
   };
 
   // Check if workout is ready to be finished (at least some sets completed)
@@ -266,11 +365,12 @@ function ExercisingPlan() {
   const startPauseTimer = exerciseId => {
     const exercise = workoutData.exercise.find(ex => ex.exerciseId === exerciseId);
     if (exercise && exercise.restTime) {
+      const exerciseDetails = getExerciseDetails(exercise);
       setPauseTimer({
         isActive: true,
         remainingTime: exercise.restTime,
         exerciseId: exerciseId,
-        exerciseName: exercise.name || `Exercise ${exerciseId}`
+        exerciseName: exerciseDetails.name || `Exercise ${exerciseId}`
       });
     }
   };
@@ -302,7 +402,8 @@ function ExercisingPlan() {
   }
 
   const currentExercise = workoutData.exercise[currentExerciseIndex];
-  const currentExerciseName = currentExercise.name || `Exercise ${currentExercise.exerciseId}`;
+  const currentExerciseDetails = getExerciseDetails(currentExercise);
+  const currentExerciseName = currentExerciseDetails.name || `Exercise ${currentExercise.exerciseId}`;
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
@@ -330,7 +431,8 @@ function ExercisingPlan() {
       {/* All Exercises in Order */}
       <div className="space-y-4">
         {workoutData.exercise.map((exercise, index) => {
-          const exerciseName = exercise.name || `Exercise ${exercise.exerciseId}`;
+          const exerciseDetails = getExerciseDetails(exercise);
+          const exerciseName = exerciseDetails.name || `Exercise ${exercise.exerciseId}`;
           const isCurrent = index === currentExerciseIndex;
           const isCollapsed = collapsedExercises[exercise.exerciseId];
           const exerciseCompleted = isExerciseCompleted(exercise.exerciseId);
@@ -351,16 +453,16 @@ function ExercisingPlan() {
                 {isCurrent ? (
                   <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center overflow-hidden">
                     <img
-                      src={exercise.gifUrl}
-                      alt={exercise.name || 'Exercise'}
+                      src={exerciseDetails.gifUrl}
+                      alt={exerciseDetails.name || 'Exercise'}
                       className="w-full h-full object-cover rounded-lg"
                     />
                   </div>
                 ) : (
                   <div className="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center overflow-hidden">
                     <img
-                      src={exercise.gifUrl}
-                      alt={exercise.name || 'Exercise'}
+                      src={exerciseDetails.gifUrl}
+                      alt={exerciseDetails.name || 'Exercise'}
                       className="w-full h-full object-cover rounded-lg opacity-60"
                     />
                   </div>
@@ -406,6 +508,7 @@ function ExercisingPlan() {
                     const setNumber = setIndex + 1;
                     const key = `${exercise.exerciseId}_${setNumber}`;
                     const setData = setInputs[key] || {};
+                    const setDefaults = getSetDefaults(exercise, setNumber);
                     const isSetCompleted = workoutSession.completedSets?.some(
                       set => set.exerciseId === exercise.exerciseId && set.setNumber === setNumber
                     );
@@ -423,6 +526,10 @@ function ExercisingPlan() {
                       lastCompletedSet.exerciseId === exercise.exerciseId &&
                       lastCompletedSet.setNumber === setNumber;
 
+                    // Get previous data - either from setDetails or completed sets from last workout
+                    const previousWeight = setDefaults.weight;
+                    const previousReps = setDefaults.reps;
+
                     return (
                       <div
                         key={setNumber}
@@ -435,16 +542,20 @@ function ExercisingPlan() {
                         <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-600">
                           {setNumber}
                         </span>
-                        <span className="text-gray-400 flex items-center">—</span>
+                        <span className="text-gray-400 flex items-center text-sm">
+                          {previousWeight}kg × {previousReps}
+                        </span>
                         <input
                           type="number"
-                          value={setData.weight || exercise.weight}
+                          value={setData.weight || setDefaults.weight}
                           onChange={e => handleInputChange(exercise.exerciseId, setNumber, 'weight', e.target.value)}
                           className="bg-gray-700 rounded px-2 py-1 text-center"
+                          step="0.5"
+                          min="0"
                         />
                         <input
                           type="number"
-                          value={setData.reps || exercise.reps}
+                          value={setData.reps || setDefaults.reps}
                           onChange={e => handleInputChange(exercise.exerciseId, setNumber, 'reps', e.target.value)}
                           className="bg-gray-700 rounded px-2 py-1 text-center"
                           min="1"
@@ -533,12 +644,14 @@ function ExercisingPlan() {
               const exercise = workoutData.exercise.find(ex => ex.exerciseId === showDetailsFor);
               if (!exercise) return null;
 
+              const exerciseDetails = getExerciseDetails(exercise);
+
               return (
                 <>
                   {/* Modal Header */}
                   <div className="flex items-center justify-between p-6 border-b border-gray-700">
                     <h2 className="text-2xl font-bold text-white">
-                      {exercise.name || `Exercise ${exercise.exerciseId}`}
+                      {exerciseDetails.name || `Exercise ${exercise.exerciseId}`}
                     </h2>
                     <button
                       onClick={() => setShowDetailsFor(null)}
@@ -554,8 +667,8 @@ function ExercisingPlan() {
                     <div className="mb-6 flex justify-center">
                       <div className="w-64 h-64 bg-gray-700 rounded-lg overflow-hidden">
                         <img
-                          src={exercise.gifUrl}
-                          alt={exercise.name || 'Exercise'}
+                          src={exerciseDetails.gifUrl}
+                          alt={exerciseDetails.name || 'Exercise'}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -563,18 +676,18 @@ function ExercisingPlan() {
 
                     {/* Exercise Details */}
                     <div className="space-y-4">
-                      {exercise.description && (
+                      {exerciseDetails.description && (
                         <div>
                           <h3 className="text-lg font-semibold text-white mb-2">Description</h3>
-                          <p className="text-gray-300 leading-relaxed">{exercise.description}</p>
+                          <p className="text-gray-300 leading-relaxed">{exerciseDetails.description}</p>
                         </div>
                       )}
 
-                      {exercise.instructions && exercise.instructions.length > 0 && (
+                      {exerciseDetails.instructions && exerciseDetails.instructions.length > 0 && (
                         <div>
                           <h3 className="text-lg font-semibold text-white mb-2">Instructions</h3>
                           <ol className="text-gray-300 space-y-2">
-                            {exercise.instructions.map((instruction, index) => (
+                            {exerciseDetails.instructions.map((instruction, index) => (
                               <li key={index} className="flex items-start">
                                 <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5 flex-shrink-0">
                                   {index + 1}
@@ -588,28 +701,28 @@ function ExercisingPlan() {
 
                       {/* Exercise Info Grid */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                        {exercise.target && (
+                        {exerciseDetails.target && (
                           <div className="bg-gray-700 p-4 rounded-lg">
                             <h4 className="text-white font-semibold mb-1">Primary Target</h4>
-                            <p className="text-gray-300 capitalize">{exercise.target}</p>
+                            <p className="text-gray-300 capitalize">{exerciseDetails.target}</p>
                           </div>
                         )}
-                        {exercise.equipment && (
+                        {exerciseDetails.equipment && (
                           <div className="bg-gray-700 p-4 rounded-lg">
                             <h4 className="text-white font-semibold mb-1">Equipment</h4>
-                            <p className="text-gray-300 capitalize">{exercise.equipment}</p>
+                            <p className="text-gray-300 capitalize">{exerciseDetails.equipment}</p>
                           </div>
                         )}
-                        {exercise.bodyPart && (
+                        {exerciseDetails.bodyPart && (
                           <div className="bg-gray-700 p-4 rounded-lg">
                             <h4 className="text-white font-semibold mb-1">Body Part</h4>
-                            <p className="text-gray-300 capitalize">{exercise.bodyPart}</p>
+                            <p className="text-gray-300 capitalize">{exerciseDetails.bodyPart}</p>
                           </div>
                         )}
-                        {exercise.secondaryMuscles && exercise.secondaryMuscles.length > 0 && (
+                        {exerciseDetails.secondaryMuscles && exerciseDetails.secondaryMuscles.length > 0 && (
                           <div className="bg-gray-700 p-4 rounded-lg">
                             <h4 className="text-white font-semibold mb-1">Secondary Muscles</h4>
-                            <p className="text-gray-300 capitalize">{exercise.secondaryMuscles.join(', ')}</p>
+                            <p className="text-gray-300 capitalize">{exerciseDetails.secondaryMuscles.join(', ')}</p>
                           </div>
                         )}
                       </div>
@@ -618,9 +731,24 @@ function ExercisingPlan() {
                       <div className="bg-blue-900 bg-opacity-50 p-4 rounded-lg mt-6">
                         <h4 className="text-white font-semibold mb-2">Today's Workout</h4>
                         <div className="text-gray-300">
-                          <span className="font-medium">{exercise.sets} sets</span> ×
-                          <span className="font-medium"> {exercise.reps} reps</span> @
-                          <span className="font-medium"> {exercise.weight}kg</span>
+                          <div className="font-medium mb-2">{exercise.sets} sets</div>
+                          {exercise.setDetails && exercise.setDetails.length > 0 ? (
+                            <div className="space-y-1">
+                              {exercise.setDetails.map((setDetail, index) => (
+                                <div key={index} className="text-sm">
+                                  Set {setDetail.setNumber}:{' '}
+                                  <span className="font-medium">
+                                    {setDetail.weight}kg × {setDetail.reps} reps
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="font-medium">{exercise.reps} reps</span> @
+                              <span className="font-medium"> {exercise.weight}kg</span> (all sets)
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
