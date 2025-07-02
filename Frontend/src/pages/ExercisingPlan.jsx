@@ -23,7 +23,7 @@ function ExercisingPlan() {
     try {
       setIsLoading(true);
       const BACKEND_URL = import.meta.env.VITE_API_URL;
-      const res = await fetch(`${BACKEND_URL}/plans/6864d5b5e2700a3565d4e23e`);
+      const res = await fetch(`${BACKEND_URL}/plans/6864ef13917a82b320caf9cc`);
 
       if (!res.ok) {
         const errorData = await res.json();
