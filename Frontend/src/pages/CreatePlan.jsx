@@ -176,6 +176,7 @@ function CreatePlan() {
           Save
         </button>
       </div>
+      {/* Editable title */}
       <div className="flex mt-12 ml-6 items-center">
         {isEditingName ? (
           <input
@@ -231,7 +232,6 @@ function CreatePlan() {
               <button
                 onClick={() => {
                   setCreatePlan(true);
-                  setShowExercises(false);
                   setEditableExercises(prev => {
                     const newExercises = selectedExercise.filter(sel => !prev.some(e => e.id === sel.id));
                     return [...prev, ...newExercises];
@@ -287,6 +287,7 @@ function CreatePlan() {
           Save
         </button>
       </div>
+      {/* Editable title */}
       <div className="flex mt-12 ml-6 items-center">
         {isEditingName ? (
           <input
@@ -342,7 +343,6 @@ function CreatePlan() {
                     const newExercises = selectedExercise.filter(sel => !prev.some(e => e.id === sel.id));
                     return [...prev, ...newExercises];
                   });
-                  setShowExercises(false);
                 }}
                 className="btn btn-primary text-lg"
               >
@@ -379,8 +379,13 @@ function CreatePlan() {
       <div>
         {editableExercises.map((exercise, idx) => (
           <div key={exercise.id} className="ml-2 mr-2 mt-5 mb-6 p-3 rounded-lg bg-gray-800">
-            <div className="font-bold text-lg mb-2">{exercise.id}</div>
-            <div className="grid grid-cols-4 gap-2 text-xs font-semibold text-gray-300 mb-1">
+            <div className="flex justify-between items-center">
+              <div className="font-bold text-lg">{exercise.id}</div>
+              <button onClick className="">
+                ⛔️
+              </button>
+            </div>
+            <div className="grid grid-cols-4 gap-2 text-xs font-semibold text-gray-300 mt-2 mb-1">
               <span>Sets</span>
               <span>Reps</span>
               <span>Weight</span>
