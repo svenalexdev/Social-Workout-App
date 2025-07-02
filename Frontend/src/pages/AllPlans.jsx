@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 export const mockPlans = [
@@ -55,14 +56,43 @@ export const mockPlans = [
 
 const AllPlans = () => {
   const navigate = useNavigate();
-
-  // const goHome = () => {
-  //   navigate('/');
-  // };
+  const [plans, setPlans] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const goToPlans = () => {
     navigate('/plans');
   };
+
+  const GoToStartRoutine = () => {
+    navigate('/exercisingplan');
+  };
+
+  // const goToHome = () => {
+  //   navigate('/');
+  // };
+
+  const getAllPlans = async () => {
+    try {
+      setIsLoading(true);
+      const BACKEND_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${BACKEND_URL}/plans`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to fetch personal plans');
+      }
+      const data = await res.json();
+      const userPlans = data.filter(plan => plan.userId && plan.userId === '6864106dd0e4f0d6f75a5adb');
+      setPlans(userPlans);
+    } catch (error) {
+      console.error('Error fetching plan data:', error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAllPlans();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#f8f8f8] text-black font-montserrat p-4 space-y-6">
@@ -72,17 +102,36 @@ const AllPlans = () => {
           Back Home
         </button>
       </div>
-      <div className="flex flex-col gap-4">
-        {mockPlans.map(plan => (
-          <div key={plan._id} className="bg-black text-white p-4 rounded-md">
-            <h4 className="font-semibold mb-1 text-base">{plan.title}</h4>
-            <p className="text-base mb-3">{plan.exercises.join(' ')}</p>
-            <button className="bg-[#3b82f6] text-white px-3 py-1 text-sm rounded hover:bg-blue-700">
-              Start Routine
-            </button>
-          </div>
-        ))}
-      </div>
+
+      {isLoading ? (
+        <p className="text-center text-sm text-gray-500">Loading...</p>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {plans.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center">No plans found.</p>
+          ) : (
+            plans.map(plan => (
+              <div key={plan._id} className="bg-black text-white p-4 rounded-md">
+                <h4 className="font-semibold mb-1 text-base">{plan.name}</h4>
+                <p className="text-base mb-3">
+                  {plan.exercise?.map((exercise, i) => (
+                    <span key={exercise._id}>
+                      Sets: {exercise.sets}, Reps: {exercise.reps}, Weight: {exercise.weight}kg
+                      {i !== plan.exercise.length - 1 && ' | '}
+                    </span>
+                  )) || 'No exercises'}
+                </p>
+                <button
+                  onClick={GoToStartRoutine}
+                  className="bg-[#3b82f6] text-white px-3 py-1 text-sm rounded hover:bg-blue-700"
+                >
+                  Start Routine
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 };
