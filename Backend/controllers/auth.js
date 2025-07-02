@@ -5,7 +5,7 @@ import User from '../models/User.js';
 
 // This will come from the .env file
 const secret = process.env.JWT_SECRET; 
-const tokenOptions = { expiresIn: '7d' }; // We will limit the duration
+const tokenOptions = { expiresIn: '7d' }; // limit the duration
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -35,10 +35,10 @@ const signup = async (req, res) => {
 };
 
 const signin = async (req, res) => {
-  const { email, password } = req.sanitizedBody;
-
+  const { email, password } = req.body;
+ 
   const user = await User.findOne({ email }).select('+password');
-
+ 
   if (!user) throw new Error('User not found', { cause: 404 });
 
   const passwordMatch = await bcrypt.compare(password, user.password);
