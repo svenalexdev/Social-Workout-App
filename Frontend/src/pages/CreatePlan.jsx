@@ -1,26 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
-const baseURL = `${import.meta.env.VITE_BACKEND_URL}/plans`;
-
-// What is needed
-// 2
-// - X button top left that navigates back to general workout plan area (useNavigate)
-// - headline in the top middle
-// - Save button top right to save created plan / template (localStorage / CRUD push to database?)
-// - another headline
-// - edit button next to this headline to change name (useState, useEffect? change headline in top as well)
-// - add exercises button that opens up 2.1 view (useState?)
-// - add AI button (no functionality yet + if add exercise button is used, make it disappear)
-// 2.1
-// - create mock data exercises
-// - open up list of mock exercises (if time: check popup/modal functionality)
-// - on click of exercise, activate "add" button (localStorage?)
-// - when clicking on add button, list the chosen exercise in 2(.2) (localStorage?)
-// - search field?
-// (- any body part button (mock data body parts?) that opens up dropdown?
-// - any category button (mock data body parts?) that opens up dropdown?
-// - sort button)
+const baseURL = `${import.meta.env.VITE_API_URL}/plans`;
 
 // mock data to be replaced with API fetch
 function CreatePlan() {
@@ -67,6 +48,9 @@ function CreatePlan() {
     }
   ];
 
+  // Site navigation
+  const navigate = useNavigate();
+
   // State management
   const [showExercises, setShowExercises] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState([]);
@@ -85,8 +69,7 @@ function CreatePlan() {
     }
   };
 
-  // Site navigation
-  const navigate = useNavigate();
+  // Handler to go back to plan page
   const handleGoBack = () => {
     navigate('/plans');
   };
@@ -139,6 +122,9 @@ function CreatePlan() {
       if (response.ok) {
         alert('Plan saved successfully!');
         localStorage.removeItem('plan');
+        setTimeout(() => {
+          navigate('/plans');
+        }, 1000);
       } else {
         alert('Error while saving!');
       }
@@ -151,7 +137,7 @@ function CreatePlan() {
   // Useeffect to auto-save plan
   useEffect(() => {
     const plan = {
-      userId: '686400ade4f4ac1e8afaaec9',
+      userId: '686451a488a5ca606f85c212',
       name: planName,
       isPublic: isPublic, // adding toggle still needed
       exercise: editableExercises.map(e => ({
