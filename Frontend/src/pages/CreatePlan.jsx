@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
-const baseURL = 'http://localhost:8080/plans';
+const baseURL = `${import.meta.env.VITE_BACKEND_URL}/plans`;
 
 // What is needed
 // 2
@@ -107,9 +107,10 @@ function CreatePlan() {
     }
   }, [createPlan]);
 
-  // Capitalizing first letter
-  const capitalizeFirstLetter = str => {
-    return str.charAt(0).toUpperCase() + str.slice(1);
+  // Capitalizing first letter of every word w/ regular expression (after spaces, parantheses, dashes etc.)
+  const capitalizeWords = str => {
+    // return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return str.replace(/\b\w/g, char => char.toUpperCase());
   };
 
   //Handler to update exercise data or state when an input changes
@@ -142,7 +143,7 @@ function CreatePlan() {
         alert('Error while saving!');
       }
     } catch (error) {
-      alert('Network error!')
+      alert('Network error!');
       console.error(error);
     }
   };
@@ -150,21 +151,19 @@ function CreatePlan() {
   // Useeffect to auto-save plan
   useEffect(() => {
     const plan = {
-      userID: 0,
+      userId: '686400ade4f4ac1e8afaaec9',
       name: planName,
       isPublic: isPublic, // adding toggle still needed
-      exercises: editableExercises.map(e => ({
-        exerciseID: e.id,
-        sets: e.sets,
-        reps: e.reps,
-        weight: e.weight,
-        restTime: e.restTime
+      exercise: editableExercises.map(e => ({
+        exerciseId: e.id?.toString() ?? '',
+        sets: Number(e.sets) || 1,
+        reps: Number(e.reps) || 1,
+        weight: Number(e.weight) || 1,
+        restTime: Number(e.restTime) || 1
       }))
     };
     localStorage.setItem('plan', JSON.stringify(plan));
   }, [planName, editableExercises, isPublic]);
-
-  // // await createPlan(createdPlan); // CRUD
 
   return !createPlan ? (
     <div>
@@ -177,6 +176,7 @@ function CreatePlan() {
           Save
         </button>
       </div>
+      {/* Editable title */}
       <div className="flex mt-12 ml-6 items-center">
         {isEditingName ? (
           <input
@@ -219,40 +219,55 @@ function CreatePlan() {
         </button>
       </div>
       {showExercises && (
-        <div className="mt-10 bg-slate-700 p-3 px-5 ml-3 mr-3 rounded-2xl">
-          <div className="flex justify-end">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-6">
+          <div className="bg-gray-800 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            {/* Close Button */}
             <button
-              onClick={() => {
-                setCreatePlan(true);
-                setShowExercises(false);
-              }}
-              className="btn btn-primary text-lg"
+              onClick={() => setShowExercises(false)}
+              className="absolute top-3 left-4 text-2xl text-gray-300 hover:text-white font-bold"
             >
-              Add ({selectedExercise.length})
+              ×
             </button>
-          </div>
-          <ul>
-            {mockExercises.map(mockExercise => (
-              <li
-                key={mockExercise.id}
-                // Select several exercises in the list - if already selected, deselect
-                onClick={() =>
-                  setSelectedExercise(prev =>
-                    prev.some(item => item.id === mockExercise.id)
-                      ? prev.filter(item => item.id !== mockExercise.id)
-                      : [...prev, { id: mockExercise.id, sets: 0, reps: 0, weight: 0, restTime: 0 }]
-                  )
-                }
-                // Mark a selected exercise with color
-                className={`text-xl font-bold mt-2 ${
-                  selectedExercise.some(item => item.id === mockExercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
-                }`}
+            <div className="flex justify-end mt-2 mr-2">
+              <button
+                onClick={() => {
+                  setCreatePlan(true);
+                  setEditableExercises(prev => {
+                    const newExercises = selectedExercise.filter(sel => !prev.some(e => e.id === sel.id));
+                    return [...prev, ...newExercises];
+                  });
+                  setShowExercises(false);
+                }}
+                className="btn btn-primary text-lg"
               >
-                {capitalizeFirstLetter(mockExercise.name)} <br />
-                <span className="text-sm">{capitalizeFirstLetter(mockExercise.bodyPart)}</span>
-              </li>
-            ))}
-          </ul>
+                Add ({selectedExercise.length})
+              </button>
+            </div>
+            <ul>
+              {mockExercises.map((mockExercise, idx) => (
+                <li
+                  key={mockExercise.id}
+                  // Select several exercises in the list - if already selected, deselect
+                  onClick={() =>
+                    setSelectedExercise(prev =>
+                      prev.some(item => item.id === mockExercise.id)
+                        ? prev.filter(item => item.id !== mockExercise.id)
+                        : [...prev, { id: mockExercise.id, sets: 0, reps: 0, weight: 0, restTime: 0 }]
+                    )
+                  }
+                  // Mark a selected exercise with color
+                  className={`text-xl font-bold mt-2 p-2 rounded ${
+                    selectedExercise.some(item => item.id === mockExercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
+                  }
+                                    ${idx !== mockExercises.length - 1 ? 'border-b border-gray-600' : ''}
+                    `}
+                >
+                  {capitalizeWords(mockExercise.name)} <br />
+                  <span className="text-sm">{capitalizeWords(mockExercise.bodyPart)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
       <div className="flex justify-center mt-40">
@@ -272,6 +287,7 @@ function CreatePlan() {
           Save
         </button>
       </div>
+      {/* Editable title */}
       <div className="flex mt-12 ml-6 items-center">
         {isEditingName ? (
           <input
@@ -309,51 +325,67 @@ function CreatePlan() {
         </button>
       </div>
       {showExercises && (
-        <div className="mt-10 bg-slate-700 p-3 px-5 ml-3 mr-3 rounded-2xl">
-          <div className="flex justify-end">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50  p-6">
+          <div className="bg-gray-800 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            {/* Close Button */}
             <button
-              onClick={() => {
-                // Merge new selections with current editableExercises to avoid duplicates
-                setEditableExercises(prev => {
-                  const newExercises = selectedExercise.filter(sel => !prev.some(e => e.id === sel.id));
-                  return [...prev, ...newExercises];
-                });
-                setShowExercises(false); // Close the modal
-              }}
-              className="btn btn-primary text-lg"
+              onClick={() => setShowExercises(false)}
+              className="absolute top-3 left-4 text-2xl text-gray-300 hover:text-white font-bold"
             >
-              Add ({selectedExercise.length})
+              ×
             </button>
-          </div>
-          <ul>
-            {mockExercises.map(mockExercise => (
-              <li
-                key={mockExercise.id}
-                // Select several exercises in the list - if already selected, deselect
-                onClick={() =>
-                  setSelectedExercise(prev =>
-                    prev.some(item => item.id === mockExercise.id)
-                      ? prev.filter(item => item.id !== mockExercise.id)
-                      : [...prev, { id: mockExercise.id, sets: 0, reps: 0, weight: 0, restTime: 0 }]
-                  )
-                }
-                // Mark a selected exercise with color
-                className={`text-xl font-bold mt-2 ${
-                  selectedExercise.some(item => item.id === mockExercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
-                }`}
+            <div className="flex justify-end mt-2 mr-2">
+              <button
+                onClick={() => {
+                  setCreatePlan(true);
+                  setShowExercises(false);
+                  setEditableExercises(prev => {
+                    const newExercises = selectedExercise.filter(sel => !prev.some(e => e.id === sel.id));
+                    return [...prev, ...newExercises];
+                  });
+                }}
+                className="btn btn-primary text-lg"
               >
-                {capitalizeFirstLetter(mockExercise.name)} <br />
-                <span className="text-sm">{capitalizeFirstLetter(mockExercise.bodyPart)}</span>
-              </li>
-            ))}
-          </ul>
+                Add ({selectedExercise.length})
+              </button>
+            </div>
+            <ul>
+              {mockExercises.map((mockExercise, idx) => (
+                <li
+                  key={mockExercise.id}
+                  // Select several exercises in the list - if already selected, deselect
+                  onClick={() =>
+                    setSelectedExercise(prev =>
+                      prev.some(item => item.id === mockExercise.id)
+                        ? prev.filter(item => item.id !== mockExercise.id)
+                        : [...prev, { id: mockExercise.id, sets: 0, reps: 0, weight: 0, restTime: 0 }]
+                    )
+                  }
+                  // Mark a selected exercise with color
+                  className={`text-xl font-bold mt-2 p-2 rounded ${
+                    selectedExercise.some(item => item.id === mockExercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
+                  }
+                                    ${idx !== mockExercises.length - 1 ? 'border-b border-gray-600' : ''}
+                    `}
+                >
+                  {capitalizeWords(mockExercise.name)} <br />
+                  <span className="text-sm">{capitalizeWords(mockExercise.bodyPart)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
       <div>
         {editableExercises.map((exercise, idx) => (
           <div key={exercise.id} className="ml-2 mr-2 mt-5 mb-6 p-3 rounded-lg bg-gray-800">
-            <div className="font-bold text-lg mb-2">{exercise.id}</div>
-            <div className="grid grid-cols-4 gap-2 text-xs font-semibold text-gray-300 mb-1">
+            <div className="flex justify-between items-center">
+              <div className="font-bold text-lg">{exercise.id}</div>
+              <button onClick className="">
+                ⛔️
+              </button>
+            </div>
+            <div className="grid grid-cols-4 gap-2 text-xs font-semibold text-gray-300 mt-2 mb-1">
               <span>Sets</span>
               <span>Reps</span>
               <span>Weight</span>
