@@ -18,9 +18,9 @@ function App() {
             <Route path="plans" element={<Plans />} />
             <Route path="createplan" element={<CreatePlan />} />
             <Route path="exercisingplan" element={<ExercisingPlan />} />
-            <Route path="seeallmyplans" element={<AllPlans />} />
+            <Route path="allplans" element={<AllPlans />} />
             <Route path="signin" element={<LoginSignup />} />
-             <Route path="signup" element={<SignUp />} />
+            <Route path="signup" element={<SignUp />} />
           </Route>
           {/* <Route path='*' element={<NotFound />} /> */}
         </Routes>

@@ -98,8 +98,9 @@ function CreatePlan() {
 
   // Useeffect to auto-save plan to localStorage
   useEffect(() => {
+    const userID = localStorage.getItem('userId');
     const plan = {
-      userId: '686451a488a5ca606f85c212',
+      userId: userID,
       name: planName,
       isPublic: isPublic,
       exercise: editableExercises.map(e => ({

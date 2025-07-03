@@ -63,7 +63,8 @@ const AllPlans = () => {
     navigate('/plans');
   };
 
-  const GoToStartRoutine = () => {
+  const GoToStartRoutine = id => {
+    setPlantoLs(id);
     navigate('/exercisingplan');
   };
 
@@ -71,7 +72,7 @@ const AllPlans = () => {
   //   navigate('/');
   // };
 
-  const getAllPlans = async () => {
+  const getMyPlans = async () => {
     try {
       setIsLoading(true);
       const BACKEND_URL = import.meta.env.VITE_API_URL;
@@ -81,7 +82,8 @@ const AllPlans = () => {
         throw new Error(errorData.error || 'Failed to fetch personal plans');
       }
       const data = await res.json();
-      const userPlans = data.filter(plan => plan.userId && plan.userId === '6864106dd0e4f0d6f75a5adb');
+      const userIdLs = localStorage.getItem('userId');
+      const userPlans = data.filter(plan => plan.userId && plan.userId === userIdLs);
       setPlans(userPlans);
     } catch (error) {
       console.error('Error fetching plan data:', error.message);
@@ -90,8 +92,12 @@ const AllPlans = () => {
     }
   };
 
+  const setPlantoLs = id => {
+    localStorage.setItem('exerciseId', id);
+  };
+
   useEffect(() => {
-    getAllPlans();
+    getMyPlans();
   }, []);
 
   return (
@@ -112,6 +118,7 @@ const AllPlans = () => {
           ) : (
             plans.map(plan => (
               <div key={plan._id} className="bg-black text-white p-4 rounded-md">
+                {/* {console.log(plan._id)} */}
                 <h4 className="font-semibold mb-1 text-base">{plan.name}</h4>
                 <p className="text-base mb-3">
                   {plan.exercise?.map((exercise, i) => (
@@ -122,7 +129,7 @@ const AllPlans = () => {
                   )) || 'No exercises'}
                 </p>
                 <button
-                  onClick={GoToStartRoutine}
+                  onClick={() => GoToStartRoutine(plan._id)}
                   className="bg-[#3b82f6] text-white px-3 py-1 text-sm rounded hover:bg-blue-700"
                 >
                   Start Routine
