@@ -1,51 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getExercise } from '../utils/fetch';
 
 function ExercisingPlan() {
-  // Mock workout data - replace with actual data from backend
-  const mockWorkout = {
-    _id: '686254dc03026a9db1f761fe',
-    userId: '68615b866087fc7630c8694f',
-    name: 'Legs Workout',
-    isPublic: true,
-    exercise: [
-      {
-        exerciseId: '0001',
-        sets: 3,
-        reps: 5,
-        weight: 60,
-        restTime: 30,
-        _id: '686254dc03026a9db1f761ff'
-      },
-      {
-        exerciseId: '0003',
-        sets: 3,
-        reps: 5,
-        weight: 60,
-        restTime: 30,
-        _id: '686254dc03026a9db1f761fc'
-      },
-      {
-        exerciseId: '0002',
-        sets: 3,
-        reps: 5,
-        weight: 60,
-        restTime: 30,
-        _id: '686254dc03026a9db1f76200'
-      }
-    ],
-    createdAt: '2025-06-30T09:11:56.425Z',
-    updatedAt: '2025-06-30T09:11:56.425Z',
-    __v: 0
-  };
-
-  // Exercise name mapping (you can expand this or fetch from backend)
-  const exerciseNames = {
-    '0001': 'Arnold Press',
-    '0002': 'Shoulder Press',
-    '0003': 'Push Up'
-  };
-
   // State management
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [timer, setTimer] = useState(0);
@@ -53,40 +8,85 @@ function ExercisingPlan() {
   const [workoutSession, setWorkoutSession] = useState(null);
   const [setInputs, setSetInputs] = useState({});
   const [collapsedExercises, setCollapsedExercises] = useState({});
+  const [workoutData, setWorkoutData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showDetailsFor, setShowDetailsFor] = useState(null); // Track which exercise is showing details
+  // Pause timer state
+  const [pauseTimer, setPauseTimer] = useState({
+    isActive: false,
+    remainingTime: 0,
+    exerciseId: null,
+    exerciseName: ''
+  });
+
+  const getData = async () => {
+    try {
+      setIsLoading(true);
+      const BACKEND_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${BACKEND_URL}/plans/6864d5b5e2700a3565d4e23e`);
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to fetch workout plan');
+      }
+
+      const data = await res.json();
+      setWorkoutData(data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching workout data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Initialize or restore workout session
   useEffect(() => {
-    const sessionKey = `workout_session_${mockWorkout._id}`;
-    const savedSession = localStorage.getItem(sessionKey);
+    const initializeWorkout = async () => {
+      localStorage.clear();
+      // Fetch workout data first
+      const data = await getData();
 
-    if (savedSession) {
-      const session = JSON.parse(savedSession);
-      setWorkoutSession(session);
-      setCurrentExerciseIndex(session.currentExerciseIndex || 0);
-      setSetInputs(session.setInputs || {});
-      setCollapsedExercises(session.collapsedExercises || {});
-    } else {
-      // Create new session with default collapsed state
-      const initialCollapsedState = {};
-      mockWorkout.exercise.forEach((exercise, index) => {
-        // Collapse all exercises except the first one
-        initialCollapsedState[exercise.exerciseId] = index !== 0;
-      });
+      if (!data) {
+        console.error('Failed to fetch workout data');
+        return;
+      }
 
-      const newSession = {
-        workoutSessionId: `session_${Date.now()}`,
-        workoutId: mockWorkout._id,
-        startTime: new Date().toISOString(),
-        currentExerciseIndex: 0,
-        completedSets: [],
-        setInputs: {},
-        collapsedExercises: initialCollapsedState
-      };
-      setWorkoutSession(newSession);
-      setCollapsedExercises(initialCollapsedState);
-      saveToLocalStorage(newSession);
-      setIsTimerRunning(true);
-    }
+      const sessionKey = `workout_session_${data._id}`;
+      const savedSession = localStorage.getItem(sessionKey);
+
+      if (savedSession) {
+        const session = JSON.parse(savedSession);
+        setWorkoutSession(session);
+        setCurrentExerciseIndex(session.currentExerciseIndex || 0);
+        setSetInputs(session.setInputs || {});
+        setCollapsedExercises(session.collapsedExercises || {});
+      } else {
+        // Create new session with default collapsed state
+        const initialCollapsedState = {};
+        console.log(data.exercise, data);
+        data.exercise.forEach((exercise, index) => {
+          // Collapse all exercises except the first one
+          initialCollapsedState[exercise.exerciseId] = index !== 0;
+        });
+
+        const newSession = {
+          workoutSessionId: `session_${Date.now()}`,
+          workoutId: data._id,
+          startTime: new Date().toISOString(),
+          currentExerciseIndex: 0,
+          completedSets: [],
+          setInputs: {},
+          collapsedExercises: initialCollapsedState
+        };
+        setWorkoutSession(newSession);
+        setCollapsedExercises(initialCollapsedState);
+        saveToLocalStorage(newSession, data._id);
+        setIsTimerRunning(true);
+      }
+    };
+
+    initializeWorkout();
   }, []);
 
   // Timer effect
@@ -102,9 +102,31 @@ function ExercisingPlan() {
     return () => clearInterval(interval);
   }, [isTimerRunning, timer]);
 
+  // Pause timer effect
+  useEffect(() => {
+    let interval = null;
+    if (pauseTimer.isActive && pauseTimer.remainingTime > 0) {
+      interval = setInterval(() => {
+        setPauseTimer(prev => ({
+          ...prev,
+          remainingTime: prev.remainingTime - 1
+        }));
+      }, 1000);
+    } else if (pauseTimer.isActive && pauseTimer.remainingTime <= 0) {
+      // Timer finished, stop it
+      setPauseTimer(prev => ({
+        ...prev,
+        isActive: false,
+        remainingTime: 0
+      }));
+    }
+    return () => clearInterval(interval);
+  }, [pauseTimer.isActive, pauseTimer.remainingTime]);
+
   // Save session to localStorage
-  const saveToLocalStorage = session => {
-    const sessionKey = `workout_session_${mockWorkout._id}`;
+  const saveToLocalStorage = (session, workoutId = workoutData?._id) => {
+    if (!workoutId) return;
+    const sessionKey = `workout_session_${workoutId}`;
     localStorage.setItem(sessionKey, JSON.stringify(session));
   };
 
@@ -117,7 +139,8 @@ function ExercisingPlan() {
 
   // Check if an exercise is completed (all sets done)
   const isExerciseCompleted = exerciseId => {
-    const exercise = mockWorkout.exercise.find(ex => ex.exerciseId === exerciseId);
+    if (!workoutData) return false;
+    const exercise = workoutData.exercise.find(ex => ex.exerciseId === exerciseId);
     if (!exercise) return false;
 
     const completedSetsForExercise = workoutSession.completedSets?.filter(set => set.exerciseId === exerciseId) || [];
@@ -127,14 +150,14 @@ function ExercisingPlan() {
 
   // Auto-progress to next exercise when current one is completed
   useEffect(() => {
-    if (!workoutSession) return;
+    if (!workoutSession || !workoutData) return;
 
-    const currentExercise = mockWorkout.exercise[currentExerciseIndex];
+    const currentExercise = workoutData.exercise[currentExerciseIndex];
     if (currentExercise && isExerciseCompleted(currentExercise.exerciseId)) {
       // Current exercise is completed, move to next
       const nextIndex = currentExerciseIndex + 1;
 
-      if (nextIndex < mockWorkout.exercise.length) {
+      if (nextIndex < workoutData.exercise.length) {
         // Move to next exercise
         const newCollapsedState = { ...collapsedExercises };
 
@@ -142,7 +165,7 @@ function ExercisingPlan() {
         newCollapsedState[currentExercise.exerciseId] = true;
 
         // Expand next exercise
-        const nextExercise = mockWorkout.exercise[nextIndex];
+        const nextExercise = workoutData.exercise[nextIndex];
         newCollapsedState[nextExercise.exerciseId] = false;
 
         setCurrentExerciseIndex(nextIndex);
@@ -155,7 +178,7 @@ function ExercisingPlan() {
       }
       // Note: Removed automatic workout completion alert
     }
-  }, [workoutSession?.completedSets, currentExerciseIndex]);
+  }, [workoutSession?.completedSets, currentExerciseIndex, workoutData]);
 
   // Handle input changes for weight and reps
   const handleInputChange = (exerciseId, setNumber, field, value) => {
@@ -169,6 +192,42 @@ function ExercisingPlan() {
     };
     setSetInputs(newInputs);
     updateSession({ setInputs: newInputs });
+  };
+
+  // Get default weight/reps for a set from setDetails or fallback
+  const getSetDefaults = (exercise, setNumber) => {
+    // Look for setDetails first (new structure)
+    if (exercise.setDetails && exercise.setDetails.length > 0) {
+      const setDetail = exercise.setDetails.find(detail => detail.setNumber === setNumber);
+      if (setDetail) {
+        return { weight: setDetail.weight, reps: setDetail.reps };
+      }
+    }
+
+    // Fallback to old structure or defaults
+    return {
+      weight: exercise.weight || 0,
+      reps: exercise.reps || 0
+    };
+  };
+
+  // Get exercise details from exerciseDetails array (new structure)
+  const getExerciseDetails = exercise => {
+    if (exercise.exerciseDetails && exercise.exerciseDetails.length > 0) {
+      return exercise.exerciseDetails[0]; // Take the first (and likely only) exercise details
+    }
+
+    // Fallback to old structure if exerciseDetails doesn't exist
+    return {
+      name: exercise.name,
+      description: exercise.description,
+      gifUrl: exercise.gifUrl,
+      target: exercise.target,
+      equipment: exercise.equipment,
+      bodyPart: exercise.bodyPart,
+      secondaryMuscles: exercise.secondaryMuscles,
+      instructions: exercise.instructions
+    };
   };
 
   // Complete a set (individual set completion)
@@ -189,17 +248,21 @@ function ExercisingPlan() {
       // Add the completed set
       const key = `${exerciseId}_${setNumber}`;
       const setData = setInputs[key] || {};
-      const currentExercise = mockWorkout.exercise.find(ex => ex.exerciseId === exerciseId);
+      const currentExercise = workoutData.exercise.find(ex => ex.exerciseId === exerciseId);
+      const setDefaults = getSetDefaults(currentExercise, setNumber);
 
       const completedSet = {
         exerciseId: exerciseId,
         setNumber: setNumber,
-        weight: setData.weight || currentExercise.weight,
-        reps: setData.reps || currentExercise.reps,
+        weight: setData.weight || setDefaults.weight,
+        reps: setData.reps || setDefaults.reps,
         completedAt: new Date().toISOString()
       };
 
       updatedCompletedSets = [...(workoutSession.completedSets || []), completedSet];
+
+      // Start pause timer after completing a set
+      startPauseTimer(exerciseId);
     }
 
     updateSession({ completedSets: updatedCompletedSets });
@@ -216,13 +279,76 @@ function ExercisingPlan() {
   };
 
   // Finish workout manually
-  const finishWorkout = () => {
+  const finishWorkout = async () => {
     setIsTimerRunning(false);
     updateSession({
       completedAt: new Date().toISOString()
     });
-    alert('🎉 Workout completed! Great job!');
-    // You could also navigate to a completion page or reset the workout here
+
+    // Check if user wants to update the plan with workout results
+    const shouldUpdatePlan = confirm(
+      '🎉 Workout completed! Would you like to update your plan with the weights and reps you just completed?'
+    );
+
+    if (shouldUpdatePlan) {
+      await updatePlanFromWorkout();
+    } else {
+      alert('🎉 Workout completed! Great job!');
+    }
+  };
+
+  // Update plan with workout results
+  const updatePlanFromWorkout = async () => {
+    try {
+      const BACKEND_URL = import.meta.env.VITE_API_URL;
+
+      // Group completed sets by exercise and prepare update data
+      const exerciseUpdates = [];
+      const exerciseGroups = {};
+
+      // Group completed sets by exercise
+      workoutSession.completedSets.forEach(completedSet => {
+        if (!exerciseGroups[completedSet.exerciseId]) {
+          exerciseGroups[completedSet.exerciseId] = [];
+        }
+        exerciseGroups[completedSet.exerciseId].push(completedSet);
+      });
+
+      // Create update data for each exercise
+      Object.keys(exerciseGroups).forEach(exerciseId => {
+        const sets = exerciseGroups[exerciseId];
+        const setUpdates = sets.map(set => ({
+          setNumber: set.setNumber,
+          weight: parseFloat(set.weight) || 0,
+          reps: parseInt(set.reps) || 0
+        }));
+
+        exerciseUpdates.push({
+          exerciseId,
+          setUpdates
+        });
+      });
+
+      const response = await fetch(`${BACKEND_URL}/plans/${workoutData._id}/update-from-workout`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          exerciseUpdates,
+          completedSets: workoutSession.completedSets
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update plan');
+      }
+
+      alert('✅ Plan updated successfully with your workout results!');
+    } catch (error) {
+      console.error('Error updating plan:', error);
+      alert('❌ Failed to update plan. Your workout is still saved!');
+    }
   };
 
   // Check if workout is ready to be finished (at least some sets completed)
@@ -235,18 +361,55 @@ function ExercisingPlan() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (!workoutSession) {
+  // Start pause timer after completing a set
+  const startPauseTimer = exerciseId => {
+    const exercise = workoutData.exercise.find(ex => ex.exerciseId === exerciseId);
+    if (exercise && exercise.restTime) {
+      const exerciseDetails = getExerciseDetails(exercise);
+      setPauseTimer({
+        isActive: true,
+        remainingTime: exercise.restTime,
+        exerciseId: exerciseId,
+        exerciseName: exerciseDetails.name || `Exercise ${exerciseId}`
+      });
+    }
+  };
+
+  // Adjust pause timer by seconds (positive to add, negative to subtract)
+  const adjustPauseTimer = seconds => {
+    setPauseTimer(prev => ({
+      ...prev,
+      remainingTime: Math.max(0, prev.remainingTime + seconds)
+    }));
+  };
+
+  // Stop pause timer manually
+  const stopPauseTimer = () => {
+    setPauseTimer({
+      isActive: false,
+      remainingTime: 0,
+      exerciseId: null,
+      exerciseName: ''
+    });
+  };
+
+  if (!workoutSession || isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
-  const currentExercise = mockWorkout.exercise[currentExerciseIndex];
-  const currentExerciseName = exerciseNames[currentExercise.exerciseId] || `Exercise ${currentExercise.exerciseId}`;
+  if (!workoutData) {
+    return <div className="flex justify-center items-center h-screen text-red-500">Error loading workout data</div>;
+  }
+
+  const currentExercise = workoutData.exercise[currentExerciseIndex];
+  const currentExerciseDetails = getExerciseDetails(currentExercise);
+  const currentExerciseName = currentExerciseDetails.name || `Exercise ${currentExercise.exerciseId}`;
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
       {/* Header */}
       <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">{mockWorkout.name}</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">{workoutData.name}</h1>
       </div>
 
       {/* Fixed Timer & Date Bar */}
@@ -267,8 +430,9 @@ function ExercisingPlan() {
 
       {/* All Exercises in Order */}
       <div className="space-y-4">
-        {mockWorkout.exercise.map((exercise, index) => {
-          const exerciseName = exerciseNames[exercise.exerciseId] || `Exercise ${exercise.exerciseId}`;
+        {workoutData.exercise.map((exercise, index) => {
+          const exerciseDetails = getExerciseDetails(exercise);
+          const exerciseName = exerciseDetails.name || `Exercise ${exercise.exerciseId}`;
           const isCurrent = index === currentExerciseIndex;
           const isCollapsed = collapsedExercises[exercise.exerciseId];
           const exerciseCompleted = isExerciseCompleted(exercise.exerciseId);
@@ -287,33 +451,44 @@ function ExercisingPlan() {
               >
                 {/* Exercise Image */}
                 {isCurrent ? (
-                  <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center">
-                    <div className="text-gray-600 text-center">
-                      <span className="text-2xl">💪</span>
-                    </div>
+                  <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center overflow-hidden">
+                    <img
+                      src={exerciseDetails.gifUrl}
+                      alt={exerciseDetails.name || 'Exercise'}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
                   </div>
                 ) : (
-                  <div className="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">💪</span>
+                  <div className="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center overflow-hidden">
+                    <img
+                      src={exerciseDetails.gifUrl}
+                      alt={exerciseDetails.name || 'Exercise'}
+                      className="w-full h-full object-cover rounded-lg opacity-60"
+                    />
                   </div>
                 )}
-
                 {/* Exercise Info */}
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className={`font-bold ${isCurrent ? 'text-2xl text-white' : 'text-lg'}`}>{exerciseName}</h3>
-                    {exerciseCompleted && (
-                      <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">✓ Completed</span>
-                    )}
-                    {isCurrent && (
-                      <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">Current</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <h3 className={`font-bold ${isCurrent ? 'text-2xl text-white' : 'text-lg'}`}>{exerciseName}</h3>
+                    </div>
+                    {!isCollapsed && (
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          setShowDetailsFor(showDetailsFor === exercise.exerciseId ? null : exercise.exerciseId);
+                        }}
+                        className="bg-gray-500 hover:bg-gray-600 text-white text-xs px-3 py-1 rounded-full transition-colors"
+                      >
+                        Details
+                      </button>
                     )}
                   </div>
-                  <div className="text-sm text-gray-400">
+                  {/* <div className="text-sm text-gray-400">
                     {exercise.sets} sets × {exercise.reps} reps @ {exercise.weight}kg
-                  </div>
-                </div>
-
+                  </div> */}
+                </div>{' '}
                 {/* Collapse/Expand Indicator */}
                 {/* <div className="text-gray-400">{isCollapsed ? '▼' : '▲'}</div> */}
               </div>
@@ -333,6 +508,7 @@ function ExercisingPlan() {
                     const setNumber = setIndex + 1;
                     const key = `${exercise.exerciseId}_${setNumber}`;
                     const setData = setInputs[key] || {};
+                    const setDefaults = getSetDefaults(exercise, setNumber);
                     const isSetCompleted = workoutSession.completedSets?.some(
                       set => set.exerciseId === exercise.exerciseId && set.setNumber === setNumber
                     );
@@ -350,6 +526,10 @@ function ExercisingPlan() {
                       lastCompletedSet.exerciseId === exercise.exerciseId &&
                       lastCompletedSet.setNumber === setNumber;
 
+                    // Get previous data - either from setDetails or completed sets from last workout
+                    const previousWeight = setDefaults.weight;
+                    const previousReps = setDefaults.reps;
+
                     return (
                       <div
                         key={setNumber}
@@ -362,24 +542,25 @@ function ExercisingPlan() {
                         <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-600">
                           {setNumber}
                         </span>
-                        <span className="text-gray-400 flex items-center">—</span>
+                        <span className="text-gray-400 flex items-center text-sm">
+                          {previousWeight}kg × {previousReps}
+                        </span>
                         <input
                           type="number"
-                          value={setData.weight || exercise.weight}
+                          value={setData.weight || setDefaults.weight}
                           onChange={e => handleInputChange(exercise.exerciseId, setNumber, 'weight', e.target.value)}
                           className="bg-gray-700 rounded px-2 py-1 text-center"
+                          step="0.5"
+                          min="0"
                         />
-                        <select
-                          value={setData.reps || exercise.reps}
+                        <input
+                          type="number"
+                          value={setData.reps || setDefaults.reps}
                           onChange={e => handleInputChange(exercise.exerciseId, setNumber, 'reps', e.target.value)}
-                          className="bg-gray-700 rounded px-2 py-1"
-                        >
-                          {[...Array(20)].map((_, i) => (
-                            <option key={i + 1} value={i + 1}>
-                              {i + 1}
-                            </option>
-                          ))}
-                        </select>
+                          className="bg-gray-700 rounded px-2 py-1 text-center"
+                          min="1"
+                          max="99"
+                        />
                         <button
                           onClick={() => toggleSetCompletion(exercise.exerciseId, setNumber)}
                           className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors ${
@@ -401,7 +582,7 @@ function ExercisingPlan() {
       </div>
 
       {/* Finish Workout Button */}
-      <div className="mt-8 mb-6">
+      <div className={`mt-8 mb-6 ${pauseTimer.isActive ? 'pb-24' : ''}`}>
         <button
           onClick={finishWorkout}
           disabled={!canFinishWorkout}
@@ -412,6 +593,172 @@ function ExercisingPlan() {
           {canFinishWorkout ? '🏁 Finish Workout' : '🏁 Complete some sets to finish'}
         </button>
       </div>
+
+      {/* Sticky Pause Timer - Bottom */}
+      {pauseTimer.isActive && (
+        <div className="fixed bottom-0 left-0 right-0 z-40">
+          <div className="bg-orange-600 rounded-t-lg p-4 border border-orange-500 backdrop-blur-sm shadow-lg">
+            <div className="flex items-center justify-between">
+              {/* Decrease Timer Button */}
+              <button
+                onClick={() => adjustPauseTimer(-10)}
+                className="bg-orange-700 hover:bg-orange-800 text-white px-4 py-2 rounded-lg transition-colors font-bold"
+              >
+                -10s
+              </button>
+
+              {/* Timer Display */}
+              <div className="flex-1 text-center">
+                <div className="text-white text-sm font-medium mb-1">Rest Time</div>
+                <div className="text-white text-2xl font-bold">{formatTime(pauseTimer.remainingTime)}</div>
+                <div className="text-orange-200 text-xs">{pauseTimer.exerciseName}</div>
+              </div>
+
+              {/* Increase Timer Button */}
+              <button
+                onClick={() => adjustPauseTimer(10)}
+                className="bg-orange-700 hover:bg-orange-800 text-white px-4 py-2 rounded-lg transition-colors font-bold"
+              >
+                +10s
+              </button>
+            </div>
+
+            {/* Skip Rest Button */}
+            <div className="mt-3 text-center">
+              <button
+                onClick={stopPauseTimer}
+                className="bg-orange-800 hover:bg-orange-900 text-white px-6 py-2 rounded-lg transition-colors text-sm font-medium"
+              >
+                Skip Rest
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exercise Details Popup Modal */}
+      {showDetailsFor && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {(() => {
+              const exercise = workoutData.exercise.find(ex => ex.exerciseId === showDetailsFor);
+              if (!exercise) return null;
+
+              const exerciseDetails = getExerciseDetails(exercise);
+
+              return (
+                <>
+                  {/* Modal Header */}
+                  <div className="flex items-center justify-between p-6 border-b border-gray-700">
+                    <h2 className="text-2xl font-bold text-white">
+                      {exerciseDetails.name || `Exercise ${exercise.exerciseId}`}
+                    </h2>
+                    <button
+                      onClick={() => setShowDetailsFor(null)}
+                      className="text-gray-400 hover:text-white text-2xl font-bold"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  {/* Modal Content */}
+                  <div className="p-6">
+                    {/* Exercise GIF */}
+                    <div className="mb-6 flex justify-center">
+                      <div className="w-64 h-64 bg-gray-700 rounded-lg overflow-hidden">
+                        <img
+                          src={exerciseDetails.gifUrl}
+                          alt={exerciseDetails.name || 'Exercise'}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Exercise Details */}
+                    <div className="space-y-4">
+                      {exerciseDetails.description && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-2">Description</h3>
+                          <p className="text-gray-300 leading-relaxed">{exerciseDetails.description}</p>
+                        </div>
+                      )}
+
+                      {exerciseDetails.instructions && exerciseDetails.instructions.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-2">Instructions</h3>
+                          <ol className="text-gray-300 space-y-2">
+                            {exerciseDetails.instructions.map((instruction, index) => (
+                              <li key={index} className="flex items-start">
+                                <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5 flex-shrink-0">
+                                  {index + 1}
+                                </span>
+                                <span className="leading-relaxed">{instruction}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+
+                      {/* Exercise Info Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                        {exerciseDetails.target && (
+                          <div className="bg-gray-700 p-4 rounded-lg">
+                            <h4 className="text-white font-semibold mb-1">Primary Target</h4>
+                            <p className="text-gray-300 capitalize">{exerciseDetails.target}</p>
+                          </div>
+                        )}
+                        {exerciseDetails.equipment && (
+                          <div className="bg-gray-700 p-4 rounded-lg">
+                            <h4 className="text-white font-semibold mb-1">Equipment</h4>
+                            <p className="text-gray-300 capitalize">{exerciseDetails.equipment}</p>
+                          </div>
+                        )}
+                        {exerciseDetails.bodyPart && (
+                          <div className="bg-gray-700 p-4 rounded-lg">
+                            <h4 className="text-white font-semibold mb-1">Body Part</h4>
+                            <p className="text-gray-300 capitalize">{exerciseDetails.bodyPart}</p>
+                          </div>
+                        )}
+                        {exerciseDetails.secondaryMuscles && exerciseDetails.secondaryMuscles.length > 0 && (
+                          <div className="bg-gray-700 p-4 rounded-lg">
+                            <h4 className="text-white font-semibold mb-1">Secondary Muscles</h4>
+                            <p className="text-gray-300 capitalize">{exerciseDetails.secondaryMuscles.join(', ')}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Workout Parameters */}
+                      <div className="bg-blue-900 bg-opacity-50 p-4 rounded-lg mt-6">
+                        <h4 className="text-white font-semibold mb-2">Today's Workout</h4>
+                        <div className="text-gray-300">
+                          <div className="font-medium mb-2">{exercise.sets} sets</div>
+                          {exercise.setDetails && exercise.setDetails.length > 0 ? (
+                            <div className="space-y-1">
+                              {exercise.setDetails.map((setDetail, index) => (
+                                <div key={index} className="text-sm">
+                                  Set {setDetail.setNumber}:{' '}
+                                  <span className="font-medium">
+                                    {setDetail.weight}kg × {setDetail.reps} reps
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="font-medium">{exercise.reps} reps</span> @
+                              <span className="font-medium"> {exercise.weight}kg</span> (all sets)
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
