@@ -6,6 +6,7 @@ import CreatePlan from './pages/CreatePlan';
 import ExercisingPlan from './pages/ExercisingPlan';
 import AllPlans from './pages/AllPlans';
 import LoginSignup from './pages/LoginSignup';
+import SignUp from './pages/SignUp';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="exercisingplan" element={<ExercisingPlan />} />
             <Route path="seeallmyplans" element={<AllPlans />} />
             <Route path="signin" element={<LoginSignup />} />
+             <Route path="signup" element={<SignUp />} />
           </Route>
           {/* <Route path='*' element={<NotFound />} /> */}
         </Routes>

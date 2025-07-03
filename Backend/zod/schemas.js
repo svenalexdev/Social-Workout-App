@@ -48,4 +48,6 @@ const logSchema = z.object({
   duration: z.number().min(1)
 });
 
-export { userSchema, planSchema, logSchema };
+const signInSchema = userSchema.omit({ name: true, stats: true });
+
+export { userSchema, planSchema, logSchema, signInSchema };
