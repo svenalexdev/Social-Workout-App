@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import checkAuth from '../data/checkAuth';
 
 function ExercisingPlan() {
   // State management
@@ -39,6 +40,17 @@ function ExercisingPlan() {
       setIsLoading(false);
     }
   };
+
+    useEffect(() => {
+      const verifyUser = async () => {
+        const login = await checkAuth();
+        if (!login) {
+          alert('User not login');
+          navigate('/signin');
+        }
+      };
+      verifyUser();
+    }, []);
 
   // Initialize or restore workout session
   useEffect(() => {
