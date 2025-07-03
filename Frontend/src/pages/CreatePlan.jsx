@@ -60,6 +60,7 @@ function CreatePlan() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [shouldOpenModal, setShouldOpenModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Effect management
   // Storing a selected exercise to localStorage
@@ -188,6 +189,10 @@ function CreatePlan() {
     return str.replace(/\b\w/g, char => char.toUpperCase());
   };
 
+  // Other
+  // Variable to filter exercises based on search term (search bar), all lower-cased for case-insensitivity
+  const filteredExercises = mockExercises.filter(ex => ex.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
   return (
     <div className="min-h-screen bg-black text-white p-4">
       {/* Modal / popup to show exercise list  */}
@@ -215,13 +220,23 @@ function CreatePlan() {
                   //   const newExercises = selectedExercise.filter(sel => !prev.some(e => e.id === sel.id));
                   //   return [...prev, ...newExercises];
                 }}
-                className="btn text-lg bg-gray-500 border-none text-white"
+                className="btn text-lg bg-gray-500 border-none text-white mr-1"
               >
                 Add ({selectedExercise.length})
               </button>
             </div>
+            {/* Search bar */}
+            <div className="flex justify-center">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="Search exercises..."
+                className="w-full max-w-xs p-2 mb-4 rounded bg-gray-700 placeholder-gray-400 mt-4"
+              />
+            </div>
             <ul>
-              {mockExercises.map((mockExercise, idx) => (
+              {filteredExercises.map((mockExercise, idx) => (
                 <li
                   key={mockExercise.id}
                   // Select several exercises in the list - if already selected, deselect
