@@ -50,7 +50,8 @@ const signin = async (req, res) => {
   const token = jwt.sign(payload, secret, tokenOptions);
 
   res.cookie('token', token, cookieOptions);
-  res.status(201).json({ message: 'welcome back' });
+
+  res.status(201).json({  userId: user._id,message : 'Welcome Back'});
 };
 
 const me = async (req, res) => {
