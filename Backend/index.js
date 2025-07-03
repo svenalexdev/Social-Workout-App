@@ -7,8 +7,6 @@ import logRouter from './routers/logRouter.js';
 import authRouter from './routers/authRouter.js';
 import cors from 'cors';
 
-
-
 const app = express();
 const port = process.env.PORT || 8080;
 
