@@ -36,7 +36,7 @@ const SignUp = () => {
 
       setLoading(true);
 
-      const { message } = await signup({ name, email, password, stats: [{ height, weight, age }] });
+      const { message } = await signup({ name, email, password, stats: [{ height :parseInt(height), weight:parseInt(weight), age:parseInt(age) }] });
 
       toast.success(message || 'Account created successfully');
       navigate('/');

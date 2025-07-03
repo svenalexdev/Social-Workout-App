@@ -35,7 +35,7 @@ export const signin = async formData => {
   }
 
   const data = await result.json();
-
+  
   return data;
 };
 

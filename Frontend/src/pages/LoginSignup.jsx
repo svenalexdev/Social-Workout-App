@@ -19,8 +19,9 @@ const LoginSignup = () => {
       const { userId, message } = await signin({ email, password });
 
       toast.success(message || 'Welcome Back');
-
+      alert('welcome Back');
       //Save id in local storage
+    
       localStorage.setItem('userId', userId);
       navigate('/');
     } catch (error) {
