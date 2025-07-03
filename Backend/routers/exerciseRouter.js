@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {
-  getAllExercises,
+  // getAllExercises,
   getExerciseByName,
   getExerciseById,
   getExercisesByTarget,
@@ -8,12 +8,14 @@ import {
   getExercisesByBodyPart,
   getBodyPartList,
   getEquipmentList,
-  getTargetList
+  getTargetList,
+  getExercisesBe
 } from '../controllers/exercises.js';
 
 const exerciseRouter = Router();
 
-exerciseRouter.get('/', getAllExercises);
+// exerciseRouter.get('/', getAllExercises);
+exerciseRouter.get('/', getExercisesBe);
 exerciseRouter.get('/name/:name', getExerciseByName);
 exerciseRouter.get('/exercise/:id', getExerciseById);
 exerciseRouter.get('/target/:target', getExercisesByTarget);
