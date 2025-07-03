@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Exercise from '../models/Exercise.js';
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
 const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST;
@@ -9,19 +10,24 @@ const getHeaders = () => ({
   'x-rapidapi-host': RAPIDAPI_HOST
 });
 
-export const getAllExercises = async (req, res) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/exercises`, {
-      headers: getHeaders()
-    });
-    res.json(response.data);
-  } catch (error) {
-    console.error('Error fetching all exercises:', error.message);
-    res.status(500).json({
-      error: 'Failed to fetch exercises',
-      message: error.response?.data?.message || error.message
-    });
-  }
+// export const getAllExercises = async (req, res) => {
+//   try {
+//     const response = await axios.get(`${BASE_URL}/exercises`, {
+//       headers: getHeaders()
+//     });
+//     res.json(response.data);
+//   } catch (error) {
+//     console.error('Error fetching all exercises:', error.message);
+//     res.status(500).json({
+//       error: 'Failed to fetch exercises',
+//       message: error.response?.data?.message || error.message
+//     });
+//   }
+// };
+
+export const getExercisesBe = async (req, res) => {
+  const exercise = await Exercise.find();
+  res.json(exercise);
 };
 
 export const getExerciseByName = async (req, res) => {
