@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
+import checkAuth from '../data/checkAuth';
 const baseURL = `${import.meta.env.VITE_API_URL}/plans`;
 
 // mock data to be replaced with API fetch
@@ -72,6 +73,18 @@ function CreatePlan() {
   // }, [selectedExercise]);
 
   // Load exercises from localStorage when createPlan = true
+
+  useEffect(() => {
+    const verifyUser = async () => {
+      const login = await checkAuth();
+      if (!login) {
+        alert('User not login');
+        navigate('/signin');
+      }
+    };
+    verifyUser();
+  }, []);
+
   useEffect(() => {
     if (createPlan) {
       const stored = JSON.parse(localStorage.getItem('exercises')) || [];

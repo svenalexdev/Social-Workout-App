@@ -5,6 +5,7 @@ import userRouter from './routers/userRouter.js';
 import planRouter from './routers/planRouter.js';
 import logRouter from './routers/logRouter.js';
 import authRouter from './routers/authRouter.js';
+import errorHandler from './middlewares/errorHandler.js';
 import cors from 'cors';
 
 const app = express();
@@ -18,6 +19,8 @@ app.use('/users', userRouter);
 app.use('/plans', planRouter);
 app.use('/logs', logRouter);
 app.use('/auth', authRouter);
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
