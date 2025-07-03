@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import checkAuth from '../data/checkAuth';
 import { useNavigate } from 'react-router';
 
 function ExercisingPlan() {
@@ -48,6 +49,17 @@ function ExercisingPlan() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const verifyUser = async () => {
+      const login = await checkAuth();
+      if (!login) {
+        alert('User not login');
+        navigate('/signin');
+      }
+    };
+    verifyUser();
+  }, []);
 
   // Initialize or restore workout session
   useEffect(() => {
