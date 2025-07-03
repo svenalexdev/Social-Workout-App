@@ -1,52 +1,52 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
-const baseURL = `${import.meta.env.VITE_API_URL}/plans`;
+const baseURL = `${import.meta.env.VITE_API_URL}`;
 
 // mock data to be replaced with API fetch
 function CreatePlan() {
-  let mockExercises = [
-    {
-      bodyPart: 'waist',
-      equipment: 'body weight',
-      gifUrl: 'https://v2.exercisedb.io/image/yy7vvVaXPByinG',
-      id: '0001',
-      name: '3/4 sit-up',
-      target: 'abs',
-      secondaryMuscles: ['hip flexors', 'lower back'],
-      instructions: [
-        'Lie flat on your back with your knees bent and feet flat on the ground.',
-        'Place your hands behind your head with your elbows pointing outwards.',
-        'Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.',
-        'Pause for a moment at the top, then slowly lower your upper body back down to the starting position.',
-        'Repeat for the desired number of repetitions.'
-      ],
-      description:
-        'The 3/4 sit-up is an abdominal exercise performed with body weight. It involves curling the torso up to a 45-degree angle, engaging the abs, hip flexors, and lower back. This movement is commonly used to build core strength and stability.',
-      difficulty: 'beginner',
-      category: 'strength'
-    },
-    {
-      bodyPart: 'chest',
-      equipment: 'leverage machine',
-      gifUrl: 'https://v2.exercisedb.io/image/De5q-sI-iu8vAI',
-      id: '0009',
-      name: 'assisted chest dip (kneeling)',
-      target: 'pectorals',
-      secondaryMuscles: ['triceps', 'shoulders'],
-      instructions: [
-        'Adjust the machine to your desired height and secure your knees on the pad.',
-        'Grasp the handles with your palms facing down and your arms fully extended.',
-        'Lower your body by bending your elbows until your upper arms are parallel to the floor.',
-        'Pause for a moment, then push yourself back up to the starting position.',
-        'Repeat for the desired number of repetitions.'
-      ],
-      description:
-        'The assisted chest dip (kneeling) is a chest-focused exercise performed on a leverage machine, where the user kneels on a pad for support. This machine-assisted variation helps reduce the load, making it accessible for those building strength or learning proper dip technique.',
-      difficulty: 'beginner',
-      category: 'strength'
-    }
-  ];
+  //   let mockExercises = [
+  //     {
+  //       bodyPart: 'waist',
+  //       equipment: 'body weight',
+  //       gifUrl: 'https://v2.exercisedb.io/image/yy7vvVaXPByinG',
+  //       id: '0001',
+  //       name: '3/4 sit-up',
+  //       target: 'abs',
+  //       secondaryMuscles: ['hip flexors', 'lower back'],
+  //       instructions: [
+  //         'Lie flat on your back with your knees bent and feet flat on the ground.',
+  //         'Place your hands behind your head with your elbows pointing outwards.',
+  //         'Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.',
+  //         'Pause for a moment at the top, then slowly lower your upper body back down to the starting position.',
+  //         'Repeat for the desired number of repetitions.'
+  //       ],
+  //       description:
+  //         'The 3/4 sit-up is an abdominal exercise performed with body weight. It involves curling the torso up to a 45-degree angle, engaging the abs, hip flexors, and lower back. This movement is commonly used to build core strength and stability.',
+  //       difficulty: 'beginner',
+  //       category: 'strength'
+  //     },
+  //     {
+  //       bodyPart: 'chest',
+  //       equipment: 'leverage machine',
+  //       gifUrl: 'https://v2.exercisedb.io/image/De5q-sI-iu8vAI',
+  //       id: '0009',
+  //       name: 'assisted chest dip (kneeling)',
+  //       target: 'pectorals',
+  //       secondaryMuscles: ['triceps', 'shoulders'],
+  //       instructions: [
+  //         'Adjust the machine to your desired height and secure your knees on the pad.',
+  //         'Grasp the handles with your palms facing down and your arms fully extended.',
+  //         'Lower your body by bending your elbows until your upper arms are parallel to the floor.',
+  //         'Pause for a moment, then push yourself back up to the starting position.',
+  //         'Repeat for the desired number of repetitions.'
+  //       ],
+  //       description:
+  //         'The assisted chest dip (kneeling) is a chest-focused exercise performed on a leverage machine, where the user kneels on a pad for support. This machine-assisted variation helps reduce the load, making it accessible for those building strength or learning proper dip technique.',
+  //       difficulty: 'beginner',
+  //       category: 'strength'
+  //     }
+  //   ];
 
   // Site navigation
   const navigate = useNavigate();
@@ -61,6 +61,7 @@ function CreatePlan() {
   const [isPublic, setIsPublic] = useState(false);
   const [shouldOpenModal, setShouldOpenModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [exercises, setExercises] = useState([]); // exercise fetch
 
   // Effect management
   // Storing a selected exercise to localStorage
@@ -79,7 +80,7 @@ function CreatePlan() {
       setEditableExercises(
         stored.map(e => {
           if (!e.name) {
-            const found = mockExercises.find(m => m.id === e.id);
+            const found = exercises.find(m => m.id === e.id);
             return { ...e, name: found ? found.name : '' };
           }
           return e;
@@ -96,10 +97,11 @@ function CreatePlan() {
     }
   }, [createPlan, shouldOpenModal]);
 
-  // Useeffect to auto-save plan to localStorage
+  // Auto-save plan to localStorage
   useEffect(() => {
+    const userId = localStorage.getItem('userId');
     const plan = {
-      userId: '686451a488a5ca606f85c212',
+      userId: userId,
       name: planName,
       isPublic: isPublic,
       exercise: editableExercises.map(e => ({
@@ -112,6 +114,51 @@ function CreatePlan() {
     };
     localStorage.setItem('plan', JSON.stringify(plan));
   }, [planName, editableExercises, isPublic]);
+
+  // Fetch limited exercises (100) by default
+  useEffect(() => {
+    let ignore = false;
+    const fetchExercises = async () => {
+      try {
+        const res = await fetch(`${baseURL}/exercises`);
+        if (!res.ok) throw new Error(`${res.status}. Something went wrong!`);
+        const data = await res.json();
+        if (!ignore) {
+          setExercises(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch exercises:', error);
+        setExercises([]);
+      }
+    };
+
+    fetchExercises();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  // // Fetch all matching exercises when searching
+  // useEffect(() => {
+  //   if (searchTerm.length < 2) return; // Only search for 2+ chars
+  //   let ignore = false;
+  //   const fetchSearch = async () => {
+  //     try {
+  //       const res = await fetch(`${baseURL}/exercises?search=${encodeURIComponent(searchTerm)}`);
+  //       if (!res.ok) throw new Error(`${res.status}. Something went wrong!`);
+  //       const data = await res.json();
+  //       if (!ignore) {
+  //         setExercises(data);
+  //       }
+  //     } catch (error) {
+  //       console.error('Failed to fetch search results:', error);
+  //       setExercises([]);
+  //     }
+  //   };
+  //   fetchSearch();
+  //   return () => {ignore = true; };
+  // }, [searchTerm]);
 
   // Handler
   // Handlers to save title name on blur or Enter
@@ -161,7 +208,7 @@ function CreatePlan() {
       return;
     }
     try {
-      const response = await fetch(baseURL, {
+      const response = await fetch(`${baseURL}/plans`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(plan)
@@ -191,7 +238,7 @@ function CreatePlan() {
 
   // Other
   // Variable to filter exercises based on search term (search bar), all lower-cased for case-insensitivity
-  const filteredExercises = mockExercises.filter(ex => ex.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredExercises = exercises.filter(ex => ex.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
@@ -236,19 +283,19 @@ function CreatePlan() {
               />
             </div>
             <ul>
-              {filteredExercises.map((mockExercise, idx) => (
+              {filteredExercises.map((exercise, idx) => (
                 <li
-                  key={mockExercise.id}
+                  key={exercise.id}
                   // Select several exercises in the list - if already selected, deselect
                   onClick={() =>
                     setSelectedExercise(prev =>
-                      prev.some(item => item.id === mockExercise.id)
-                        ? prev.filter(item => item.id !== mockExercise.id)
+                      prev.some(item => item.id === exercise.id)
+                        ? prev.filter(item => item.id !== exercise.id)
                         : [
                             ...prev,
                             {
-                              id: mockExercise.id,
-                              name: mockExercise.name,
+                              id: exercise.id,
+                              name: exercise.name,
                               sets: [],
                               reps: [],
                               weight: [],
@@ -259,13 +306,13 @@ function CreatePlan() {
                   }
                   // Mark a selected exercise with color
                   className={`text-xl font-bold mt-2 p-2 rounded ${
-                    selectedExercise.some(item => item.id === mockExercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
+                    selectedExercise.some(item => item.id === exercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
                   }
-                                    ${idx !== mockExercises.length - 1 ? 'border-b border-gray-600' : ''}
+                                    ${idx !== exercises.length - 1 ? 'border-b border-gray-600' : ''}
                     `}
                 >
-                  {capitalizeWords(mockExercise.name)} <br />
-                  <span className="text-sm">{capitalizeWords(mockExercise.bodyPart)}</span>
+                  {capitalizeWords(exercise.name)} <br />
+                  <span className="text-sm">{capitalizeWords(exercise.bodyPart)}</span>
                 </li>
               ))}
             </ul>
