@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import checkAuth from '../data/checkAuth';
+import { useNavigate } from 'react-router';
 
 function ExercisingPlan() {
+  const navigate = useNavigate();
+
   // State management
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [timer, setTimer] = useState(0);
@@ -24,7 +27,13 @@ function ExercisingPlan() {
     try {
       setIsLoading(true);
       const BACKEND_URL = import.meta.env.VITE_API_URL;
-      const res = await fetch(`${BACKEND_URL}/plans/6864d5b5e2700a3565d4e23e`);
+      const exerciseId = localStorage.getItem('exerciseId');
+      const userId = localStorage.getItem('userId');
+      console.log(userId, exerciseId);
+      localStorage.clear();
+      localStorage.setItem('exerciseId', exerciseId);
+      localStorage.setItem('userId', userId);
+      const res = await fetch(`${BACKEND_URL}/plans/${exerciseId}`);
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -41,21 +50,21 @@ function ExercisingPlan() {
     }
   };
 
-    useEffect(() => {
-      const verifyUser = async () => {
-        const login = await checkAuth();
-        if (!login) {
-          alert('User not login');
-          navigate('/signin');
-        }
-      };
-      verifyUser();
-    }, []);
+  useEffect(() => {
+    const verifyUser = async () => {
+      const login = await checkAuth();
+      if (!login) {
+        alert('User not login');
+        navigate('/signin');
+      }
+    };
+    verifyUser();
+  }, []);
 
   // Initialize or restore workout session
   useEffect(() => {
     const initializeWorkout = async () => {
-      localStorage.clear();
+      // localStorage.clear();
       // Fetch workout data first
       const data = await getData();
 
@@ -65,6 +74,7 @@ function ExercisingPlan() {
       }
 
       const sessionKey = `workout_session_${data._id}`;
+      localStorage.setItem('deleteId', sessionKey);
       const savedSession = localStorage.getItem(sessionKey);
 
       if (savedSession) {
@@ -304,9 +314,16 @@ function ExercisingPlan() {
 
     if (shouldUpdatePlan) {
       await updatePlanFromWorkout();
+
+      navigate('/plans');
     } else {
       alert('🎉 Workout completed! Great job!');
     }
+    const deleteId = localStorage.getItem('deleteId');
+    localStorage.removeItem(deleteId);
+    localStorage.removeItem('exerciseId');
+    localStorage.removeItem(`deleteId`);
+    navigate('/plans');
   };
 
   // Update plan with workout results

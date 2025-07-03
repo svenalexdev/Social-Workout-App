@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import axios from 'axios';
-import { mockPlans } from './AllPlans';
 
 const Plans = () => {
   const navigate = useNavigate();
@@ -16,17 +15,22 @@ const Plans = () => {
   };
 
   const GoToSeeAllMyPlans = () => {
-    navigate('/seeallmyplans');
+    navigate('/allplans');
   };
 
   useEffect(() => {
     (async () => {
+      const userID = localStorage.getItem('userId');
+
       try {
-        const response = await fetch('https://finalproject-backend-y98m.onrender.com/plans');
+        const BACKEND_URL = import.meta.env.VITE_API_URL;
+        const response = await fetch(`${BACKEND_URL}/plans`);
         const data = await response.json();
-        // console.log('plans:', data);
+        console.log('plans:', data);
+
+        // Filter for public plans and take first 6
         const publicPlans = data.filter(plan => plan.isPublic);
-        setRecommendedPlans(publicPlans.slice(0, 4));
+        setRecommendedPlans(publicPlans.slice(0, 6));
       } catch (error) {
         console.error('Failed to fetch recommended plans:', error.message);
       }
@@ -48,7 +52,7 @@ const Plans = () => {
 
         <h3 className="text-lg font-semibold mb-2">My Pinned Plans</h3>
 
-        <div className="flex flex-col gap-4">
+        {/* <div className="flex flex-col gap-4">
           {mockPlans.slice(0, 3).map(plan => (
             <div key={plan._id} className="bg-black text-white p-4 rounded-md">
               <h4 className="font-semibold mb-1 text-base">{plan.title}</h4>
@@ -61,7 +65,7 @@ const Plans = () => {
               </button>
             </div>
           ))}
-        </div>
+        </div> */}
 
         <div className="flex justify-center mt-4">
           <button
@@ -77,21 +81,57 @@ const Plans = () => {
         <h2 className="text-xl font-bold mb-3">Recommended Plans</h2>
 
         <div className="bg-[#d8d8d8] p-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {recommendedPlans.map(plan => {
               const hasExercises = plan.exercise && plan.exercise.length > 0;
-              const exerciseList = hasExercises
-                ? plan.exercise
-                    .map(exercise => {
-                      return `Sets: ${exercise.sets}, Reps: ${exercise.reps}, Weight: ${exercise.weight}kg`;
-                    })
-                    .join(' | ')
-                : 'No exercises';
+              let exerciseList = 'No exercises';
+
+              if (hasExercises) {
+                exerciseList = plan.exercise
+                  .slice(0, 2) // Limit to first 2 exercises to avoid too much text
+                  .map(exercise => {
+                    // Get exercise name from exerciseDetails if available
+                    const exerciseName =
+                      exercise.exerciseDetails && exercise.exerciseDetails.length > 0
+                        ? exercise.exerciseDetails[0].name
+                        : exercise.name || `Exercise ${exercise.exerciseId}`;
+
+                    // Truncate exercise name if too long
+                    const truncatedName =
+                      exerciseName.length > 15 ? exerciseName.substring(0, 15) + '...' : exerciseName;
+
+                    // Show sets count and setDetails info if available
+                    if (exercise.setDetails && exercise.setDetails.length > 0) {
+                      const avgWeight =
+                        exercise.setDetails.reduce((sum, set) => sum + set.weight, 0) / exercise.setDetails.length;
+                      const avgReps =
+                        exercise.setDetails.reduce((sum, set) => sum + set.reps, 0) / exercise.setDetails.length;
+                      return `${truncatedName}: ${exercise.sets} sets, ~${avgReps.toFixed(0)} reps, ~${avgWeight}kg`;
+                    } else {
+                      // Fallback to old structure
+                      return `${truncatedName}: ${exercise.sets} sets, ${exercise.reps || 0} reps, ${
+                        exercise.weight || 0
+                      }kg`;
+                    }
+                  })
+                  .join(' | ');
+
+                // Add "..." if there are more than 2 exercises
+                if (plan.exercise.length > 2) {
+                  exerciseList += ` | +${plan.exercise.length - 2} more...`;
+                }
+              }
+
+              // Truncate the entire exercise list if it's still too long
+              const maxLength = 80;
+              if (exerciseList.length > maxLength) {
+                exerciseList = exerciseList.substring(0, maxLength) + '...';
+              }
 
               return (
                 <div key={plan._id} className="bg-[#f8f8f8] p-3 rounded-md">
                   <p className="font-semibold text-base mb-1">{plan.name}</p>
-                  <p className="text-base">{exerciseList}</p>
+                  <p className="text-sm text-gray-600 leading-tight">{exerciseList}</p>
                 </div>
               );
             })}

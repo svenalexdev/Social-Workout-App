@@ -1,4 +1,8 @@
+import { useNavigate } from 'react-router';
+
 function Home() {
+  const navigate = useNavigate();
+
   const GoToPlan = () => {
     navigate('/plans');
   };

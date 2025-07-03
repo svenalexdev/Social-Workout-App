@@ -9,7 +9,8 @@ import {
   getBodyPartList,
   getEquipmentList,
   getTargetList,
-  getExercisesBe
+  getExercisesBe,
+  syncExercisesFromApi
 } from '../controllers/exercises.js';
 
 const exerciseRouter = Router();
@@ -24,5 +25,8 @@ exerciseRouter.get('/bodyPart/:bodyPart', getExercisesByBodyPart);
 exerciseRouter.get('/bodyPartList', getBodyPartList);
 exerciseRouter.get('/equipmentList', getEquipmentList);
 exerciseRouter.get('/targetList', getTargetList);
+
+// Sync endpoint for updating database with fresh API data
+exerciseRouter.post('/sync', syncExercisesFromApi);
 
 export default exerciseRouter;
