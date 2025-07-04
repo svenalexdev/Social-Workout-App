@@ -4,51 +4,7 @@ import { Switch } from '@headlessui/react';
 import checkAuth from '../data/checkAuth';
 const baseURL = `${import.meta.env.VITE_API_URL}`;
 
-// mock data to be replaced with API fetch
 function CreatePlan() {
-  //   let mockExercises = [
-  //     {
-  //       bodyPart: 'waist',
-  //       equipment: 'body weight',
-  //       gifUrl: 'https://v2.exercisedb.io/image/yy7vvVaXPByinG',
-  //       id: '0001',
-  //       name: '3/4 sit-up',
-  //       target: 'abs',
-  //       secondaryMuscles: ['hip flexors', 'lower back'],
-  //       instructions: [
-  //         'Lie flat on your back with your knees bent and feet flat on the ground.',
-  //         'Place your hands behind your head with your elbows pointing outwards.',
-  //         'Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.',
-  //         'Pause for a moment at the top, then slowly lower your upper body back down to the starting position.',
-  //         'Repeat for the desired number of repetitions.'
-  //       ],
-  //       description:
-  //         'The 3/4 sit-up is an abdominal exercise performed with body weight. It involves curling the torso up to a 45-degree angle, engaging the abs, hip flexors, and lower back. This movement is commonly used to build core strength and stability.',
-  //       difficulty: 'beginner',
-  //       category: 'strength'
-  //     },
-  //     {
-  //       bodyPart: 'chest',
-  //       equipment: 'leverage machine',
-  //       gifUrl: 'https://v2.exercisedb.io/image/De5q-sI-iu8vAI',
-  //       id: '0009',
-  //       name: 'assisted chest dip (kneeling)',
-  //       target: 'pectorals',
-  //       secondaryMuscles: ['triceps', 'shoulders'],
-  //       instructions: [
-  //         'Adjust the machine to your desired height and secure your knees on the pad.',
-  //         'Grasp the handles with your palms facing down and your arms fully extended.',
-  //         'Lower your body by bending your elbows until your upper arms are parallel to the floor.',
-  //         'Pause for a moment, then push yourself back up to the starting position.',
-  //         'Repeat for the desired number of repetitions.'
-  //       ],
-  //       description:
-  //         'The assisted chest dip (kneeling) is a chest-focused exercise performed on a leverage machine, where the user kneels on a pad for support. This machine-assisted variation helps reduce the load, making it accessible for those building strength or learning proper dip technique.',
-  //       difficulty: 'beginner',
-  //       category: 'strength'
-  //     }
-  //   ];
-
   // Site navigation
   const navigate = useNavigate();
 
@@ -73,7 +29,7 @@ function CreatePlan() {
   //   }
   // }, [selectedExercise]);
 
-  
+  // Verify user
   useEffect(() => {
     const verifyUser = async () => {
       const login = await checkAuth();
@@ -84,7 +40,7 @@ function CreatePlan() {
     };
     verifyUser();
   }, []);
-  
+
   // Load exercises from localStorage when createPlan = true
   useEffect(() => {
     if (createPlan) {
@@ -252,83 +208,87 @@ function CreatePlan() {
   // Other
   // Variable to filter exercises based on search term (search bar), all lower-cased for case-insensitivity
   const filteredExercises = exercises.filter(ex => ex.name.toLowerCase().includes(searchTerm.toLowerCase()));
-console.log(filteredExercises);
-
+  console.log(filteredExercises);
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
       {/* Modal / popup to show exercise list  */}
       {showExercises && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
-          <div className="bg-gray-800 rounded-2xl max-w-lg w-full max-h-[90vh] min-h-full overflow-y-auto overflow-hidden relative">
-            {/* Close Button */}
-            <button
-              onClick={() => {
-                setShowExercises(false);
-                setSelectedExercise([]);
-              }}
-              className="absolute top-3 left-4 text-2xl hover:text-white font-bold"
-            >
-              ×
-            </button>
-            <div className="flex justify-end mt-2 mr-2">
+          <div className="bg-gray-800 rounded-2xl max-w-lg w-full h-[600px] min-h-full overflow-hidden relative flex flex-col">
+            <div className="sticky top-0 z-10 pb-2">
+              {/* Close Button */}
               <button
                 onClick={() => {
                   setShowExercises(false);
-                  setEditableExercises(prev => [...prev, ...selectedExercise]);
                   setSelectedExercise([]);
+                  setSearchTerm('');
                 }}
-                className="btn text-lg bg-gray-500 border-none text-white mr-1"
+                className="absolute top-3 left-4 text-2xl hover:text-white font-bold"
               >
-                Add ({selectedExercise.length})
+                ×
               </button>
+              <div className="flex justify-end mt-2 mr-2">
+                <button
+                  onClick={() => {
+                    setShowExercises(false);
+                    setEditableExercises(prev => [...prev, ...selectedExercise]);
+                    setSelectedExercise([]);
+                  }}
+                  className="btn text-lg bg-gray-500 border-none text-white mr-1"
+                >
+                  Add ({selectedExercise.length})
+                </button>
+              </div>
+              {/* Search bar */}
+              <div className="flex justify-center">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  placeholder="Search exercises..."
+                  className="w-full max-w-xs p-2 mb-4 rounded bg-gray-700 placeholder-gray-400 mt-4"
+                />
+              </div>
             </div>
-            {/* Search bar */}
-            <div className="flex justify-center">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                placeholder="Search exercises..."
-                className="w-full max-w-xs p-2 mb-4 rounded bg-gray-700 placeholder-gray-400 mt-4"
-              />
-            </div>
-            <ul>
-              {filteredExercises.map((ex, idx) => (
-                <li
-                  key={ex.exerciseId}
-                  // Select several exercises in the list - if already selected, deselect
-                  onClick={() =>
-                    setSelectedExercise(prev =>
-                      prev.some(item => item.exerciseId === ex.exerciseId)
-                        ? prev.filter(item => item.exerciseId !== ex.exerciseId)
-                        : [
-                            ...prev,
-                            {
-                              exerciseId: ex.exerciseId,
-                              name: ex.name,
-                              sets: [],
-                              reps: [],
-                              weight: [],
-                              restTime: []
-                            }
-                          ]
-                    )
-                  }
-                  // Mark a selected exercise with color
-                  className={`text-xl font-bold mt-2 p-2 rounded ${
-                    selectedExercise.some(item => item.exerciseId === ex.exerciseId)
-                      ? 'bg-green-800'
-                      : 'hover:bg-slate-600'
-                  }
+            <div className="overflow-y-auto">
+              <ul>
+                {filteredExercises.map((ex, idx) => (
+                  <li
+                    key={ex.exerciseId}
+                    // Select several exercises in the list - if already selected, deselect
+                    onClick={() =>
+                      setSelectedExercise(prev =>
+                        prev.some(item => item.exerciseId === ex.exerciseId)
+                          ? prev.filter(item => item.exerciseId !== ex.exerciseId)
+                          : [
+                              ...prev,
+                              {
+                                exerciseId: ex.exerciseId,
+                                name: ex.name,
+                                sets: [],
+                                reps: [],
+                                weight: [],
+                                restTime: []
+                              }
+                            ]
+                      )
+                    }
+                    // Mark a selected exercise with color
+                    className={`text-xl font-bold mt-2 p-2 rounded ${
+                      selectedExercise.some(item => item.exerciseId === ex.exerciseId)
+                        ? 'bg-green-800'
+                        : 'hover:bg-slate-600'
+                    }
                                     ${idx !== filteredExercises.length - 1 ? 'border-b border-gray-600' : ''}
                     `}
-                >
-                  {capitalizeWords(ex.name)} <br />
-                  <span className="text-sm">{capitalizeWords(ex.bodyPart)}</span>
-                </li>
-              ))}
-            </ul>
+                  >
+                    {capitalizeWords(ex.name)} <br />
+                    <span className="text-sm">{capitalizeWords(ex.bodyPart)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       )}
@@ -379,7 +339,7 @@ console.log(filteredExercises);
               inline-block h-4 w-4 transform rounded-full bg-white transition`}
               />
             </Switch>
-            <span className="text-sm font-medium">{isPublic ? 'Public' : 'Private'}</span>
+            <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
           </div>
           <div className="flex justify-center mt-8">
             <button onClick={handleAddExercise} className="btn text-lg bg-gray-500 border-none text-white w-xs">
@@ -434,7 +394,7 @@ console.log(filteredExercises);
               inline-block h-4 w-4 transform rounded-full bg-white transition`}
               />
             </Switch>
-            <span className="text-sm font-medium">{isPublic ? 'Public' : 'Private'}</span>
+            <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
           </div>
           <div className="flex justify-center mt-8">
             <button
