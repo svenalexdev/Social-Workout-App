@@ -17,7 +17,7 @@ function Home() {
   return (
     <div>
       Home
-      <div>
+      <div className="flex flex-col justify-center">
         <button className="bg-[#3b82f6] text-white px-3 py-1 text-sm rounded hover:bg-blue-700" onClick={GoToPlan}>
           GO TO PLAN
         </button>
