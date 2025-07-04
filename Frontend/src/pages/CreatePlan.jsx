@@ -2,7 +2,7 @@ import { useState, useEffect, use } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
 import checkAuth from '../data/checkAuth';
-const baseURL = `${import.meta.env.VITE_API_URL}/plans`;
+const baseURL = `${import.meta.env.VITE_API_URL}`;
 
 // mock data to be replaced with API fetch
 function CreatePlan() {
@@ -73,8 +73,7 @@ function CreatePlan() {
   //   }
   // }, [selectedExercise]);
 
-  // Load exercises from localStorage when createPlan = true
-
+  
   useEffect(() => {
     const verifyUser = async () => {
       const login = await checkAuth();
@@ -85,7 +84,8 @@ function CreatePlan() {
     };
     verifyUser();
   }, []);
-
+  
+  // Load exercises from localStorage when createPlan = true
   useEffect(() => {
     if (createPlan) {
       const stored = JSON.parse(localStorage.getItem('exercises')) || [];
@@ -93,7 +93,7 @@ function CreatePlan() {
       setEditableExercises(
         stored.map(e => {
           if (!e.name) {
-            const found = exercises.find(m => m.id === e.id);
+            const found = exercises.find(ex => ex.exerciseId === e.exerciseId);
             return { ...e, name: found ? found.name : '' };
           }
           return e;
@@ -118,7 +118,7 @@ function CreatePlan() {
       name: planName,
       isPublic: isPublic,
       exercise: editableExercises.map(e => ({
-        exerciseId: e.id?.toString() ?? '',
+        exerciseId: e.exerciseId?.toString() ?? '',
         sets: Number(e.sets) || 1,
         reps: Number(e.reps) || 1,
         weight: Number(e.weight) || 1,
@@ -128,12 +128,12 @@ function CreatePlan() {
     localStorage.setItem('plan', JSON.stringify(plan));
   }, [planName, editableExercises, isPublic]);
 
-  // Fetch limited exercises (100) by default
+  // Fetch exercises
   useEffect(() => {
     let ignore = false;
     const fetchExercises = async () => {
       try {
-        const res = await fetch(`${baseURL}/exercises`);
+        const res = await fetch(`${baseURL}/exercises/`);
         if (!res.ok) throw new Error(`${res.status}. Something went wrong!`);
         const data = await res.json();
         if (!ignore) {
@@ -252,13 +252,15 @@ function CreatePlan() {
   // Other
   // Variable to filter exercises based on search term (search bar), all lower-cased for case-insensitivity
   const filteredExercises = exercises.filter(ex => ex.name.toLowerCase().includes(searchTerm.toLowerCase()));
+console.log(filteredExercises);
+
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
       {/* Modal / popup to show exercise list  */}
       {showExercises && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
-          <div className="bg-gray-800 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto overflow-hidden relative">
+          <div className="bg-gray-800 rounded-2xl max-w-lg w-full max-h-[90vh] min-h-full overflow-y-auto overflow-hidden relative">
             {/* Close Button */}
             <button
               onClick={() => {
@@ -275,10 +277,6 @@ function CreatePlan() {
                   setShowExercises(false);
                   setEditableExercises(prev => [...prev, ...selectedExercise]);
                   setSelectedExercise([]);
-                  // Avoid double entries
-                  // setEditableExercises(prev => {
-                  //   const newExercises = selectedExercise.filter(sel => !prev.some(e => e.id === sel.id));
-                  //   return [...prev, ...newExercises];
                 }}
                 className="btn text-lg bg-gray-500 border-none text-white mr-1"
               >
@@ -296,19 +294,19 @@ function CreatePlan() {
               />
             </div>
             <ul>
-              {filteredExercises.map((exercise, idx) => (
+              {filteredExercises.map((ex, idx) => (
                 <li
-                  key={exercise.id}
+                  key={ex.exerciseId}
                   // Select several exercises in the list - if already selected, deselect
                   onClick={() =>
                     setSelectedExercise(prev =>
-                      prev.some(item => item.id === exercise.id)
-                        ? prev.filter(item => item.id !== exercise.id)
+                      prev.some(item => item.exerciseId === ex.exerciseId)
+                        ? prev.filter(item => item.exerciseId !== ex.exerciseId)
                         : [
                             ...prev,
                             {
-                              id: exercise.id,
-                              name: exercise.name,
+                              exerciseId: ex.exerciseId,
+                              name: ex.name,
                               sets: [],
                               reps: [],
                               weight: [],
@@ -319,13 +317,15 @@ function CreatePlan() {
                   }
                   // Mark a selected exercise with color
                   className={`text-xl font-bold mt-2 p-2 rounded ${
-                    selectedExercise.some(item => item.id === exercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
+                    selectedExercise.some(item => item.exerciseId === ex.exerciseId)
+                      ? 'bg-green-800'
+                      : 'hover:bg-slate-600'
                   }
-                                    ${idx !== exercises.length - 1 ? 'border-b border-gray-600' : ''}
+                                    ${idx !== filteredExercises.length - 1 ? 'border-b border-gray-600' : ''}
                     `}
                 >
-                  {capitalizeWords(exercise.name)} <br />
-                  <span className="text-sm">{capitalizeWords(exercise.bodyPart)}</span>
+                  {capitalizeWords(ex.name)} <br />
+                  <span className="text-sm">{capitalizeWords(ex.bodyPart)}</span>
                 </li>
               ))}
             </ul>
