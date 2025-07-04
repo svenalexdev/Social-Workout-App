@@ -640,7 +640,7 @@ function ExercisingPlan() {
 
       {/* Sticky Pause Timer - Bottom */}
       {pauseTimer.isActive && (
-        <div className="fixed bottom-0 left-0 right-0 z-40">
+        <div className="fixed bottom-12 left-0 right-0 z-40">
           <div className="bg-orange-600 rounded-t-lg p-4 border border-orange-500 backdrop-blur-sm shadow-lg">
             <div className="flex items-center justify-between">
               {/* Decrease Timer Button */}

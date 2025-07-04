@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import { signin } from '../data/auth.js';
 
@@ -21,9 +21,9 @@ const LoginSignup = () => {
       toast.success(message || 'Welcome Back');
       //alert('welcome Back');
       //Save id in local storage
-    
+
       localStorage.setItem('userId', userId);
-      navigate('/');
+      navigate('/plans');
     } catch (error) {
       toast.error(error.message);
     } finally {

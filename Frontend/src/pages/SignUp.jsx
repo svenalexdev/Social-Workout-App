@@ -48,8 +48,8 @@ const SignUp = () => {
       });
 
       toast.success(message || 'Account created successfully');
-      
-      navigate('/signin');
+
+      navigate('/plans');
     } catch (error) {
       toast.error(error.message || 'SignUp Faild');
     } finally {
