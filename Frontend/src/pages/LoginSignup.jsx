@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import { signin } from '../data/auth.js';
+import { useAuth } from '../context/index,js';
 
 const LoginSignup = () => {
+  const { isAuthenticated, setCheckSession, setIsAuthenticated } = useAuth();
   const [{ email, password }, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
 
@@ -19,9 +21,13 @@ const LoginSignup = () => {
       const { userId, message } = await signin({ email, password });
 
       toast.success(message || 'Welcome Back');
-      alert('welcome Back');
-      //Save id in local storage
-    
+      //alert('welcome Back');
+
+     
+      setIsAuthenticated(true);
+      setCheckSession(true);
+      
+       //Save id in local storage
       localStorage.setItem('userId', userId);
       navigate('/');
     } catch (error) {
