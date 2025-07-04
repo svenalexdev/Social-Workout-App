@@ -222,6 +222,7 @@ function CreatePlan() {
                 onClick={() => {
                   setShowExercises(false);
                   setSelectedExercise([]);
+                  setSearchTerm('');
                 }}
                 className="absolute top-3 left-4 text-2xl hover:text-white font-bold"
               >
