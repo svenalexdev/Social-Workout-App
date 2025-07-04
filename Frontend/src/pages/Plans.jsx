@@ -1,16 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import axios from 'axios';
+import checkAuth from '../data/checkAuth';
 
 const Plans = () => {
   const navigate = useNavigate();
   const [recommendedPlans, setRecommendedPlans] = useState([]);
+  const [plans, setPlans] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const GoToCreatePlan = () => {
     navigate('/createplan');
   };
 
-  const GoToStartRoutine = () => {
+  const GoToStartRoutine = planId => {
+    if (planId) {
+      localStorage.setItem('exerciseId', planId);
+    }
     navigate('/exercisingplan');
   };
 
@@ -19,14 +24,20 @@ const Plans = () => {
   };
 
   useEffect(() => {
-    (async () => {
-      const userID = localStorage.getItem('userId');
+    const verifyUser = async () => {
+      const login = await checkAuth();
+      if (!login) {
+        alert('User not login');
+        navigate('/signin');
+      }
+    };
+    verifyUser();
 
+    (async () => {
       try {
         const BACKEND_URL = import.meta.env.VITE_API_URL;
         const response = await fetch(`${BACKEND_URL}/plans`);
         const data = await response.json();
-        console.log('plans:', data);
 
         // Filter for public plans and take first 6
         const publicPlans = data.filter(plan => plan.isPublic);
@@ -35,7 +46,30 @@ const Plans = () => {
         console.error('Failed to fetch recommended plans:', error.message);
       }
     })();
+
+    // Also fetch user's personal plans
+    getMyPlans();
   }, []);
+
+  const getMyPlans = async () => {
+    try {
+      setIsLoading(true);
+      const BACKEND_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${BACKEND_URL}/plans`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to fetch personal plans');
+      }
+      const data = await res.json();
+      const userIdLs = localStorage.getItem('userId');
+      const userPlans = data.filter(plan => plan.userId && plan.userId === userIdLs);
+      setPlans(userPlans);
+    } catch (error) {
+      console.error('Error fetching plan data:', error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#f8f8f8] text-black font-montserrat p-4 space-y-8">
@@ -52,20 +86,54 @@ const Plans = () => {
 
         <h3 className="text-lg font-semibold mb-2">My Pinned Plans</h3>
 
-        {/* <div className="flex flex-col gap-4">
-          {mockPlans.slice(0, 3).map(plan => (
-            <div key={plan._id} className="bg-black text-white p-4 rounded-md">
-              <h4 className="font-semibold mb-1 text-base">{plan.title}</h4>
-              <p className="text-base mb-3">{plan.exercises.slice(0, 3).join(' ')}</p>
-              <button
-                onClick={GoToStartRoutine}
-                className="bg-[#3b82f6] text-white px-3 py-1 text-sm rounded hover:bg-blue-700"
-              >
-                Start Routine
-              </button>
-            </div>
-          ))}
-        </div> */}
+        {isLoading ? (
+          <p className="text-center text-sm text-gray-500">Loading your plans...</p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {plans.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center">No personal plans found.</p>
+            ) : (
+              plans.slice(0, 3).map(plan => {
+                const hasExercises = plan.exercise && plan.exercise.length > 0;
+                let exerciseList = 'No exercises';
+
+                if (hasExercises) {
+                  exerciseList = plan.exercise
+                    .slice(0, 2) // Show first 2 exercises
+                    .map(exercise => {
+                      const exerciseName =
+                        exercise.exerciseDetails && exercise.exerciseDetails.length > 0
+                          ? exercise.exerciseDetails[0].name
+                          : exercise.name || `Exercise ${exercise.exerciseId}`;
+
+                      const truncatedName =
+                        exerciseName.length > 20 ? exerciseName.substring(0, 20) + '...' : exerciseName;
+
+                      return `${truncatedName} (${exercise.sets} sets)`;
+                    })
+                    .join(', ');
+
+                  if (plan.exercise.length > 2) {
+                    exerciseList += `, +${plan.exercise.length - 2} more`;
+                  }
+                }
+
+                return (
+                  <div key={plan._id} className="bg-black text-white p-4 rounded-md">
+                    <h4 className="font-semibold mb-1 text-base">{plan.name}</h4>
+                    <p className="text-sm mb-3 text-gray-300">{exerciseList}</p>
+                    <button
+                      onClick={() => GoToStartRoutine(plan._id)}
+                      className="bg-[#3b82f6] text-white px-3 py-1 text-sm rounded hover:bg-blue-700"
+                    >
+                      Start Routine
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
 
         <div className="flex justify-center mt-4">
           <button
