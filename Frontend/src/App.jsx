@@ -9,6 +9,7 @@ import LoginSignup from './pages/LoginSignup';
 import SignUp from './pages/SignUp';
 import Profile from './pages/Profile';
 import ProtectedLayout from './components/ProtectedRoute';
+import GroupFinder from './pages/GroupFinder';
 
 function App() {
   return (
@@ -33,6 +34,8 @@ function App() {
             <Route path="signin" element={<LoginSignup />} />
             <Route path="signup" element={<SignUp />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="groupfinder" element={<GroupFinder />} />
+
            
           </Route>
           {/* <Route path='*' element={<NotFound />} /> */}
