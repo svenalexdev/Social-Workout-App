@@ -29,7 +29,7 @@ const LoginSignup = () => {
 
       //Save id in local storage
       localStorage.setItem('userId', userId);
-      navigate('/');
+      navigate('/plans');
     } catch (error) {
       toast.error(error.message);
     } finally {

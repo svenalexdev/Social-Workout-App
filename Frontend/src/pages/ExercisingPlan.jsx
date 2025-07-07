@@ -326,6 +326,21 @@ function ExercisingPlan() {
     navigate('/plans');
   };
 
+  // Abort workout and go back to plans
+  const abortWorkout = () => {
+    const confirmAbort = confirm('Are you sure you want to abort this workout? Your progress will be lost.');
+    if (confirmAbort) {
+      // Clear localStorage like in finishWorkout
+      const deleteId = localStorage.getItem('deleteId');
+      localStorage.removeItem(deleteId);
+      localStorage.removeItem('exerciseId');
+      localStorage.removeItem('deleteId');
+
+      // Navigate back to plans
+      navigate('/plans');
+    }
+  };
+
   // Update plan with workout results
   const updatePlanFromWorkout = async () => {
     try {
@@ -438,7 +453,7 @@ function ExercisingPlan() {
     <div className="min-h-screen bg-black text-white p-4">
       {/* Header */}
       <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">{workoutData.name}</h1>
+        <h1 className="text-3xl font-bold text-white">{workoutData.name}</h1>
       </div>
 
       {/* Fixed Timer & Date Bar */}
@@ -448,12 +463,12 @@ function ExercisingPlan() {
             <span className="flex items-center gap-1">📅 {new Date().toLocaleDateString()}</span>
             <span className="flex items-center gap-1">⏱️ {formatTime(timer)}</span>
           </div>
-          {/* <button
-            onClick={() => setIsTimerRunning(!isTimerRunning)}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+          <button
+            onClick={abortWorkout}
+            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors"
           >
-            {isTimerRunning ? '⏸️ Pause' : '▶️ Start'} Timer
-          </button> */}
+            Cancel
+          </button>
         </div>
       </div>
 
@@ -625,7 +640,7 @@ function ExercisingPlan() {
 
       {/* Sticky Pause Timer - Bottom */}
       {pauseTimer.isActive && (
-        <div className="fixed bottom-0 left-0 right-0 z-40">
+        <div className="fixed bottom-12 left-0 right-0 z-40">
           <div className="bg-orange-600 rounded-t-lg p-4 border border-orange-500 backdrop-blur-sm shadow-lg">
             <div className="flex items-center justify-between">
               {/* Decrease Timer Button */}

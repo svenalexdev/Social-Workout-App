@@ -28,6 +28,10 @@ const SignUp = () => {
     e.preventDefault();
     if (!name || !email || !password) throw new Error('All fields are required');
 
+    if (password.length < 8) {
+      toast.error('Password is too short');
+      return;
+    }
     setStep(2);
   };
 
@@ -44,7 +48,7 @@ const SignUp = () => {
         password,
         stats: [{ height: parseInt(height), weight: parseInt(weight), age: parseInt(age) }]
       });
-
+     
       toast.success(message || 'Account created successfully! Please log in.');
       navigate('/');
       
@@ -112,14 +116,14 @@ const SignUp = () => {
                 type="submit"
                 className="flex w-full justify-center rounded-lg bg-indigo-600 p-3 mt-9 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                Sign Up
+                Next Page
               </button>
             </div>
           </form>
         </>
       ) : (
         <>
-          <h2 className="mt-10 text-center text-3xl font-bold text-white mb-10"> Complete Your Profile</h2>
+          <h2 className="mt-10 text-center text-3xl font-bold text-white mb-10">Complete Profile</h2>
           <form className="space-y-4" onSubmit={handleSubmitProfile}>
             <div>
               <label className="block text-sm text-gray-300">Height</label>

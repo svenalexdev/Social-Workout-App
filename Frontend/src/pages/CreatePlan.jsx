@@ -2,53 +2,9 @@ import { useState, useEffect, use } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
 import checkAuth from '../data/checkAuth';
-const baseURL = `${import.meta.env.VITE_API_URL}/plans`;
+const baseURL = `${import.meta.env.VITE_API_URL}`;
 
-// mock data to be replaced with API fetch
 function CreatePlan() {
-  //   let mockExercises = [
-  //     {
-  //       bodyPart: 'waist',
-  //       equipment: 'body weight',
-  //       gifUrl: 'https://v2.exercisedb.io/image/yy7vvVaXPByinG',
-  //       id: '0001',
-  //       name: '3/4 sit-up',
-  //       target: 'abs',
-  //       secondaryMuscles: ['hip flexors', 'lower back'],
-  //       instructions: [
-  //         'Lie flat on your back with your knees bent and feet flat on the ground.',
-  //         'Place your hands behind your head with your elbows pointing outwards.',
-  //         'Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.',
-  //         'Pause for a moment at the top, then slowly lower your upper body back down to the starting position.',
-  //         'Repeat for the desired number of repetitions.'
-  //       ],
-  //       description:
-  //         'The 3/4 sit-up is an abdominal exercise performed with body weight. It involves curling the torso up to a 45-degree angle, engaging the abs, hip flexors, and lower back. This movement is commonly used to build core strength and stability.',
-  //       difficulty: 'beginner',
-  //       category: 'strength'
-  //     },
-  //     {
-  //       bodyPart: 'chest',
-  //       equipment: 'leverage machine',
-  //       gifUrl: 'https://v2.exercisedb.io/image/De5q-sI-iu8vAI',
-  //       id: '0009',
-  //       name: 'assisted chest dip (kneeling)',
-  //       target: 'pectorals',
-  //       secondaryMuscles: ['triceps', 'shoulders'],
-  //       instructions: [
-  //         'Adjust the machine to your desired height and secure your knees on the pad.',
-  //         'Grasp the handles with your palms facing down and your arms fully extended.',
-  //         'Lower your body by bending your elbows until your upper arms are parallel to the floor.',
-  //         'Pause for a moment, then push yourself back up to the starting position.',
-  //         'Repeat for the desired number of repetitions.'
-  //       ],
-  //       description:
-  //         'The assisted chest dip (kneeling) is a chest-focused exercise performed on a leverage machine, where the user kneels on a pad for support. This machine-assisted variation helps reduce the load, making it accessible for those building strength or learning proper dip technique.',
-  //       difficulty: 'beginner',
-  //       category: 'strength'
-  //     }
-  //   ];
-
   // Site navigation
   const navigate = useNavigate();
 
@@ -86,6 +42,7 @@ function CreatePlan() {
   //   verifyUser();
   // }, []);
 
+  // Load exercises from localStorage when createPlan = true
   useEffect(() => {
     if (createPlan) {
       const stored = JSON.parse(localStorage.getItem('exercises')) || [];
@@ -93,7 +50,7 @@ function CreatePlan() {
       setEditableExercises(
         stored.map(e => {
           if (!e.name) {
-            const found = exercises.find(m => m.id === e.id);
+            const found = exercises.find(ex => ex.exerciseId === e.exerciseId);
             return { ...e, name: found ? found.name : '' };
           }
           return e;
@@ -118,7 +75,7 @@ function CreatePlan() {
       name: planName,
       isPublic: isPublic,
       exercise: editableExercises.map(e => ({
-        exerciseId: e.id?.toString() ?? '',
+        exerciseId: e.exerciseId?.toString() ?? '',
         sets: Number(e.sets) || 1,
         reps: Number(e.reps) || 1,
         weight: Number(e.weight) || 1,
@@ -128,12 +85,12 @@ function CreatePlan() {
     localStorage.setItem('plan', JSON.stringify(plan));
   }, [planName, editableExercises, isPublic]);
 
-  // Fetch limited exercises (100) by default
+  // Fetch exercises
   useEffect(() => {
     let ignore = false;
     const fetchExercises = async () => {
       try {
-        const res = await fetch(`${baseURL}/exercises`);
+        const res = await fetch(`${baseURL}/exercises/`);
         if (!res.ok) throw new Error(`${res.status}. Something went wrong!`);
         const data = await res.json();
         if (!ignore) {
@@ -252,83 +209,92 @@ function CreatePlan() {
   // Other
   // Variable to filter exercises based on search term (search bar), all lower-cased for case-insensitivity
   const filteredExercises = exercises.filter(ex => ex.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  // console.log(filteredExercises);
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
       {/* Modal / popup to show exercise list  */}
       {showExercises && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
-          <div className="bg-gray-800 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto overflow-hidden relative">
-            {/* Close Button */}
-            <button
-              onClick={() => {
-                setShowExercises(false);
-                setSelectedExercise([]);
-              }}
-              className="absolute top-3 left-4 text-2xl hover:text-white font-bold"
-            >
-              ×
-            </button>
-            <div className="flex justify-end mt-2 mr-2">
+          <div className="bg-gray-800 rounded-2xl max-w-lg w-full h-[600px] min-h-full overflow-hidden relative flex flex-col">
+            <div className="sticky top-0 z-10 pb-2">
+              {/* Close Button */}
               <button
                 onClick={() => {
                   setShowExercises(false);
-                  setEditableExercises(prev => [...prev, ...selectedExercise]);
                   setSelectedExercise([]);
-                  // Avoid double entries
-                  // setEditableExercises(prev => {
-                  //   const newExercises = selectedExercise.filter(sel => !prev.some(e => e.id === sel.id));
-                  //   return [...prev, ...newExercises];
+                  setSearchTerm('');
                 }}
-                className="btn text-lg bg-gray-500 border-none text-white mr-1"
+                className="absolute top-3 left-4 text-2xl hover:text-white font-bold"
               >
-                Add ({selectedExercise.length})
+                ×
               </button>
-            </div>
-            {/* Search bar */}
-            <div className="flex justify-center">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                placeholder="Search exercises..."
-                className="w-full max-w-xs p-2 mb-4 rounded bg-gray-700 placeholder-gray-400 mt-4"
-              />
-            </div>
-            <ul>
-              {filteredExercises.map((exercise, idx) => (
-                <li
-                  key={exercise.id}
-                  // Select several exercises in the list - if already selected, deselect
-                  onClick={() =>
-                    setSelectedExercise(prev =>
-                      prev.some(item => item.id === exercise.id)
-                        ? prev.filter(item => item.id !== exercise.id)
-                        : [
-                            ...prev,
-                            {
-                              id: exercise.id,
-                              name: exercise.name,
-                              sets: [],
-                              reps: [],
-                              weight: [],
-                              restTime: []
-                            }
-                          ]
-                    )
-                  }
-                  // Mark a selected exercise with color
-                  className={`text-xl font-bold mt-2 p-2 rounded ${
-                    selectedExercise.some(item => item.id === exercise.id) ? 'bg-green-800' : 'hover:bg-slate-600'
-                  }
-                                    ${idx !== exercises.length - 1 ? 'border-b border-gray-600' : ''}
-                    `}
+              <div className="flex justify-end mt-2 mr-2">
+                <button
+                  onClick={() => {
+                    setShowExercises(false);
+                    setEditableExercises(prev => [...prev, ...selectedExercise]);
+                    setSelectedExercise([]);
+                  }}
+                  className="btn text-lg bg-gray-500 border-none text-white mr-1"
                 >
-                  {capitalizeWords(exercise.name)} <br />
-                  <span className="text-sm">{capitalizeWords(exercise.bodyPart)}</span>
-                </li>
-              ))}
-            </ul>
+                  Add ({selectedExercise.length})
+                </button>
+              </div>
+              {/* Search bar */}
+              <div className="flex justify-center">
+                <input
+                  type="text"
+                  name="searchTerm"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  placeholder="Search exercises..."
+                  className="w-full max-w-xs p-2 mb-4 rounded bg-gray-700 placeholder-gray-400 mt-4"
+                />
+              </div>
+            </div>
+            <div className="overflow-y-auto">
+              <ul>
+                {filteredExercises.map((ex, idx) => (
+                  <li
+                    key={ex.exerciseId}
+                    // Select several exercises in the list - if already selected, deselect
+                    onClick={() =>
+                      setSelectedExercise(prev =>
+                        prev.some(item => item.exerciseId === ex.exerciseId)
+                          ? prev.filter(item => item.exerciseId !== ex.exerciseId)
+                          : [
+                              ...prev,
+                              {
+                                exerciseId: ex.exerciseId,
+                                name: ex.name,
+                                gifUrl: ex.gifUrl,
+                                sets: [],
+                                reps: [],
+                                weight: [],
+                                restTime: []
+                              }
+                            ]
+                      )
+                    }
+                    // Mark a selected exercise with color
+                    className={`flex items-center text-xl font-bold mt-2 p-2 rounded ${
+                      selectedExercise.some(item => item.exerciseId === ex.exerciseId)
+                        ? 'bg-green-800'
+                        : 'hover:bg-slate-600'
+                    }
+                                    ${idx !== filteredExercises.length - 1 ? 'border-b border-gray-600' : ''}
+                    `}
+                  >
+                    <img src={ex.gifUrl} className="w-16 h-16 rounded object-cover" />
+                    <div className="ml-4">
+                      {capitalizeWords(ex.name)} <br />
+                      <span className="text-sm">{capitalizeWords(ex.bodyPart)}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       )}
@@ -349,6 +315,7 @@ function CreatePlan() {
             {isEditingName ? (
               <input
                 type="text"
+                name="planName"
                 value={planName}
                 onChange={handleNameChange}
                 onBlur={handleNameBlur}
@@ -379,18 +346,18 @@ function CreatePlan() {
               inline-block h-4 w-4 transform rounded-full bg-white transition`}
               />
             </Switch>
-            <span className="text-sm font-medium">{isPublic ? 'Public' : 'Private'}</span>
+            <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
           </div>
           <div className="flex justify-center mt-8">
             <button onClick={handleAddExercise} className="btn text-lg bg-gray-500 border-none text-white w-xs">
               Add exercises
             </button>
           </div>
-          <div className="flex justify-center mt-40">
+          {/* <div className="flex justify-center mt-40">
             <button className="btn text-lg bg-gray-500 border-none text-white h-35 w-35">
               Create Plan <br /> with AI
             </button>
-          </div>
+          </div> */}
         </div>
       ) : (
         <div>
@@ -409,6 +376,7 @@ function CreatePlan() {
             {isEditingName ? (
               <input
                 type="text"
+                name="planName"
                 value={planName}
                 onChange={handleNameChange}
                 onBlur={handleNameBlur}
@@ -434,7 +402,7 @@ function CreatePlan() {
               inline-block h-4 w-4 transform rounded-full bg-white transition`}
               />
             </Switch>
-            <span className="text-sm font-medium">{isPublic ? 'Public' : 'Private'}</span>
+            <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
           </div>
           <div className="flex justify-center mt-8">
             <button
@@ -447,17 +415,19 @@ function CreatePlan() {
           <div className="mt-8">
             {editableExercises.map((exercise, idx) => (
               <div key={idx} className="ml-2 mr-2 mt-5 mb-6 p-3 rounded-lg bg-gray-800">
-                <div className="flex justify-between items-center">
-                  <div className="font-bold text-lg">{capitalizeWords(exercise.name)}</div>
+                <div className="flex items-center">
+                  <img src={exercise.gifUrl} className="w-11 h-11 rounded object-cover" />
+                  <div className="font-bold text-lg ml-4 mr-4">{capitalizeWords(exercise.name)}</div>
                   <button
                     onClick={() => {
                       handleRemoveExercise(idx);
                     }}
+                    className="ml-auto"
                   >
                     ⛔️
                   </button>
                 </div>
-                <div className="grid grid-cols-4 gap-2 text-xs font-semibold mt-2 mb-1">
+                <div className="grid grid-cols-4 gap-2 text-xs font-semibold mt-4 mb-1">
                   <span>Sets</span>
                   <span>Reps</span>
                   <span>Weight</span>
@@ -466,6 +436,7 @@ function CreatePlan() {
                 <div className="grid grid-cols-4 gap-2">
                   <input
                     type="number"
+                    name={`sets-${idx}`}
                     placeholder="0"
                     value={exercise.sets?.toString() ?? ''}
                     onChange={e => handleExerciseChange(idx, 'sets', e.target.value)}
@@ -474,6 +445,7 @@ function CreatePlan() {
                   />
                   <input
                     type="number"
+                    name={`reps-${idx}`}
                     placeholder="0"
                     value={exercise.reps?.toString() ?? ''}
                     onChange={e => handleExerciseChange(idx, 'reps', e.target.value)}
@@ -482,6 +454,7 @@ function CreatePlan() {
                   />
                   <input
                     type="number"
+                    name={`weight-${idx}`}
                     placeholder="0"
                     value={exercise.weight?.toString() ?? ''}
                     onChange={e => handleExerciseChange(idx, 'weight', e.target.value)}
@@ -490,6 +463,7 @@ function CreatePlan() {
                   />
                   <input
                     type="number"
+                    name={`restTime-${idx}`}
                     placeholder="0"
                     value={exercise.restTime?.toString() ?? ''}
                     onChange={e => handleExerciseChange(idx, 'restTime', e.target.value)}
