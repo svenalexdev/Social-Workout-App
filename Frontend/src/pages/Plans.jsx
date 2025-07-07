@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import checkAuth from '../data/checkAuth';
 
+
 const Plans = () => {
   const navigate = useNavigate();
+
   const [recommendedPlans, setRecommendedPlans] = useState([]);
   const [plans, setPlans] = useState([]);
   const [isLoading, setIsLoading] = useState(false);

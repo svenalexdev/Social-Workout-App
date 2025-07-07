@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, Navigate, useNavigate, useLocation } from 'react-router';
 import { toast } from 'react-toastify';
 import { signin } from '../data/auth.js';
+import { useAuth } from '../context/index.js';
 
 const LoginSignup = () => {
+  const location = useLocation();
+  const { isAuthenticated, setCheckSession, setIsAuthenticated } = useAuth();
   const [{ email, password }, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
 
@@ -20,8 +23,11 @@ const LoginSignup = () => {
 
       toast.success(message || 'Welcome Back');
       //alert('welcome Back');
-      //Save id in local storage
 
+      setIsAuthenticated(true);
+      setCheckSession(true);
+
+      //Save id in local storage
       localStorage.setItem('userId', userId);
       navigate('/plans');
     } catch (error) {
@@ -30,6 +36,7 @@ const LoginSignup = () => {
       setLoading(false);
     }
   };
+  if (isAuthenticated) return <Navigate to={location.state?.next || '/'} />;
 
   return (
     <div className="min-h-screen bg-black text-white p-4">

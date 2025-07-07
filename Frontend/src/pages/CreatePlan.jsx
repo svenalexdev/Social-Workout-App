@@ -29,17 +29,18 @@ function CreatePlan() {
   //   }
   // }, [selectedExercise]);
 
-  // Verify user
-  useEffect(() => {
-    const verifyUser = async () => {
-      const login = await checkAuth();
-      if (!login) {
-        alert('User not login');
-        navigate('/signin');
-      }
-    };
-    verifyUser();
-  }, []);
+  // Load exercises from localStorage when createPlan = true
+
+  // useEffect(() => {
+  //   const verifyUser = async () => {
+  //     const login = await checkAuth();
+  //     if (!login) {
+  //       alert('User not login');
+  //       navigate('/signin');
+  //     }
+  //   };
+  //   verifyUser();
+  // }, []);
 
   // Load exercises from localStorage when createPlan = true
   useEffect(() => {
