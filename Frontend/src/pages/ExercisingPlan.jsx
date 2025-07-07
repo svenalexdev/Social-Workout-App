@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import checkAuth from '../data/checkAuth';
 import { useNavigate } from 'react-router';
+import { setCookie, getCookie, deleteCookie } from '../utils/cookieUtils';
 
 function ExercisingPlan() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ function ExercisingPlan() {
   const [workoutData, setWorkoutData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showDetailsFor, setShowDetailsFor] = useState(null); // Track which exercise is showing details
+  const [exerciseCache, setExerciseCache] = useState({}); // Cache for fetched exercise data
   // Pause timer state
   const [pauseTimer, setPauseTimer] = useState({
     isActive: false,
@@ -23,16 +25,53 @@ function ExercisingPlan() {
     exerciseName: ''
   });
 
+  // Fetch exercise data by ID to get current gifUrl
+  const fetchExerciseById = async exerciseId => {
+    try {
+      const BACKEND_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${BACKEND_URL}/exercises/exercise/${exerciseId}`);
+      if (response.ok) {
+        const exerciseData = await response.json();
+        return exerciseData;
+      }
+    } catch (error) {
+      console.error(`Error fetching exercise ${exerciseId}:`, error);
+    }
+    return null;
+  };
+
+  // Fetch all exercises for the workout to cache their current data
+  const fetchAllExercises = async exercises => {
+    const cache = {};
+    const fetchPromises = exercises.map(async exercise => {
+      const exerciseData = await fetchExerciseById(exercise.exerciseId);
+      if (exerciseData) {
+        cache[exercise.exerciseId] = exerciseData;
+      }
+    });
+
+    await Promise.all(fetchPromises);
+    setExerciseCache(cache);
+  };
+
   const getData = async () => {
     try {
       setIsLoading(true);
       const BACKEND_URL = import.meta.env.VITE_API_URL;
-      const exerciseId = localStorage.getItem('exerciseId');
-      const userId = localStorage.getItem('userId');
-      console.log(userId, exerciseId);
-      localStorage.clear();
-      localStorage.setItem('exerciseId', exerciseId);
-      localStorage.setItem('userId', userId);
+      const exerciseId = getCookie('exerciseId');
+      const userId = getCookie('userId');
+      // console.log(userId, exerciseId);
+      // Clear all workout-related cookies but preserve user session
+      const allCookies = document.cookie.split(';');
+      allCookies.forEach(cookie => {
+        const eqPos = cookie.indexOf('=');
+        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+        if (name.startsWith('workout_session_') || name === 'deleteId') {
+          deleteCookie(name);
+        }
+      });
+      setCookie('exerciseId', exerciseId);
+      setCookie('userId', userId);
       const res = await fetch(`${BACKEND_URL}/plans/${exerciseId}`);
 
       if (!res.ok) {
@@ -42,6 +81,12 @@ function ExercisingPlan() {
 
       const data = await res.json();
       setWorkoutData(data);
+
+      // Fetch all exercise data for current gifUrls
+      if (data && data.exercise) {
+        await fetchAllExercises(data.exercise);
+      }
+
       return data;
     } catch (error) {
       console.error('Error fetching workout data:', error);
@@ -64,7 +109,7 @@ function ExercisingPlan() {
   // Initialize or restore workout session
   useEffect(() => {
     const initializeWorkout = async () => {
-      // localStorage.clear();
+      // Clear all workout-related cookies
       // Fetch workout data first
       const data = await getData();
 
@@ -74,8 +119,8 @@ function ExercisingPlan() {
       }
 
       const sessionKey = `workout_session_${data._id}`;
-      localStorage.setItem('deleteId', sessionKey);
-      const savedSession = localStorage.getItem(sessionKey);
+      setCookie('deleteId', sessionKey);
+      const savedSession = getCookie(sessionKey);
 
       if (savedSession) {
         const session = JSON.parse(savedSession);
@@ -86,7 +131,7 @@ function ExercisingPlan() {
       } else {
         // Create new session with default collapsed state
         const initialCollapsedState = {};
-        console.log(data.exercise, data);
+        // console.log(data.exercise, data);
         data.exercise.forEach((exercise, index) => {
           // Collapse all exercises except the first one
           initialCollapsedState[exercise.exerciseId] = index !== 0;
@@ -103,7 +148,7 @@ function ExercisingPlan() {
         };
         setWorkoutSession(newSession);
         setCollapsedExercises(initialCollapsedState);
-        saveToLocalStorage(newSession, data._id);
+        saveToCookies(newSession, data._id);
         setIsTimerRunning(true);
       }
     };
@@ -145,18 +190,18 @@ function ExercisingPlan() {
     return () => clearInterval(interval);
   }, [pauseTimer.isActive, pauseTimer.remainingTime]);
 
-  // Save session to localStorage
-  const saveToLocalStorage = (session, workoutId = workoutData?._id) => {
+  // Save session to cookies
+  const saveToCookies = (session, workoutId = workoutData?._id) => {
     if (!workoutId) return;
     const sessionKey = `workout_session_${workoutId}`;
-    localStorage.setItem(sessionKey, JSON.stringify(session));
+    setCookie(sessionKey, JSON.stringify(session));
   };
 
   // Update session state and save
   const updateSession = updates => {
     const updatedSession = { ...workoutSession, ...updates };
     setWorkoutSession(updatedSession);
-    saveToLocalStorage(updatedSession);
+    saveToCookies(updatedSession);
   };
 
   // Check if an exercise is completed (all sets done)
@@ -233,8 +278,24 @@ function ExercisingPlan() {
     };
   };
 
-  // Get exercise details from exerciseDetails array (new structure)
+  // Get exercise details from exerciseDetails array (new structure) or cached data
   const getExerciseDetails = exercise => {
+    // First check if we have cached data from the API
+    const cachedExercise = exerciseCache[exercise.exerciseId];
+    if (cachedExercise) {
+      return {
+        name: cachedExercise.name,
+        description: cachedExercise.description,
+        gifUrl: cachedExercise.gifUrl, // Use current gifUrl from API
+        target: cachedExercise.target,
+        equipment: cachedExercise.equipment,
+        bodyPart: cachedExercise.bodyPart,
+        secondaryMuscles: cachedExercise.secondaryMuscles,
+        instructions: cachedExercise.instructions
+      };
+    }
+
+    // Fallback to exercise details from plan data
     if (exercise.exerciseDetails && exercise.exerciseDetails.length > 0) {
       return exercise.exerciseDetails[0]; // Take the first (and likely only) exercise details
     }
@@ -243,7 +304,7 @@ function ExercisingPlan() {
     return {
       name: exercise.name,
       description: exercise.description,
-      gifUrl: exercise.gifUrl,
+      gifUrl: '', // Empty gifUrl as fallback
       target: exercise.target,
       equipment: exercise.equipment,
       bodyPart: exercise.bodyPart,
@@ -319,10 +380,10 @@ function ExercisingPlan() {
     } else {
       alert('🎉 Workout completed! Great job!');
     }
-    const deleteId = localStorage.getItem('deleteId');
-    localStorage.removeItem(deleteId);
-    localStorage.removeItem('exerciseId');
-    localStorage.removeItem(`deleteId`);
+    const deleteId = getCookie('deleteId');
+    deleteCookie(deleteId);
+    deleteCookie('exerciseId');
+    deleteCookie('deleteId');
     navigate('/plans');
   };
 
@@ -330,11 +391,11 @@ function ExercisingPlan() {
   const abortWorkout = () => {
     const confirmAbort = confirm('Are you sure you want to abort this workout? Your progress will be lost.');
     if (confirmAbort) {
-      // Clear localStorage like in finishWorkout
-      const deleteId = localStorage.getItem('deleteId');
-      localStorage.removeItem(deleteId);
-      localStorage.removeItem('exerciseId');
-      localStorage.removeItem('deleteId');
+      // Clear cookies like in finishWorkout
+      const deleteId = getCookie('deleteId');
+      deleteCookie(deleteId);
+      deleteCookie('exerciseId');
+      deleteCookie('deleteId');
 
       // Navigate back to plans
       navigate('/plans');
@@ -445,6 +506,11 @@ function ExercisingPlan() {
     return <div className="flex justify-center items-center h-screen text-red-500">Error loading workout data</div>;
   }
 
+  const capitalizeWords = str => {
+    if (!str) return '';
+    return str.replace(/\b\w/g, char => char.toUpperCase());
+  };
+
   const currentExercise = workoutData.exercise[currentExerciseIndex];
   const currentExerciseDetails = getExerciseDetails(currentExercise);
   const currentExerciseName = currentExerciseDetails.name || `Exercise ${currentExercise.exerciseId}`;
@@ -476,7 +542,7 @@ function ExercisingPlan() {
       <div className="space-y-4">
         {workoutData.exercise.map((exercise, index) => {
           const exerciseDetails = getExerciseDetails(exercise);
-          const exerciseName = exerciseDetails.name || `Exercise ${exercise.exerciseId}`;
+          const exerciseName = capitalizeWords(exerciseDetails.name) || `Exercise ${exercise.exerciseId}`;
           const isCurrent = index === currentExerciseIndex;
           const isCollapsed = collapsedExercises[exercise.exerciseId];
           const exerciseCompleted = isExerciseCompleted(exercise.exerciseId);
@@ -496,19 +562,27 @@ function ExercisingPlan() {
                 {/* Exercise Image */}
                 {isCurrent ? (
                   <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center overflow-hidden">
-                    <img
-                      src={exerciseDetails.gifUrl}
-                      alt={exerciseDetails.name || 'Exercise'}
-                      className="w-full h-full object-cover rounded-lg"
-                    />
+                    {exerciseDetails.gifUrl ? (
+                      <img
+                        src={exerciseDetails.gifUrl}
+                        alt={exerciseDetails.name || 'Exercise'}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-300 rounded-lg"></div>
+                    )}
                   </div>
                 ) : (
                   <div className="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center overflow-hidden">
-                    <img
-                      src={exerciseDetails.gifUrl}
-                      alt={exerciseDetails.name || 'Exercise'}
-                      className="w-full h-full object-cover rounded-lg opacity-60"
-                    />
+                    {exerciseDetails.gifUrl ? (
+                      <img
+                        src={exerciseDetails.gifUrl}
+                        alt={exerciseDetails.name || 'Exercise'}
+                        className="w-full h-full object-cover rounded-lg opacity-60"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-500 rounded-lg opacity-60"></div>
+                    )}
                   </div>
                 )}
                 {/* Exercise Info */}
@@ -710,11 +784,17 @@ function ExercisingPlan() {
                     {/* Exercise GIF */}
                     <div className="mb-6 flex justify-center">
                       <div className="w-64 h-64 bg-gray-700 rounded-lg overflow-hidden">
-                        <img
-                          src={exerciseDetails.gifUrl}
-                          alt={exerciseDetails.name || 'Exercise'}
-                          className="w-full h-full object-cover"
-                        />
+                        {exerciseDetails.gifUrl ? (
+                          <img
+                            src={exerciseDetails.gifUrl}
+                            alt={exerciseDetails.name || 'Exercise'}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-600 rounded-lg flex items-center justify-center">
+                            <span className="text-gray-400">No image available</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 

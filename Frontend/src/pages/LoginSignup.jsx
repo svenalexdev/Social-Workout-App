@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate, useLocation } from 'react-router';
 import { toast } from 'react-toastify';
 import { signin } from '../data/auth.js';
+import { setCookie } from '../utils/cookieUtils.js';
 import { useAuth } from '../context/index.js';
 
 const LoginSignup = () => {
@@ -26,9 +27,8 @@ const LoginSignup = () => {
 
       setIsAuthenticated(true);
       setCheckSession(true);
+      setCookie('userId', userId);
 
-      //Save id in local storage
-      localStorage.setItem('userId', userId);
       navigate('/plans');
     } catch (error) {
       toast.error(error.message);

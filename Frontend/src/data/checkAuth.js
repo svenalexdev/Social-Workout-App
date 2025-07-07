@@ -1,16 +1,17 @@
 import React from 'react';
 import { me } from './auth';
+import { setCookie, getCookie } from '../utils/cookieUtils';
 
 const checkAuth = async () => {
-  const localStorage_userID = localStorage.getItem('userId');
+  const cookie_userID = getCookie('userId');
   try {
     //waiting for token if token not available send message to login
     const user = await me();
 
     const userId = user._id;
 
-    if (!localStorage_userID) {
-      localStorage.setItem('userId', userId);
+    if (!cookie_userID) {
+      setCookie('userId', userId);
     }
 
     return true;

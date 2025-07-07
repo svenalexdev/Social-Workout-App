@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import checkAuth from '../data/checkAuth';
+import { setCookie, getCookie } from '../utils/cookieUtils.js';
 
 
 const Plans = () => {
@@ -16,7 +17,7 @@ const Plans = () => {
 
   const GoToStartRoutine = planId => {
     if (planId) {
-      localStorage.setItem('exerciseId', planId);
+      setCookie('exerciseId', planId); // Store plan ID in cookies for iOS compatibility
     }
     navigate('/exercisingplan');
   };
@@ -63,8 +64,8 @@ const Plans = () => {
         throw new Error(errorData.error || 'Failed to fetch personal plans');
       }
       const data = await res.json();
-      const userIdLs = localStorage.getItem('userId');
-      const userPlans = data.filter(plan => plan.userId && plan.userId === userIdLs);
+      const userIdCookie = getCookie('userId'); // Get user ID from cookies
+      const userPlans = data.filter(plan => plan.userId && plan.userId === userIdCookie);
       setPlans(userPlans);
     } catch (error) {
       console.error('Error fetching plan data:', error.message);
