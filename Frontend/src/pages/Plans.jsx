@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import axios from 'axios';
 
+
 const Plans = () => {
   const navigate = useNavigate();
+
   const [recommendedPlans, setRecommendedPlans] = useState([]);
 
   const GoToCreatePlan = () => {

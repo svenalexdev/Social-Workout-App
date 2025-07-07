@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import { signup } from '../data/auth';
+import { useAuth } from '../context/index.js';
 
 const SignUp = () => {
+  const { isAuthenticated, setCheckSession, setIsAuthenticated } = useAuth();
   const [{ name, email, password }, setForm] = useState({
     name: '',
     email: '',
@@ -36,10 +38,17 @@ const SignUp = () => {
 
       setLoading(true);
 
-      const { message } = await signup({ name, email, password, stats: [{ height :parseInt(height), weight:parseInt(weight), age:parseInt(age) }] });
+      const { message } = await signup({
+        name,
+        email,
+        password,
+        stats: [{ height: parseInt(height), weight: parseInt(weight), age: parseInt(age) }]
+      });
 
-      toast.success(message || 'Account created successfully');
+      toast.success(message || 'Account created successfully! Please log in.');
       navigate('/');
+      
+       setCheckSession(true);
     } catch (error) {
       toast.error(error.message || 'SignUp Faild');
     } finally {
@@ -47,6 +56,7 @@ const SignUp = () => {
     }
   };
 
+  if (isAuthenticated) return <Navigate to="/" />;
   return (
     <div className="min-h-screen bg-black text-white p-4">
       {step === 1 ? (
@@ -141,7 +151,7 @@ const SignUp = () => {
                 className="w-full bg-gray-900 p-2 rounded-lg text-gray-300 border border-gray-600"
               />
             </div>
-            <button type="submit" className="w-full bg-indigo-600 p-3 rounded-lg mt-6">
+            <button type="submit" className="w-full bg-indigo-600 p-3 rounded-lg mt-6" disabled={loading}>
               Submit Profile
             </button>
           </form>
