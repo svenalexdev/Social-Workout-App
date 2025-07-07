@@ -2,6 +2,7 @@ import { useState, useEffect, use } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
 import checkAuth from '../data/checkAuth';
+import { setCookie, getCookie, deleteCookie } from '../utils/cookieUtils.js';
 const baseURL = `${import.meta.env.VITE_API_URL}`;
 
 function CreatePlan() {
@@ -21,10 +22,10 @@ function CreatePlan() {
   const [exercises, setExercises] = useState([]); // exercise fetch
 
   // Effect management
-  // Storing a selected exercise to localStorage
+  // Storing a selected exercise to cookies
   // useEffect(() => {
   //   if (selectedExercise) {
-  //     localStorage.setItem('exercises', JSON.stringify(selectedExercise));
+  //     setCookie('exercises', JSON.stringify(selectedExercise));
   //     console.log(selectedExercise);
   //   }
   // }, [selectedExercise]);
@@ -41,10 +42,10 @@ function CreatePlan() {
     verifyUser();
   }, []);
 
-  // Load exercises from localStorage when createPlan = true
+  // Load exercises from cookies when createPlan = true
   useEffect(() => {
     if (createPlan) {
-      const stored = JSON.parse(localStorage.getItem('exercises')) || [];
+      const stored = JSON.parse(getCookie('exercises') || '[]');
       // Ensure each exercise has a name (check if still needed once fetched from API)
       setEditableExercises(
         stored.map(e => {
@@ -66,9 +67,9 @@ function CreatePlan() {
     }
   }, [createPlan, shouldOpenModal]);
 
-  // Auto-save plan to localStorage
+  // Auto-save plan to cookies
   useEffect(() => {
-    const userID = localStorage.getItem('userId');
+    const userID = getCookie('userId');
     const plan = {
       userId: userID,
       name: planName,
@@ -81,7 +82,7 @@ function CreatePlan() {
         restTime: Number(e.restTime) || 1
       }))
     };
-    localStorage.setItem('plan', JSON.stringify(plan));
+    setCookie('plan', JSON.stringify(plan));
   }, [planName, editableExercises, isPublic]);
 
   // Fetch exercises
@@ -164,15 +165,15 @@ function CreatePlan() {
     });
   };
 
-  // Save button handler to get localStorage, POST information and delete it afterwards
+  // Save button handler to get cookies, POST information and delete it afterwards
   const handleSaveButton = async () => {
     if (editableExercises.length === 0) {
       alert('Please add at least one exercise to your plan!');
       return;
     }
-    const plan = JSON.parse(localStorage.getItem('plan'));
+    const plan = JSON.parse(getCookie('plan') || '{}');
     console.log('Plan to save:', plan);
-    if (!plan) {
+    if (!plan || !plan.userId) {
       alert('No plan found!');
       return;
     }
@@ -184,7 +185,7 @@ function CreatePlan() {
       });
       if (response.ok) {
         alert('Plan saved successfully!');
-        localStorage.removeItem('plan');
+        deleteCookie('plan');
         setTimeout(() => {
           navigate('/plans');
         }, 1000);
@@ -208,7 +209,6 @@ function CreatePlan() {
   // Other
   // Variable to filter exercises based on search term (search bar), all lower-cased for case-insensitivity
   const filteredExercises = exercises.filter(ex => ex.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  console.log(filteredExercises);
 
   return (
     <div className="min-h-screen bg-black text-white p-4">

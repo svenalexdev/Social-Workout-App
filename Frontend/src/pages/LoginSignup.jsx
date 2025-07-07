@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import { signin } from '../data/auth.js';
+import { setCookie } from '../utils/cookieUtils.js';
 
 const LoginSignup = () => {
   const [{ email, password }, setForm] = useState({ email: '', password: '' });
@@ -20,9 +21,8 @@ const LoginSignup = () => {
 
       toast.success(message || 'Welcome Back');
       //alert('welcome Back');
-      //Save id in local storage
-
-      localStorage.setItem('userId', userId);
+      //Save id in session cookies for iOS compatibility
+      setCookie('userId', userId); // Session cookie - expires when app/browser closes
       navigate('/plans');
     } catch (error) {
       toast.error(error.message);
