@@ -208,7 +208,7 @@ function CreatePlan() {
   // Other
   // Variable to filter exercises based on search term (search bar), all lower-cased for case-insensitivity
   const filteredExercises = exercises.filter(ex => ex.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  console.log(filteredExercises);
+  // console.log(filteredExercises);
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
@@ -244,6 +244,7 @@ function CreatePlan() {
               <div className="flex justify-center">
                 <input
                   type="text"
+                  name="searchTerm"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   placeholder="Search exercises..."
@@ -266,6 +267,7 @@ function CreatePlan() {
                               {
                                 exerciseId: ex.exerciseId,
                                 name: ex.name,
+                                gifUrl: ex.gifUrl,
                                 sets: [],
                                 reps: [],
                                 weight: [],
@@ -275,7 +277,7 @@ function CreatePlan() {
                       )
                     }
                     // Mark a selected exercise with color
-                    className={`text-xl font-bold mt-2 p-2 rounded ${
+                    className={`flex items-center text-xl font-bold mt-2 p-2 rounded ${
                       selectedExercise.some(item => item.exerciseId === ex.exerciseId)
                         ? 'bg-green-800'
                         : 'hover:bg-slate-600'
@@ -283,8 +285,11 @@ function CreatePlan() {
                                     ${idx !== filteredExercises.length - 1 ? 'border-b border-gray-600' : ''}
                     `}
                   >
-                    {capitalizeWords(ex.name)} <br />
-                    <span className="text-sm">{capitalizeWords(ex.bodyPart)}</span>
+                    <img src={ex.gifUrl} className="w-16 h-16 rounded object-cover" />
+                    <div className="ml-4">
+                      {capitalizeWords(ex.name)} <br />
+                      <span className="text-sm">{capitalizeWords(ex.bodyPart)}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -309,6 +314,7 @@ function CreatePlan() {
             {isEditingName ? (
               <input
                 type="text"
+                name="planName"
                 value={planName}
                 onChange={handleNameChange}
                 onBlur={handleNameBlur}
@@ -346,11 +352,11 @@ function CreatePlan() {
               Add exercises
             </button>
           </div>
-          <div className="flex justify-center mt-40">
+          {/* <div className="flex justify-center mt-40">
             <button className="btn text-lg bg-gray-500 border-none text-white h-35 w-35">
               Create Plan <br /> with AI
             </button>
-          </div>
+          </div> */}
         </div>
       ) : (
         <div>
@@ -369,6 +375,7 @@ function CreatePlan() {
             {isEditingName ? (
               <input
                 type="text"
+                name="planName"
                 value={planName}
                 onChange={handleNameChange}
                 onBlur={handleNameBlur}
@@ -407,17 +414,19 @@ function CreatePlan() {
           <div className="mt-8">
             {editableExercises.map((exercise, idx) => (
               <div key={idx} className="ml-2 mr-2 mt-5 mb-6 p-3 rounded-lg bg-gray-800">
-                <div className="flex justify-between items-center">
-                  <div className="font-bold text-lg">{capitalizeWords(exercise.name)}</div>
+                <div className="flex items-center">
+                  <img src={exercise.gifUrl} className="w-11 h-11 rounded object-cover" />
+                  <div className="font-bold text-lg ml-4 mr-4">{capitalizeWords(exercise.name)}</div>
                   <button
                     onClick={() => {
                       handleRemoveExercise(idx);
                     }}
+                    className="ml-auto"
                   >
                     ⛔️
                   </button>
                 </div>
-                <div className="grid grid-cols-4 gap-2 text-xs font-semibold mt-2 mb-1">
+                <div className="grid grid-cols-4 gap-2 text-xs font-semibold mt-4 mb-1">
                   <span>Sets</span>
                   <span>Reps</span>
                   <span>Weight</span>
@@ -426,6 +435,7 @@ function CreatePlan() {
                 <div className="grid grid-cols-4 gap-2">
                   <input
                     type="number"
+                    name={`sets-${idx}`}
                     placeholder="0"
                     value={exercise.sets?.toString() ?? ''}
                     onChange={e => handleExerciseChange(idx, 'sets', e.target.value)}
@@ -434,6 +444,7 @@ function CreatePlan() {
                   />
                   <input
                     type="number"
+                    name={`reps-${idx}`}
                     placeholder="0"
                     value={exercise.reps?.toString() ?? ''}
                     onChange={e => handleExerciseChange(idx, 'reps', e.target.value)}
@@ -442,6 +453,7 @@ function CreatePlan() {
                   />
                   <input
                     type="number"
+                    name={`weight-${idx}`}
                     placeholder="0"
                     value={exercise.weight?.toString() ?? ''}
                     onChange={e => handleExerciseChange(idx, 'weight', e.target.value)}
@@ -450,6 +462,7 @@ function CreatePlan() {
                   />
                   <input
                     type="number"
+                    name={`restTime-${idx}`}
                     placeholder="0"
                     value={exercise.restTime?.toString() ?? ''}
                     onChange={e => handleExerciseChange(idx, 'restTime', e.target.value)}
