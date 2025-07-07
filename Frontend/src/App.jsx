@@ -7,6 +7,7 @@ import ExercisingPlan from './pages/ExercisingPlan';
 import AllPlans from './pages/AllPlans';
 import LoginSignup from './pages/LoginSignup';
 import SignUp from './pages/SignUp';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             <Route path="allplans" element={<AllPlans />} />
             <Route path="signin" element={<LoginSignup />} />
             <Route path="signup" element={<SignUp />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
           {/* <Route path='*' element={<NotFound />} /> */}
         </Routes>
