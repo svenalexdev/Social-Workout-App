@@ -164,7 +164,7 @@ function CreatePlan() {
   // Other
   // Variable to filter exercises based on search term (search bar), all lower-cased for case-insensitivity
   const filteredExercises = exercises.filter(ex => ex.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  console.log(filteredExercises);
+  // console.log(filteredExercises);
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
