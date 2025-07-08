@@ -48,11 +48,11 @@ const SignUp = () => {
         password,
         stats: [{ height: parseInt(height), weight: parseInt(weight), age: parseInt(age) }]
       });
-     
+
       toast.success(message || 'Account created successfully! Please log in.');
       navigate('/');
-      
-       setCheckSession(true);
+
+      setCheckSession(true);
     } catch (error) {
       toast.error(error.message || 'SignUp Faild');
     } finally {
@@ -123,8 +123,18 @@ const SignUp = () => {
         </>
       ) : (
         <>
-          <h2 className="mt-10 text-center text-3xl font-bold text-white mb-10">Complete Profile</h2>
-          <form className="space-y-4" onSubmit={handleSubmitProfile}>
+          <button
+            type="button"
+            onClick={() => setStep(1)}
+            className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors text-sm mb-9"
+          >
+            Back
+          </button>
+
+          <div className="flex justify-between items-center mb-10 ">
+            <h2 className="text-center text-3xl font-bold text-white flex-1">Complete Profile</h2>
+          </div>
+          <form className="space-y-4 mt-3" onSubmit={handleSubmitProfile}>
             <div>
               <label className="block text-sm text-gray-300">Height</label>
               <input
@@ -155,8 +165,12 @@ const SignUp = () => {
                 className="w-full bg-gray-900 p-2 rounded-lg text-gray-300 border border-gray-600"
               />
             </div>
-            <button type="submit" className="w-full bg-indigo-600 p-3 rounded-lg mt-6" disabled={loading}>
-              Submit Profile
+            <button
+              type="submit"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 p-3 rounded-lg mt-6 transition-colors"
+              disabled={loading}
+            >
+              {loading ? 'Creating Account...' : 'Submit Profile'}
             </button>
           </form>
         </>
