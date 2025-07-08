@@ -21,7 +21,7 @@ function App() {
             {/* <Route path="plans" element={<Plans />} /> */}
             <Route path="plans" element={<ProtectedLayout />}>
               <Route index element={<Plans />} />
-           </Route>
+            </Route>
             <Route path="createplan" element={<ProtectedLayout />}>
               <Route index element={<CreatePlan />} />
             </Route>
@@ -34,9 +34,9 @@ function App() {
             <Route path="signin" element={<LoginSignup />} />
             <Route path="signup" element={<SignUp />} />
             <Route path="profile" element={<Profile />} />
-            <Route path="groupfinder" element={<GroupFinder />} />
-
-           
+            <Route path="groupfinder" element={<ProtectedLayout />}>
+              <Route index element={<GroupFinder />} />
+            </Route>
           </Route>
           {/* <Route path='*' element={<NotFound />} /> */}
         </Routes>
