@@ -48,6 +48,46 @@ const logSchema = z.object({
   duration: z.number().min(1)
 });
 
+const groupFinderSchema = z.object({
+  userId: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().min(1),
+  gym: z.string().min(1),
+  time: z.string(),
+  showWorkoutPlan: z.boolean(),
+  workoutPlanId: z.string().min(1),
+  attendeessLimit: z.number().min(1),
+  attendess: z.array(
+    z.object({
+      userId: z.string().min(1),
+      status: z.string().min(1)
+    })
+  ),
+  bodyParts: z.array(
+    z.object({
+      abductors: z.string().optional(),
+      abs: z.string().optional(),
+      adductors: z.string().optional(),
+      biceps: z.string().optional(),
+      calves: z.string().optional(),
+      cardiovascularSystem: z.string().optional(),
+      deltes: z.string().optional(),
+      forearms: z.string().optional(),
+      glutes: z.string().optional(),
+      hamStrings: z.string().optional(),
+      lats: z.string().optional(),
+      levatorScapule: z.string().optional(),
+      pectorals: z.string().optional(),
+      quads: z.string().optional(),
+      serratusAnterior: z.string().optional(),
+      spin: z.string().optional(),
+      traps: z.string().optional(),
+      triceps: z.string().optional(),
+      upperBack: z.string().optional()
+    })
+  )
+});
+
 const signInSchema = userSchema.omit({ name: true, stats: true });
 
-export { userSchema, planSchema, logSchema, signInSchema };
+export { userSchema, planSchema, logSchema, signInSchema,groupFinderSchema };
