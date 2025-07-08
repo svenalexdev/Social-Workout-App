@@ -15,6 +15,11 @@ const Profile = () => {
         const userRes = await fetch(`${BACKEND_URL}/auth/me`, { credentials: 'include' });
         if (!userRes.ok) throw new Error('Failed to fetch user info');
         const userData = await userRes.json();
+
+        if (userData.image && !userData.image.startsWith('http')) {
+          userData.image = `${BACKEND_URL}${userData.image}`;
+          console.log(userData);
+        }
         setUser(userData);
 
         const userId = userData._id;
