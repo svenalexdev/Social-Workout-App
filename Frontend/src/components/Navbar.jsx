@@ -1,10 +1,16 @@
 import { useNavigate } from 'react-router';
+import { useAuth } from '../context';
 
 function Navbar() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const goToProfile = () => {
-    navigate('/profile');
+    if (isAuthenticated) {
+      navigate('/profile');
+    } else {
+      navigate('/signin');
+    }
   };
 
   const goToPlans = () => {
