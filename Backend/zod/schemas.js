@@ -4,6 +4,7 @@ const userSchema = z.object({
   name: z.string('Name must be string').min(2, 'Name must be at least 2 characters'),
   email: z.email('Must be a valid email'),
   password: z.string().min(8),
+  image: z.string().optional(),
   stats: z.array(
     z.object({
       height: z.number().min(1),
@@ -109,4 +110,4 @@ const groupFinderSchema = z.object({
 
 const signInSchema = userSchema.omit({ name: true, stats: true });
 
-export { userSchema, planSchema, logSchema, signInSchema,groupFinderSchema };
+export { userSchema, planSchema, logSchema, signInSchema, groupFinderSchema };
