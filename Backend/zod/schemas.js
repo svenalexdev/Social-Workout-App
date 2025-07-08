@@ -32,20 +32,39 @@ const planSchema = z.object({
 const logSchema = z.object({
   userId: z.string().min(1),
   planId: z.string().min(1),
-  date: z.date().optional(),
-  exercise: z.array(
+  workoutId: z.string().min(1),
+  workoutSessionId: z.string().min(1),
+  startTime: z.string().datetime(),
+  completedAt: z.string().datetime(),
+  duration: z.number().min(0).optional(),
+  currentExerciseIndex: z.number().min(0).default(0),
+  completedSets: z.array(
     z.object({
       exerciseId: z.string().min(1),
-      name: z.string('Name must be string'),
-      bodyParts: z.string('Body part must be string'),
-      equipment: z.string('Equipment must be string'),
-      weight: z.number().min(1),
-      setsCompleted: z.number().min(1),
+      setNumber: z.number().min(1),
+      weight: z.number().min(0),
       reps: z.number().min(1),
-      notes: z.string('Notes must be string')
+      completedAt: z.string().datetime()
     })
   ),
-  duration: z.number().min(1)
+  setInputs: z.any().default({}), // Allow any object structure
+  collapsedExercises: z.any().default({}), // Allow any object structure with numeric-like keys
+  exercises: z.array(
+    z.object({
+      exerciseId: z.string().min(1),
+      name: z.string().optional(),
+      bodyPart: z.string().optional(),
+      equipment: z.string().optional(),
+      target: z.string().optional(),
+      totalSetsCompleted: z.number().min(0).default(0),
+      plannedSets: z.number().min(1).optional(),
+      plannedReps: z.number().min(1).optional(),
+      plannedWeight: z.number().min(0).optional()
+    })
+  ),
+  planName: z.string().optional(),
+  isPublic: z.boolean().default(false),
+  notes: z.string().optional()
 });
 
 const signInSchema = userSchema.omit({ name: true, stats: true });

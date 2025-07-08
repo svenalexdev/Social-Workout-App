@@ -110,6 +110,7 @@ function ExercisingPlan() {
   useEffect(() => {
     const initializeWorkout = async () => {
       // Clear all workout-related cookies
+      localStorage.clear();
       // Fetch workout data first
       const data = await getData();
 
@@ -120,7 +121,7 @@ function ExercisingPlan() {
 
       const sessionKey = `workout_session_${data._id}`;
       setCookie('deleteId', sessionKey);
-      const savedSession = getCookie(sessionKey);
+      const savedSession = localStorage.getItem(sessionKey);
 
       if (savedSession) {
         const session = JSON.parse(savedSession);
@@ -148,7 +149,7 @@ function ExercisingPlan() {
         };
         setWorkoutSession(newSession);
         setCollapsedExercises(initialCollapsedState);
-        saveToCookies(newSession, data._id);
+        saveToLocalStorage(newSession, data._id);
         setIsTimerRunning(true);
       }
     };
@@ -190,18 +191,18 @@ function ExercisingPlan() {
     return () => clearInterval(interval);
   }, [pauseTimer.isActive, pauseTimer.remainingTime]);
 
-  // Save session to cookies
-  const saveToCookies = (session, workoutId = workoutData?._id) => {
+  // Save session to localStorage
+  const saveToLocalStorage = (session, workoutId = workoutData?._id) => {
     if (!workoutId) return;
     const sessionKey = `workout_session_${workoutId}`;
-    setCookie(sessionKey, JSON.stringify(session));
+    localStorage.setItem(sessionKey, JSON.stringify(session));
   };
 
   // Update session state and save
   const updateSession = updates => {
     const updatedSession = { ...workoutSession, ...updates };
     setWorkoutSession(updatedSession);
-    saveToCookies(updatedSession);
+    saveToLocalStorage(updatedSession);
   };
 
   // Check if an exercise is completed (all sets done)
@@ -364,9 +365,13 @@ function ExercisingPlan() {
   // Finish workout manually
   const finishWorkout = async () => {
     setIsTimerRunning(false);
+    const completedAt = new Date().toISOString();
     updateSession({
-      completedAt: new Date().toISOString()
+      completedAt: completedAt
     });
+
+    // Create workout log
+    await createWorkoutLog(completedAt);
 
     // Check if user wants to update the plan with workout results
     const shouldUpdatePlan = confirm(
@@ -375,16 +380,92 @@ function ExercisingPlan() {
 
     if (shouldUpdatePlan) {
       await updatePlanFromWorkout();
-
-      navigate('/plans');
     } else {
       alert('🎉 Workout completed! Great job!');
     }
+
+    // Clean up storage
     const deleteId = getCookie('deleteId');
-    deleteCookie(deleteId);
+    localStorage.clear();
     deleteCookie('exerciseId');
     deleteCookie('deleteId');
     navigate('/plans');
+  };
+
+  // Create workout log
+  const createWorkoutLog = async completedAt => {
+    try {
+      const BACKEND_URL = import.meta.env.VITE_API_URL;
+      const userId = getCookie('userId');
+
+      if (!workoutSession || !workoutData) {
+        console.error('Missing workout session or data for logging');
+        return;
+      }
+
+      // Calculate workout duration in seconds
+      const startTime = new Date(workoutSession.startTime);
+      const endTime = new Date(completedAt);
+      const duration = Math.floor((endTime - startTime) / 1000);
+
+      // Prepare exercises data with completion info
+      const exercises = workoutData.exercise.map(exercise => {
+        const exerciseDetails = getExerciseDetails(exercise);
+        const completedSetsForExercise =
+          workoutSession.completedSets?.filter(set => set.exerciseId === exercise.exerciseId) || [];
+
+        return {
+          exerciseId: exercise.exerciseId,
+          name: exerciseDetails.name,
+          bodyPart: exerciseDetails.bodyPart,
+          equipment: exerciseDetails.equipment,
+          target: exerciseDetails.target,
+          totalSetsCompleted: completedSetsForExercise.length,
+          plannedSets: exercise.sets,
+          plannedReps: exercise.reps,
+          plannedWeight: exercise.weight
+        };
+      });
+
+      const logData = {
+        userId: userId,
+        planId: workoutData._id,
+        workoutId: workoutData._id, // Same as planId but matches localStorage structure
+        workoutSessionId: workoutSession.workoutSessionId,
+        startTime: workoutSession.startTime,
+        completedAt: completedAt,
+        duration: duration,
+        currentExerciseIndex: workoutSession.currentExerciseIndex || 0,
+        completedSets: workoutSession.completedSets || [],
+        setInputs: workoutSession.setInputs || {},
+        collapsedExercises: workoutSession.collapsedExercises || {},
+        exercises: exercises,
+        planName: workoutData.name,
+        isPublic: workoutData.isPublic || false
+      };
+
+      console.log('Creating workout log:', logData);
+
+      const response = await fetch(`${BACKEND_URL}/logs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(logData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create workout log');
+      }
+
+      const createdLog = await response.json();
+      console.log('Workout log created successfully:', createdLog);
+    } catch (error) {
+      console.error('Error creating workout log:', error);
+      // Don't prevent workout completion if logging fails
+      alert('⚠️ Workout completed but failed to save log. Your progress is still saved!');
+    }
   };
 
   // Abort workout and go back to plans
@@ -396,6 +477,7 @@ function ExercisingPlan() {
       deleteCookie(deleteId);
       deleteCookie('exerciseId');
       deleteCookie('deleteId');
+      localStorage.clear();
 
       // Navigate back to plans
       navigate('/plans');
