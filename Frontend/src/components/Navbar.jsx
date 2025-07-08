@@ -17,9 +17,19 @@ function Navbar() {
     navigate('/plans');
   };
 
+  const goToGroupFinder = () => {
+    navigate('/groupfinder');
+  };
+
+  const goToHome = () => {
+    navigate('/');
+  };
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 h-[50px] bg-red-300 w-full text-center pt-3 text-black flex justify-around">
+    <div className="fixed bottom-0 left-0 right-0 z-40 h-[70px] bg-red-300 w-full text-center  text-black flex justify-around">
+      <button onClick={goToHome}>Home</button>
       <button onClick={goToPlans}>Plans</button>
+      <button onClick={goToGroupFinder}>Groups</button>
       <button onClick={goToProfile}>Profile</button>
     </div>
   );
