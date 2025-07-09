@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { createChat, createPersonalChat, fetchChat, fetchPersonalChat } from '../../data/gemini';
 import { addOrUpdateMsg } from '../../utils/msgUtils';
-import { useAuth } from '@/context';
+import { useAuth } from '../../context/index.js';
+import { setCookie } from '../../utils/cookieUtils.js';
 
 const Form = ({ setMessages, chatId, setChatId }) => {
   const { isAuthenticated } = useAuth();
@@ -89,6 +90,10 @@ const Form = ({ setMessages, chatId, setChatId }) => {
 
         aiMsg.parts[0].text = response.aiResponse;
 
+        console.log(response.aiResponse);
+        //save respone in cookie
+       setCookie('ai_response', JSON.stringify(response.aiResponse), false);
+
         setMessages(prev => [...prev, aiMsg]);
         setChatId(response.chatId);
         localStorage.setItem('chatId', response.chatId);
@@ -103,13 +108,13 @@ const Form = ({ setMessages, chatId, setChatId }) => {
   };
 
   return (
-    <div className='h-1/3 w-full p-8 border-t-2'>
+    <div className="h-1/3 w-full p-8 border-t-2">
       <form onSubmit={handleSubmit}>
-        <label className='flex gap-2 items-center my-2'>
+        <label className="flex gap-2 items-center my-2">
           <input
-            id='stream'
-            type='checkbox'
-            className='checkbox checkbox-primary'
+            id="stream"
+            type="checkbox"
+            className="checkbox checkbox-primary"
             checked={isStream}
             onChange={toggleChecked}
             disabled={loading}
@@ -119,12 +124,12 @@ const Form = ({ setMessages, chatId, setChatId }) => {
         <input
           value={prompt}
           onChange={handleChange}
-          id='prompt'
-          rows='5'
-          placeholder='Ask me anything...'
-          className='block w-full px-4 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+          id="prompt"
+          rows="5"
+          placeholder="Ask me anything..."
+          className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
-        <button id='submit' type='submit' className='mt-4 w-full btn btn-primary' disabled={loading}>
+        <button id="submit" type="submit" className="mt-4 w-full btn btn-primary" disabled={loading}>
           Submit✨
         </button>
       </form>

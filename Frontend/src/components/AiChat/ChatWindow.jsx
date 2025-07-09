@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useRef, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
-// import { getChatHistory } from '@/data';
 import { getChatHistory } from '../../data/gemini';
 import Form from './Form';
 import Chat from './Chat';
