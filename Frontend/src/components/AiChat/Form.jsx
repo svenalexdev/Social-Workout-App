@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { createChat, createPersonalChat, fetchChat, fetchPersonalChat } from '../../data/gemini';
 import { addOrUpdateMsg } from '../../utils/msgUtils';
-import { useAuth } from '@/context';
+import { useAuth } from '../../context';
 
 const Form = ({ setMessages, chatId, setChatId }) => {
   const { isAuthenticated } = useAuth();
