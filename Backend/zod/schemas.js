@@ -37,14 +37,14 @@ const logSchema = z.object({
   workoutSessionId: z.string().min(1),
   startTime: z.string().datetime(),
   completedAt: z.string().datetime(),
-  duration: z.number().min(0).optional(),
-  currentExerciseIndex: z.number().min(0).default(0),
+  duration: z.coerce.number().min(0).optional(),
+  currentExerciseIndex: z.coerce.number().min(0).default(0),
   completedSets: z.array(
     z.object({
       exerciseId: z.string().min(1),
-      setNumber: z.number().min(1),
-      weight: z.number().min(0),
-      reps: z.number().min(1),
+      setNumber: z.coerce.number().min(1),
+      weight: z.coerce.number().min(0),
+      reps: z.coerce.number().min(1),
       completedAt: z.string().datetime()
     })
   ),
@@ -57,10 +57,10 @@ const logSchema = z.object({
       bodyPart: z.string().optional(),
       equipment: z.string().optional(),
       target: z.string().optional(),
-      totalSetsCompleted: z.number().min(0).default(0),
-      plannedSets: z.number().min(1).optional(),
-      plannedReps: z.number().min(1).optional(),
-      plannedWeight: z.number().min(0).optional()
+      totalSetsCompleted: z.coerce.number().min(0).default(0),
+      plannedSets: z.coerce.number().min(1).optional(),
+      plannedReps: z.coerce.number().min(1).optional(),
+      plannedWeight: z.coerce.number().min(0).optional()
     })
   ),
   planName: z.string().optional(),
@@ -69,7 +69,7 @@ const logSchema = z.object({
 });
 
 const groupFinderSchema = z.object({
-  userId: z.string().min(1),
+  userId: z.string().min(1).optional(), // Make userId optional since it comes from auth token
   name: z.string().min(1),
   description: z.string().min(1),
   gym: z.string().min(1),
