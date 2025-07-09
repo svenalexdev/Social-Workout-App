@@ -3,7 +3,9 @@ import User from '../models/User.js';
 import Lfg from '../models/lfg.js';
 
 const getGroup = async (req, res) => {
-  const group = await Lfg.find();
+  const group = await Lfg.find()
+    .populate('userId', 'name') // Populate creator name
+    .populate('attendess.userId', 'name'); // Populate attendee names
   res.json(group);
 };
 
@@ -37,7 +39,9 @@ const getGroupById = async (req, res) => {
 
   if (!isValidObjectId(id)) throw new Error('Invalid id', { cause: 400 });
 
-  const group = await Lfg.findById(id);
+  const group = await Lfg.findById(id)
+    .populate('userId', 'name') // Populate creator name
+    .populate('attendess.userId', 'name'); // Populate attendee names
 
   if (!group) throw new Error('Group not found', { cause: 404 });
 
@@ -81,7 +85,9 @@ const updateGroup = async (req, res) => {
 
   // Override userId with the one from the token
   const updateData = { ...req.sanitizedBody, userId };
-  const group = await Lfg.findByIdAndUpdate(id, updateData, { new: true });
+  const group = await Lfg.findByIdAndUpdate(id, updateData, { new: true })
+    .populate('userId', 'name')
+    .populate('attendess.userId', 'name');
 
   if (!group) throw new Error('group not found', { cause: 404 });
   res.json(group);
@@ -144,7 +150,9 @@ const joinGroup = async (req, res) => {
   // Check if user is already in the attendees list
   const existingAttendee = group.attendess.find(attendee => attendee.userId.toString() === userId);
   if (existingAttendee) {
-    return res.status(400).json({ error: `You have already requested to join this activity (Status: ${existingAttendee.status})` });
+    return res
+      .status(400)
+      .json({ error: `You have already requested to join this activity (Status: ${existingAttendee.status})` });
   }
 
   // Check if the activity has reached its attendee limit
@@ -166,10 +174,13 @@ const joinGroup = async (req, res) => {
 
   await group.save();
 
-  res.json({ 
-    message: 'Join request sent successfully', 
+  // Populate user data before returning
+  const populatedGroup = await Lfg.findById(id).populate('userId', 'name').populate('attendess.userId', 'name');
+
+  res.json({
+    message: 'Join request sent successfully',
     status: 'pending',
-    activity: group 
+    activity: populatedGroup
   });
 };
 
@@ -196,9 +207,12 @@ const leaveGroup = async (req, res) => {
 
   await group.save();
 
-  res.json({ 
+  // Populate user data before returning
+  const populatedGroup = await Lfg.findById(id).populate('userId', 'name').populate('attendess.userId', 'name');
+
+  res.json({
     message: 'Successfully left the activity',
-    activity: group 
+    activity: populatedGroup
   });
 };
 
@@ -237,10 +251,23 @@ const updateAttendeeStatus = async (req, res) => {
 
   await group.save();
 
-  res.json({ 
+  // Populate user data before returning
+  const populatedGroup = await Lfg.findById(id).populate('userId', 'name').populate('attendess.userId', 'name');
+
+  res.json({
     message: `Attendee status updated to ${status}`,
-    activity: group 
+    activity: populatedGroup
   });
 };
 
-export { getGroup, createGroup, getGroupById, updateGroup, deleteGroup, getGroupByUserId, joinGroup, leaveGroup, updateAttendeeStatus };
+export {
+  getGroup,
+  createGroup,
+  getGroupById,
+  updateGroup,
+  deleteGroup,
+  getGroupByUserId,
+  joinGroup,
+  leaveGroup,
+  updateAttendeeStatus
+};

@@ -207,7 +207,7 @@ const GroupFinder = () => {
   };
 
   // Handle joining an activity
-  const handleJoinActivity = async (activity) => {
+  const handleJoinActivity = async activity => {
     try {
       setIsJoining(true);
       const BACKEND_URL = import.meta.env.VITE_API_URL;
@@ -226,9 +226,7 @@ const GroupFinder = () => {
       console.log('Join request sent:', result);
 
       // Update the activities list with the updated activity
-      setActivities(prev => prev.map(act => 
-        act._id === activity._id ? result.activity : act
-      ));
+      setActivities(prev => prev.map(act => (act._id === activity._id ? result.activity : act)));
 
       // Update selected activity if it's currently displayed
       if (selectedActivity && selectedActivity._id === activity._id) {
@@ -236,7 +234,6 @@ const GroupFinder = () => {
       }
 
       alert('✅ Join request sent successfully! The activity owner will review your request.');
-      
     } catch (error) {
       console.error('Error joining activity:', error);
       alert('❌ Failed to join activity: ' + error.message);
@@ -246,7 +243,7 @@ const GroupFinder = () => {
   };
 
   // Handle leaving an activity
-  const handleLeaveActivity = async (activity) => {
+  const handleLeaveActivity = async activity => {
     const confirmLeave = confirm(`Are you sure you want to leave "${activity.name}"?`);
     if (!confirmLeave) return;
 
@@ -268,9 +265,7 @@ const GroupFinder = () => {
       console.log('Left activity:', result);
 
       // Update the activities list with the updated activity
-      setActivities(prev => prev.map(act => 
-        act._id === activity._id ? result.activity : act
-      ));
+      setActivities(prev => prev.map(act => (act._id === activity._id ? result.activity : act)));
 
       // Update selected activity if it's currently displayed
       if (selectedActivity && selectedActivity._id === activity._id) {
@@ -278,7 +273,6 @@ const GroupFinder = () => {
       }
 
       alert('✅ Successfully left the activity.');
-      
     } catch (error) {
       console.error('Error leaving activity:', error);
       alert('❌ Failed to leave activity: ' + error.message);
@@ -287,20 +281,73 @@ const GroupFinder = () => {
     }
   };
 
+  // Handle updating attendee status (approve/decline requests)
+  const handleUpdateAttendeeStatus = async (activityId, attendeeId, newStatus) => {
+    try {
+      setIsUpdating(true);
+      const BACKEND_URL = import.meta.env.VITE_API_URL;
+
+      const response = await fetch(`${BACKEND_URL}/lfg/${activityId}/attendee/${attendeeId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update attendee status');
+      }
+
+      const result = await response.json();
+      console.log('Attendee status updated:', result);
+
+      // Update the activities list with the updated activity
+      setActivities(prev => prev.map(act => (act._id === activityId ? result.activity : act)));
+
+      // Update managing activity if it's currently being managed
+      if (managingActivity && managingActivity._id === activityId) {
+        setManagingActivity(result.activity);
+      }
+
+      // Update selected activity if it's currently displayed
+      if (selectedActivity && selectedActivity._id === activityId) {
+        setSelectedActivity(result.activity);
+      }
+
+      const statusText = newStatus === 'approved' ? 'approved' : 'declined';
+      alert(`✅ Join request ${statusText} successfully!`);
+    } catch (error) {
+      console.error('Error updating attendee status:', error);
+      alert('❌ Failed to update attendee status: ' + error.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   // Helper function to get user's status in an activity
-  const getUserStatusInActivity = (activity) => {
+  const getUserStatusInActivity = activity => {
     const userId = getCookie('userId');
-    const attendee = activity.attendess?.find(att => att.userId === userId);
+    const attendee = activity.attendess?.find(att => {
+      // Handle both populated (object) and non-populated (string) userId
+      const attendeeUserId = typeof att.userId === 'object' ? att.userId._id : att.userId;
+      return attendeeUserId === userId;
+    });
     return attendee ? attendee.status : null;
   };
 
   // Helper function to check if user can join activity
-  const canUserJoinActivity = (activity) => {
+  const canUserJoinActivity = activity => {
     const userId = getCookie('userId');
-    const isOwnActivity = activity.userId === userId;
+    // Handle both populated (object) and non-populated (string) userId
+    const activityUserId = typeof activity.userId === 'object' ? activity.userId._id : activity.userId;
+    const isOwnActivity = activityUserId === userId;
     const userStatus = getUserStatusInActivity(activity);
-    const isAtLimit = activity.attendeessLimit && activity.attendess?.length >= activity.attendeessLimit;
-    
+    const approvedAttendeesCount = activity.attendess?.filter(att => att.status === 'approved').length || 0;
+    const isAtLimit = activity.attendeessLimit && approvedAttendeesCount >= activity.attendeessLimit;
+
     return !isOwnActivity && !userStatus && !isAtLimit;
   };
 
@@ -333,10 +380,30 @@ const GroupFinder = () => {
     waist: ['abs', 'spin']
   };
 
-  // Filter activities based on selected body parts
-  const filteredActivities =
+  // Sort activities by most recent first (by creation date)
+  const sortedActivities = [...activities].sort((a, b) => {
+    const dateA = new Date(a.createdAt || a._id);
+    const dateB = new Date(b.createdAt || b._id);
+    return dateB - dateA; // Most recent first
+  });
+
+  // Separate user's own activities from others
+  const currentUserId = getCookie('userId');
+  const myActivities = sortedActivities.filter(activity => {
+    // Handle both populated (object) and non-populated (string) userId
+    const activityUserId = typeof activity.userId === 'object' ? activity.userId._id : activity.userId;
+    return activityUserId === currentUserId;
+  });
+  const otherActivities = sortedActivities.filter(activity => {
+    // Handle both populated (object) and non-populated (string) userId
+    const activityUserId = typeof activity.userId === 'object' ? activity.userId._id : activity.userId;
+    return activityUserId !== currentUserId;
+  });
+
+  // Filter other activities based on selected body parts
+  const filteredOtherActivities =
     selectedBodyparts.length > 0
-      ? activities.filter(activity => {
+      ? otherActivities.filter(activity => {
           if (!activity.bodyParts || activity.bodyParts.length === 0) return false;
 
           return activity.bodyParts.some(bodyPartObj =>
@@ -348,7 +415,7 @@ const GroupFinder = () => {
             })
           );
         })
-      : activities;
+      : otherActivities;
 
   // Capitalize words and handle camelCase/compound words
   const capitalizeWords = str => {
@@ -372,8 +439,242 @@ const GroupFinder = () => {
             <h1 className="flex-1 text-center font-bold text-2xl">Find A Group!</h1>
             <div className="w-12" />
           </div>{' '}
-          <h2 className="mt-8 font-bold text-xl">Filter By Body Part</h2>
+          {/* My Posted Activities Section - Only show if user has posted activities */}
+          {myActivities.length > 0 && (
+            <>
+              <div className="mt-10 flex">
+                <h2 className="font-bold text-xl">My Posted Activities</h2>
+              </div>
+              <div className="mt-4 space-y-4">
+                {myActivities.map(activity => (
+                  <div
+                    key={activity._id}
+                    className="p-3 border border-blue-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden bg-blue-900/20"
+                  >
+                    <div className="flex items-center">
+                      <img src="https://cdn-icons-png.freepik.com/512/6833605.png" className="h-20 w-20 rounded-full" />
+                      <div className="flex flex-col ml-2">
+                        <p>
+                          <span className="font-bold">Name: </span>
+                          {activity.name}
+                        </p>
+                        <p>
+                          <span className="font-bold">Created by: </span>
+                          {activity.userId?.name || 'You'}
+                        </p>
+                        <p>
+                          <span className="font-bold">Gym: </span>
+                          {activity.gym || 'Not specified'}
+                        </p>
+                        <p>
+                          <span className="font-bold">Time: </span>
+                          {activity.time || 'Not specified'}
+                        </p>
+                        <p className="text-blue-400 text-sm italic">Your activity</p>
+                      </div>
+                    </div>
+
+                    {/* Attendees */}
+                    {activity.attendess && activity.attendess.length > 0 && (
+                      <div className="attendees flex mt-2">
+                        {activity.attendess.slice(0, 3).map((attendee, index) => {
+                          const getAttendeeStyle = status => {
+                            switch (status) {
+                              case 'approved':
+                                return 'opacity-100';
+                              case 'pending':
+                                return 'opacity-50';
+                              case 'declined':
+                                return 'opacity-25 grayscale sepia-[0.3] hue-rotate-[320deg] saturate-[1.5]'; // Red-ish tint
+                              default:
+                                return 'opacity-100';
+                            }
+                          };
+
+                          return (
+                            <img
+                              key={index}
+                              src={`https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg`}
+                              className={`h-8 w-8 rounded-full ${index > 0 ? 'ml-2' : ''} ${getAttendeeStyle(
+                                attendee.status
+                              )} transition-all duration-300`}
+                              alt={`${attendee.userId?.name || 'User'} - ${attendee.status}`}
+                              title={`${attendee.userId?.name || 'User'} - Status: ${attendee.status}`}
+                            />
+                          );
+                        })}
+                        {activity.attendess.length > 3 && (
+                          <div className="ml-2 h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
+                            +{activity.attendess.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Attendee limit info */}
+                    {activity.attendeessLimit && (
+                      <p className="mt-2 text-sm text-gray-400">
+                        Spots: {activity.attendess?.filter(att => att.status === 'approved').length || 0}/
+                        {activity.attendeessLimit}
+                      </p>
+                    )}
+
+                    {/* Description */}
+                    {activity.description && (
+                      <p className="mt-4 max-h-16 overflow-hidden break-words">
+                        {activity.description.length > 90
+                          ? activity.description.slice(0, 90) + '...'
+                          : activity.description}
+                      </p>
+                    )}
+
+                    {/* Attendee Management Section - Show if there are attendees */}
+                    {activity.attendess && activity.attendess.length > 0 && (
+                      <div className="mt-3 border-t border-blue-400 pt-3">
+                        <h4 className="text-sm font-medium text-blue-200 mb-2">
+                          Manage Requests ({activity.attendess.filter(att => att.status === 'pending').length} pending)
+                        </h4>
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                          {activity.attendess.map((attendee, index) => {
+                            const getAttendeeStyle = status => {
+                              switch (status) {
+                                case 'approved':
+                                  return 'opacity-100';
+                                case 'pending':
+                                  return 'opacity-50';
+                                case 'declined':
+                                  return 'opacity-25 grayscale sepia-[0.3] hue-rotate-[320deg] saturate-[1.5]';
+                                default:
+                                  return 'opacity-100';
+                              }
+                            };
+
+                            return (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between bg-black bg-opacity-30 p-2 rounded"
+                              >
+                                <div className="flex items-center">
+                                  <img
+                                    src="https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg"
+                                    className={`h-6 w-6 rounded-full mr-2 ${getAttendeeStyle(
+                                      attendee.status
+                                    )} transition-all duration-300`}
+                                    alt={`${attendee.userId?.name || 'User'} - ${attendee.status}`}
+                                    title={`${attendee.userId?.name || 'User'} - Status: ${attendee.status}`}
+                                  />
+                                  <div>
+                                    <p className="text-xs font-medium text-white">
+                                      {attendee.userId?.name || 'Unknown User'}
+                                    </p>
+                                    <p
+                                      className={`text-xs capitalize font-medium ${
+                                        attendee.status === 'approved'
+                                          ? 'text-green-400'
+                                          : attendee.status === 'pending'
+                                          ? 'text-yellow-400'
+                                          : attendee.status === 'declined'
+                                          ? 'text-red-400'
+                                          : 'text-gray-400'
+                                      }`}
+                                    >
+                                      {attendee.status}
+                                      {attendee.status === 'pending' && ' ⏳'}
+                                      {attendee.status === 'approved' && ' ✅'}
+                                      {attendee.status === 'declined' && ' ❌'}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {attendee.status === 'pending' && (
+                                  <div className="flex gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const attendeeUserId =
+                                          typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                        handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'approved');
+                                      }}
+                                      className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
+                                      disabled={isUpdating}
+                                    >
+                                      ✓
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const attendeeUserId =
+                                          typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                        handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'declined');
+                                      }}
+                                      className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                      disabled={isUpdating}
+                                    >
+                                      ✗
+                                    </button>
+                                  </div>
+                                )}
+
+                                {attendee.status === 'approved' && (
+                                  <div className="flex gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const attendeeUserId =
+                                          typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                        handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'declined');
+                                      }}
+                                      className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                      disabled={isUpdating}
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                )}
+
+                                {attendee.status === 'declined' && (
+                                  <div className="flex gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const attendeeUserId =
+                                          typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                        handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'approved');
+                                      }}
+                                      className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
+                                      disabled={isUpdating}
+                                    >
+                                      Re-approve
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex justify-center mt-5">
+                      <button onClick={() => handleActivityClick(activity)} className="btn bg-green-600 h-8 mr-2">
+                        More Details
+                      </button>
+                      <button onClick={() => handleManageActivity(activity)} className="btn bg-blue-600 h-8 relative">
+                        Manage
+                        {activity.attendess?.some(att => att.status === 'pending') && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                            {activity.attendess.filter(att => att.status === 'pending').length}
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
           {/* Filter UI */}
+          <h2 className="mt-8 font-bold text-xl">Filter By Body Part</h2>
           <div className="mt-4 overflow-x-auto">
             <div className="flex gap-2 pb-2" style={{ minWidth: 'max-content' }}>
               {allBodyparts.map(part => {
@@ -412,31 +713,30 @@ const GroupFinder = () => {
             </div>
           )}
           {/* No activities */}
-          {!loading && !error && filteredActivities.length === 0 && (
+          {!loading && !error && filteredOtherActivities.length === 0 && (
             <div className="mt-4 text-center text-gray-400">
               <p>No activities found matching your criteria.</p>
             </div>
           )}
           {/* Activities list */}
-          {!loading && !error && filteredActivities.length > 0 && (
+          {!loading && !error && filteredOtherActivities.length > 0 && (
             <div className="mt-4 space-y-4">
-              {filteredActivities.map(activity => {
-                const isOwnActivity = activity.userId === getCookie('userId');
-
+              {filteredOtherActivities.map(activity => {
                 return (
                   <div
                     key={activity._id}
                     className="p-3 border border-gray-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden"
                   >
                     <div className="flex items-center">
-                      <img
-                        src="https://cdn-icons-png.freepik.com/512/6833605.png"
-                        className="h-20 w-20 rounded-full"
-                      />
+                      <img src="https://cdn-icons-png.freepik.com/512/6833605.png" className="h-20 w-20 rounded-full" />
                       <div className="flex flex-col ml-2">
                         <p>
                           <span className="font-bold">Name: </span>
                           {activity.name}
+                        </p>
+                        <p>
+                          <span className="font-bold">Created by: </span>
+                          {activity.userId?.name || 'Unknown User'}
                         </p>
                         <p>
                           <span className="font-bold">Gym: </span>
@@ -446,8 +746,7 @@ const GroupFinder = () => {
                           <span className="font-bold">Time: </span>
                           {activity.time || 'Not specified'}
                         </p>
-                        {isOwnActivity && <p className="text-blue-400 text-sm italic">Your activity</p>}
-                        {!isOwnActivity && (() => {
+                        {(() => {
                           const userStatus = getUserStatusInActivity(activity);
                           if (userStatus === 'pending') {
                             return <p className="text-yellow-400 text-sm italic">Join request pending ⏳</p>;
@@ -464,14 +763,32 @@ const GroupFinder = () => {
                     {/* Attendees */}
                     {activity.attendess && activity.attendess.length > 0 && (
                       <div className="attendees flex mt-2">
-                        {activity.attendess.slice(0, 3).map((attendee, index) => (
-                          <img
-                            key={index}
-                            src={`https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg`}
-                            className={`h-8 w-8 rounded-full ${index > 0 ? 'ml-2' : ''}`}
-                            alt={`Attendee ${index + 1}`}
-                          />
-                        ))}
+                        {activity.attendess.slice(0, 3).map((attendee, index) => {
+                          const getAttendeeStyle = status => {
+                            switch (status) {
+                              case 'approved':
+                                return 'opacity-100';
+                              case 'pending':
+                                return 'opacity-50';
+                              case 'declined':
+                                return 'opacity-25 grayscale sepia-[0.3] hue-rotate-[320deg] saturate-[1.5]'; // Red-ish tint
+                              default:
+                                return 'opacity-100';
+                            }
+                          };
+
+                          return (
+                            <img
+                              key={index}
+                              src={`https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg`}
+                              className={`h-8 w-8 rounded-full ${index > 0 ? 'ml-2' : ''} ${getAttendeeStyle(
+                                attendee.status
+                              )} transition-all duration-300`}
+                              alt={`${attendee.userId?.name || 'User'} - ${attendee.status}`}
+                              title={`${attendee.userId?.name || 'User'} - Status: ${attendee.status}`}
+                            />
+                          );
+                        })}
                         {activity.attendess.length > 3 && (
                           <div className="ml-2 h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
                             +{activity.attendess.length - 3}
@@ -483,7 +800,8 @@ const GroupFinder = () => {
                     {/* Attendee limit info */}
                     {activity.attendeessLimit && (
                       <p className="mt-2 text-sm text-gray-400">
-                        Spots: {activity.attendess?.length || 0}/{activity.attendeessLimit}
+                        Spots: {activity.attendess?.filter(att => att.status === 'approved').length || 0}/
+                        {activity.attendeessLimit}
                       </p>
                     )}
 
@@ -503,49 +821,53 @@ const GroupFinder = () => {
                       {/* {activity.showWorkoutPlan && activity.workoutPlanId && (
                         <button className="btn bg-gray-500 h-8">See Workout Plan</button>
                       )} */}
-                      {isOwnActivity ? (
-                        <button onClick={() => handleManageActivity(activity)} className="btn bg-blue-600 ml-5 h-8">
-                          Manage
-                        </button>
-                      ) : (
-                        (() => {
-                          const userStatus = getUserStatusInActivity(activity);
-                          const canJoin = canUserJoinActivity(activity);
-                          
-                          if (userStatus === 'pending') {
-                            return <button className="btn bg-yellow-600 ml-5 h-8" disabled>Pending</button>;
-                          } else if (userStatus === 'approved') {
-                            return (
-                              <button 
-                                onClick={() => handleLeaveActivity(activity)}
-                                className="btn bg-red-600 ml-5 h-8"
-                                disabled={isJoining}
-                              >
-                                {isJoining ? 'Leaving...' : 'Leave'}
-                              </button>
-                            );
-                          } else if (userStatus === 'declined') {
-                            return <button className="btn bg-gray-600 ml-5 h-8" disabled>Declined</button>;
-                          } else if (canJoin) {
-                            return (
-                              <button 
-                                onClick={() => handleJoinActivity(activity)}
-                                className="btn bg-green-600 ml-5 h-8"
-                                disabled={isJoining}
-                              >
-                                {isJoining ? 'Joining...' : 'Ask to Join'}
-                              </button>
-                            );
-                          } else {
-                            const isAtLimit = activity.attendeessLimit && activity.attendess?.length >= activity.attendeessLimit;
-                            return (
-                              <button className="btn bg-gray-500 ml-5 h-8" disabled>
-                                {isAtLimit ? 'Full' : 'Unavailable'}
-                              </button>
-                            );
-                          }
-                        })()
-                      )}
+                      {(() => {
+                        const userStatus = getUserStatusInActivity(activity);
+                        const canJoin = canUserJoinActivity(activity);
+
+                        if (userStatus === 'pending') {
+                          return (
+                            <button className="btn bg-yellow-600 ml-5 h-8" disabled>
+                              Pending
+                            </button>
+                          );
+                        } else if (userStatus === 'approved') {
+                          return (
+                            <button
+                              onClick={() => handleLeaveActivity(activity)}
+                              className="btn bg-red-600 ml-5 h-8"
+                              disabled={isJoining}
+                            >
+                              {isJoining ? 'Leaving...' : 'Leave'}
+                            </button>
+                          );
+                        } else if (userStatus === 'declined') {
+                          return (
+                            <button className="btn bg-gray-600 ml-5 h-8" disabled>
+                              Declined
+                            </button>
+                          );
+                        } else if (canJoin) {
+                          return (
+                            <button
+                              onClick={() => handleJoinActivity(activity)}
+                              className="btn bg-green-600 ml-5 h-8"
+                              disabled={isJoining}
+                            >
+                              {isJoining ? 'Joining...' : 'Ask to Join'}
+                            </button>
+                          );
+                        } else {
+                          const approvedCount =
+                            activity.attendess?.filter(att => att.status === 'approved').length || 0;
+                          const isAtLimit = activity.attendeessLimit && approvedCount >= activity.attendeessLimit;
+                          return (
+                            <button className="btn bg-gray-500 ml-5 h-8" disabled>
+                              {isAtLimit ? 'Full' : 'Unavailable'}
+                            </button>
+                          );
+                        }
+                      })()}
                     </div>
                   </div>
                 );
@@ -556,7 +878,7 @@ const GroupFinder = () => {
       ) : managingActivity ? (
         /* Manage Activity Modal */
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-black">Manage Activity</h2>
               <button onClick={handleCloseManage} className="text-gray-500 hover:text-gray-700 text-2xl">
@@ -630,13 +952,147 @@ const GroupFinder = () => {
 
               <div className="border-t pt-4">
                 <p className="text-sm text-gray-600 mb-2">
-                  <strong>Current Attendees:</strong> {managingActivity.attendess?.length || 0} /{' '}
+                  <strong>Approved Attendees:</strong>{' '}
+                  {managingActivity.attendess?.filter(att => att.status === 'approved').length || 0} /{' '}
                   {managingActivity.attendeessLimit}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Total Requests:</strong> {managingActivity.attendess?.length || 0} (including
+                  pending/declined)
                 </p>
                 <p className="text-sm text-gray-600">
                   <strong>Created:</strong> {new Date(managingActivity.createdAt).toLocaleDateString()}
                 </p>
               </div>
+
+              {/* Attendee Management Section */}
+              {managingActivity.attendess && managingActivity.attendess.length > 0 && (
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">Manage Join Requests</h3>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {managingActivity.attendess.map((attendee, index) => {
+                      const getAttendeeStyle = status => {
+                        switch (status) {
+                          case 'approved':
+                            return 'opacity-100';
+                          case 'pending':
+                            return 'opacity-50';
+                          case 'declined':
+                            return 'opacity-25 grayscale sepia-[0.3] hue-rotate-[320deg] saturate-[1.5]'; // Red-ish tint
+                          default:
+                            return 'opacity-100';
+                        }
+                      };
+
+                      return (
+                        <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                          <div className="flex items-center">
+                            <img
+                              src="https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg"
+                              className={`h-8 w-8 rounded-full mr-2 ${getAttendeeStyle(
+                                attendee.status
+                              )} transition-all duration-300`}
+                              alt={`${attendee.userId?.name || 'User'} - ${attendee.status}`}
+                              title={`${attendee.userId?.name || 'User'} - Status: ${attendee.status}`}
+                            />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {attendee.userId?.name || 'Unknown User'}
+                              </p>
+                              <p
+                                className={`text-xs capitalize font-medium ${
+                                  attendee.status === 'approved'
+                                    ? 'text-green-600'
+                                    : attendee.status === 'pending'
+                                    ? 'text-yellow-600'
+                                    : attendee.status === 'declined'
+                                    ? 'text-red-600'
+                                    : 'text-gray-600'
+                                }`}
+                              >
+                                {attendee.status}
+                                {attendee.status === 'pending' && ' ⏳'}
+                                {attendee.status === 'approved' && ' ✅'}
+                                {attendee.status === 'declined' && ' ❌'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {attendee.status === 'pending' && (
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const attendeeUserId =
+                                    typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                  handleUpdateAttendeeStatus(managingActivity._id, attendeeUserId, 'approved');
+                                }}
+                                className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
+                                disabled={isUpdating}
+                              >
+                                ✓ Approve
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const attendeeUserId =
+                                    typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                  handleUpdateAttendeeStatus(managingActivity._id, attendeeUserId, 'declined');
+                                }}
+                                className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                disabled={isUpdating}
+                              >
+                                ✗ Decline
+                              </button>
+                            </div>
+                          )}
+
+                          {attendee.status === 'approved' && (
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const attendeeUserId =
+                                    typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                  handleUpdateAttendeeStatus(managingActivity._id, attendeeUserId, 'declined');
+                                }}
+                                className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                disabled={isUpdating}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          )}
+
+                          {attendee.status === 'declined' && (
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const attendeeUserId =
+                                    typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                  handleUpdateAttendeeStatus(managingActivity._id, attendeeUserId, 'approved');
+                                }}
+                                className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
+                                disabled={isUpdating}
+                              >
+                                Re-approve
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {managingActivity.attendess.filter(att => att.status === 'pending').length > 0 && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      💡 You have {managingActivity.attendess.filter(att => att.status === 'pending').length} pending
+                      join request(s)
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <button
@@ -692,6 +1148,10 @@ const GroupFinder = () => {
                   <div>
                     <h2 className="text-2xl font-bold mb-2">{selectedActivity.name}</h2>
                     <p className="text-gray-300">
+                      <span className="font-semibold">Created by: </span>
+                      {selectedActivity.userId?.name || 'Unknown User'}
+                    </p>
+                    <p className="text-gray-300">
                       <span className="font-semibold">Gym: </span>
                       {selectedActivity.gym || 'Not specified'}
                     </p>
@@ -699,9 +1159,13 @@ const GroupFinder = () => {
                       <span className="font-semibold">Time: </span>
                       {selectedActivity.time || 'Not specified'}
                     </p>
-                    {selectedActivity.userId === getCookie('userId') && (
-                      <p className="text-blue-400 text-sm italic mt-1">Your activity</p>
-                    )}
+                    {(() => {
+                      const activityUserId =
+                        typeof selectedActivity.userId === 'object'
+                          ? selectedActivity.userId._id
+                          : selectedActivity.userId;
+                      return activityUserId === getCookie('userId');
+                    })() && <p className="text-blue-400 text-sm italic mt-1">Your activity</p>}
                   </div>
                 </div>
 
@@ -717,28 +1181,59 @@ const GroupFinder = () => {
                 <div className="mb-4">
                   <h3 className="font-semibold mb-2">Attendees</h3>
                   <p className="text-gray-300 mb-3">
-                    {selectedActivity.attendess?.length || 0} / {selectedActivity.attendeessLimit || 'No limit'} people
+                    {selectedActivity.attendess?.filter(att => att.status === 'approved').length || 0} /{' '}
+                    {selectedActivity.attendeessLimit || 'No limit'} confirmed
+                  </p>
+                  <p className="text-gray-300 mb-3 text-sm">
+                    Total requests: {selectedActivity.attendess?.length || 0} (including pending/declined)
                   </p>
 
                   {selectedActivity.attendess && selectedActivity.attendess.length > 0 && (
                     <div className="space-y-2">
                       {selectedActivity.attendess.map((attendee, index) => {
-                        const isCurrentUser = attendee.userId === getCookie('userId');
-                        const statusColor = 
-                          attendee.status === 'approved' ? 'text-green-400' :
-                          attendee.status === 'pending' ? 'text-yellow-400' :
-                          attendee.status === 'declined' ? 'text-red-400' : 'text-gray-400';
-                        
+                        const attendeeUserId =
+                          typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                        const isCurrentUser = attendeeUserId === getCookie('userId');
+                        const statusColor =
+                          attendee.status === 'approved'
+                            ? 'text-green-400'
+                            : attendee.status === 'pending'
+                            ? 'text-yellow-400'
+                            : attendee.status === 'declined'
+                            ? 'text-red-400'
+                            : 'text-gray-400';
+
+                        const getAttendeeStyle = status => {
+                          switch (status) {
+                            case 'approved':
+                              return 'opacity-100';
+                            case 'pending':
+                              return 'opacity-50';
+                            case 'declined':
+                              return 'opacity-25 grayscale sepia-[0.3] hue-rotate-[320deg] saturate-[1.5]'; // Red-ish tint
+                            default:
+                              return 'opacity-100';
+                          }
+                        };
+
                         return (
-                          <div key={index} className={`flex items-center ${isCurrentUser ? 'bg-blue-900 bg-opacity-50 p-2 rounded' : ''}`}>
+                          <div
+                            key={index}
+                            className={`flex items-center ${
+                              isCurrentUser ? 'bg-blue-900 bg-opacity-50 p-2 rounded' : ''
+                            }`}
+                          >
                             <img
                               src="https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg"
-                              className="h-10 w-10 rounded-full mr-3"
-                              alt={`Attendee ${index + 1}`}
+                              className={`h-10 w-10 rounded-full mr-3 ${getAttendeeStyle(
+                                attendee.status
+                              )} transition-all duration-300`}
+                              alt={`${attendee.userId?.name || 'User'} - ${attendee.status}`}
+                              title={`${attendee.userId?.name || 'User'} - Status: ${attendee.status}`}
                             />
                             <div className="flex-1">
                               <p className="font-medium">
-                                {isCurrentUser ? 'You' : `User ${index + 1}`}
+                                {isCurrentUser ? 'You' : attendee.userId?.name || 'Unknown User'}
                               </p>
                               <p className={`text-sm capitalize font-medium ${statusColor}`}>
                                 {attendee.status}
@@ -750,6 +1245,18 @@ const GroupFinder = () => {
                           </div>
                         );
                       })}
+                    </div>
+                  )}
+
+                  {/* Visual Legend */}
+                  {selectedActivity.attendess && selectedActivity.attendess.length > 0 && (
+                    <div className="mt-3 text-xs text-gray-400">
+                      <p className="mb-1">Avatar status indicators:</p>
+                      <div className="flex gap-4">
+                        <span>✅ Approved: Normal</span>
+                        <span>⏳ Pending: 50% opacity</span>
+                        <span>❌ Declined: 25% opacity + red tint</span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -784,21 +1291,32 @@ const GroupFinder = () => {
                   {selectedActivity.showWorkoutPlan && selectedActivity.workoutPlanId && (
                     <button className="btn bg-gray-600 text-white px-6 py-2">View Workout Plan</button>
                   )}
-                  {selectedActivity.userId === getCookie('userId') ? (
+                  {(() => {
+                    const activityUserId =
+                      typeof selectedActivity.userId === 'object'
+                        ? selectedActivity.userId._id
+                        : selectedActivity.userId;
+                    return activityUserId === getCookie('userId');
+                  })() ? (
                     <button
                       onClick={() => {
                         setSelectedActivity(null); // Close details view
                         handleManageActivity(selectedActivity);
                       }}
-                      className="btn bg-blue-600 text-white px-6 py-2"
+                      className="btn bg-blue-600 text-white px-6 py-2 relative"
                     >
                       Manage Activity
+                      {selectedActivity.attendess?.some(att => att.status === 'pending') && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                          {selectedActivity.attendess.filter(att => att.status === 'pending').length}
+                        </span>
+                      )}
                     </button>
                   ) : (
                     (() => {
                       const userStatus = getUserStatusInActivity(selectedActivity);
                       const canJoin = canUserJoinActivity(selectedActivity);
-                      
+
                       if (userStatus === 'pending') {
                         return (
                           <button className="btn bg-yellow-600 text-white px-6 py-2" disabled>
@@ -807,7 +1325,7 @@ const GroupFinder = () => {
                         );
                       } else if (userStatus === 'approved') {
                         return (
-                          <button 
+                          <button
                             onClick={() => handleLeaveActivity(selectedActivity)}
                             className="btn bg-red-600 text-white px-6 py-2"
                             disabled={isJoining}
@@ -823,7 +1341,7 @@ const GroupFinder = () => {
                         );
                       } else if (canJoin) {
                         return (
-                          <button 
+                          <button
                             onClick={() => handleJoinActivity(selectedActivity)}
                             className="btn bg-green-600 text-white px-6 py-2"
                             disabled={isJoining}
@@ -832,7 +1350,10 @@ const GroupFinder = () => {
                           </button>
                         );
                       } else {
-                        const isAtLimit = selectedActivity.attendeessLimit && selectedActivity.attendess?.length >= selectedActivity.attendeessLimit;
+                        const approvedCount =
+                          selectedActivity.attendess?.filter(att => att.status === 'approved').length || 0;
+                        const isAtLimit =
+                          selectedActivity.attendeessLimit && approvedCount >= selectedActivity.attendeessLimit;
                         return (
                           <button className="btn bg-gray-500 text-white px-6 py-2" disabled>
                             {isAtLimit ? 'Activity Full' : 'Unavailable'}
