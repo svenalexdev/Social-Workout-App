@@ -49,18 +49,42 @@ export const getExerciseByName = async (req, res) => {
 export const getExerciseById = async (req, res) => {
   try {
     const { id } = req.params;
-    const response = await axios.get(`${BASE_URL}/exercises/exercise/${id}`, {
-      headers: getHeaders()
-    });
-    res.json(response.data);
+
+    // Find exercise by exerciseId in MongoDB
+    const exercise = await Exercise.findOne({ exerciseId: id });
+
+    if (!exercise) {
+      return res.status(404).json({
+        error: 'Exercise not found',
+        message: `No exercise found with exerciseId: ${id}`
+      });
+    }
+
+    res.json(exercise);
   } catch (error) {
     console.error('Error fetching exercise by ID:', error.message);
     res.status(500).json({
       error: 'Failed to fetch exercise by ID',
-      message: error.response?.data?.message || error.message
+      message: error.message
     });
   }
 };
+
+// export const getExerciseById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const response = await axios.get(`${BASE_URL}/exercises/exercise/${id}`, {
+//       headers: getHeaders()
+//     });
+//     res.json(response.data);
+//   } catch (error) {
+//     console.error('Error fetching exercise by ID:', error.message);
+//     res.status(500).json({
+//       error: 'Failed to fetch exercise by ID',
+//       message: error.response?.data?.message || error.message
+//     });
+//   }
+// };
 
 export const getExercisesByTarget = async (req, res) => {
   try {
