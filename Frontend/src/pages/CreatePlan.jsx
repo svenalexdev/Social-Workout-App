@@ -2,6 +2,7 @@ import { useState, useEffect, use } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
 import { setCookie, getCookie, deleteCookie } from '../utils/cookieUtils.js';
+import ChatBtn from '../components/AiChat/ChatBtn.jsx';
 const baseURL = `${import.meta.env.VITE_API_URL}`;
 
 function CreatePlan() {
@@ -313,6 +314,7 @@ function CreatePlan() {
               Create Plan <br /> with AI
             </button>
           </div> */}
+          <ChatBtn />
         </div>
       ) : (
         <div>
