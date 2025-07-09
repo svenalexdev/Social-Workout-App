@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router';
 import { useState, useEffect } from 'react';
 import { getCookie } from '../utils/cookieUtils';
+import BodypartFilter from '../components/BodypartFilter';
 
 const GroupFinder = () => {
   const navigate = useNavigate();
@@ -352,19 +353,19 @@ const GroupFinder = () => {
   };
 
   // Other
-  // Predefined body parts for filtering
-  const allBodyparts = [
-    'back',
-    'cardio',
-    'chest',
-    'lower arms',
-    'lower legs',
-    'neck',
-    'shoulders',
-    'upper arms',
-    'upper legs',
-    'waist'
-  ];
+  //   // Predefined body parts for filtering
+  //   const allBodyparts = [
+  //     'back',
+  //     'cardio',
+  //     'chest',
+  //     'lower arms',
+  //     'lower legs',
+  //     'neck',
+  //     'shoulders',
+  //     'upper arms',
+  //     'upper legs',
+  //     'waist'
+  //   ];
 
   // Mapping from frontend filter terms to backend body part keys
   const bodyPartMapping = {
@@ -417,7 +418,7 @@ const GroupFinder = () => {
         })
       : otherActivities;
 
-  // Capitalize words and handle camelCase/compound words
+  //   // Capitalize words and handle camelCase/compound words
   const capitalizeWords = str => {
     if (!str) return '';
 
@@ -674,29 +675,7 @@ const GroupFinder = () => {
             </>
           )}
           {/* Filter UI */}
-          <h2 className="mt-8 font-bold text-xl">Filter By Body Part</h2>
-          <div className="mt-4 overflow-x-auto">
-            <div className="flex gap-2 pb-2" style={{ minWidth: 'max-content' }}>
-              {allBodyparts.map(part => {
-                const selected = selectedBodyparts.includes(part);
-                return (
-                  <button
-                    key={part}
-                    onClick={() => (selected ? handleRemove(part) : handleSelect(part))}
-                    className={`flex items-center px-3 py-1 rounded-full border transition-colors whitespace-nowrap flex-shrink-0
-                      ${
-                        selected
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-gray-700 text-gray-200 border-gray-500 hover:bg-blue-800'
-                      }`}
-                  >
-                    <span>{capitalizeWords(part)}</span>
-                    {selected && <span className="ml-2 font-bold text-white">x</span>}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <BodypartFilter selectedBodyparts={selectedBodyparts} onSelect={handleSelect} onRemove={handleRemove} />
           <div className="mt-10 flex">
             <h2 className="font-bold text-xl">Matching Activities</h2>
           </div>
