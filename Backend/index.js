@@ -7,6 +7,7 @@ import logRouter from './routers/logRouter.js';
 import authRouter from './routers/authRouter.js';
 import errorHandler from './middlewares/errorHandler.js';
 import lfgRouter from './routers/lfgRouter.js';
+import path from 'path';
 import cors from 'cors';
 
 const app = express();
@@ -22,6 +23,7 @@ app.use('/logs', logRouter);
 app.use('/auth', authRouter);
 app.use('/lfg', lfgRouter);
 
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use(errorHandler);
 
 app.listen(port, () => {

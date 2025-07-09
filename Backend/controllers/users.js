@@ -55,4 +55,34 @@ const deleteUser = async (req, res) => {
   res.json({ message: 'User deleted' });
 };
 
-export { getUsers, createUser, getUserById, updateUser, deleteUser };
+ const uploadProfileImage = async (req, res) => {
+  const { id } = req.params;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ error: 'Invalid user ID' });
+  }
+
+  const imageUrl = req.body.image;
+  if (!imageUrl) {
+    return res.status(400).json({ error: 'Image URL missing from request' });
+  }
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { image: imageUrl },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export { getUsers, createUser, getUserById, updateUser, deleteUser, uploadProfileImage };

@@ -2,6 +2,8 @@ import { useState, useEffect, use } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
 import { setCookie, getCookie, deleteCookie } from '../utils/cookieUtils.js';
+import BodypartFilter from '../components/BodypartFilter.jsx';
+import capitalizeWords from '../utils/helpers.js';
 const baseURL = `${import.meta.env.VITE_API_URL}`;
 
 function CreatePlan() {
@@ -19,6 +21,7 @@ function CreatePlan() {
   const [shouldOpenModal, setShouldOpenModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [exercises, setExercises] = useState([]); // exercise fetch
+  const [selectedBodyparts, setSelectedBodyparts] = useState([]);
 
   // Effect management
   useEffect(() => {
@@ -106,6 +109,18 @@ function CreatePlan() {
     setShouldOpenModal(true);
   };
 
+  // Handle selecting bodyparts
+  const handleSelect = part => {
+    if (!selectedBodyparts.includes(part)) {
+      setSelectedBodyparts([...selectedBodyparts, part]);
+    }
+  };
+
+  // Handle removing bodyparts
+  const handleRemove = part => {
+    setSelectedBodyparts(selectedBodyparts.filter(p => p !== part));
+  };
+
   // Handler to remove exercise of Create Plan view
   const handleRemoveExercise = idx => {
     setEditableExercises(prev => prev.filter((_, i) => i !== idx));
@@ -153,17 +168,15 @@ function CreatePlan() {
     }
   };
 
-  // Helper functions
-  // Capitalizing first letter of every word w/ regular expression (after spaces, parantheses, dashes etc.)
-  const capitalizeWords = str => {
-    // return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    if (!str) return '';
-    return str.replace(/\b\w/g, char => char.toUpperCase());
-  };
+
 
   // Other
-  // Variable to filter exercises based on search term (search bar), all lower-cased for case-insensitivity
-  const filteredExercises = exercises.filter(ex => ex.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Variable to filter exercises based on search term (search bar), and bodyparts based on filter - all lower-cased for case-insensitivity
+  const filteredExercises = exercises.filter(ex => {
+    const matchesSearch = ex.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesBodypart = selectedBodyparts.length === 0 || selectedBodyparts.includes(ex.bodyPart?.toLowerCase());
+    return matchesSearch && matchesBodypart;
+  });
   // console.log(filteredExercises);
 
   return (
@@ -207,6 +220,8 @@ function CreatePlan() {
                   className="w-full max-w-xs p-2 mb-4 rounded bg-gray-700 placeholder-gray-400 mt-4"
                 />
               </div>
+              {/* Bodypart Filter UI */}
+              <BodypartFilter selectedBodyparts={selectedBodyparts} onSelect={handleSelect} onRemove={handleRemove} />
             </div>
             <div className="overflow-y-auto">
               <ul>
