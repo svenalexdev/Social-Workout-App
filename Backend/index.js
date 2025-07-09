@@ -8,6 +8,7 @@ import authRouter from './routers/authRouter.js';
 import errorHandler from './middlewares/errorHandler.js';
 import lfgRouter from './routers/lfgRouter.js';
 import aiChatRouter from './routers/aiChatRouter.js';
+import path from 'path';
 import cors from 'cors';
 
 const app = express();
@@ -24,6 +25,7 @@ app.use('/auth', authRouter);
 app.use('/lfg', lfgRouter);
 app.use('/aiplan', aiChatRouter);
 
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use(errorHandler);
 
 app.listen(port, () => {
