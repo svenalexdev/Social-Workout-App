@@ -25,12 +25,51 @@ function Navbar() {
     navigate('/');
   };
 
+  const currentPath = window.location.pathname;
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 h-[70px] bg-red-300 w-full text-center  text-black flex justify-around">
-      <button onClick={goToHome}>Home</button>
-      <button onClick={goToPlans}>Plans</button>
-      <button onClick={goToGroupFinder}>Groups</button>
-      <button onClick={goToProfile}>Profile</button>
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-900 border-t border-gray-700 px-4 py-2">
+      <div className="flex justify-around items-center max-w-md mx-auto">
+        <button
+          onClick={goToHome}
+          className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl ${
+            currentPath === '/' ? 'bg-[#F2AB40] text-black' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          <div className="text-xl mb-1">🏠</div>
+          <span className="text-xs">Home</span>
+        </button>
+
+        <button
+          onClick={goToPlans}
+          className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl ${
+            currentPath.startsWith('/plans') ? 'bg-[#F2AB40] text-black' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          <div className="text-xl mb-1">📋</div>
+          <span className="text-xs">Plans</span>
+        </button>
+
+        <button
+          onClick={goToGroupFinder}
+          className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl ${
+            currentPath.startsWith('/groupfinder') ? 'bg-[#F2AB40] text-black' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          <div className="text-xl mb-1">👥</div>
+          <span className="text-xs">Groups</span>
+        </button>
+
+        <button
+          onClick={goToProfile}
+          className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl ${
+            currentPath.startsWith('/profile') ? 'bg-[#F2AB40] text-black' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          <div className="text-xl mb-1">👤</div>
+          <span className="text-xs">Profile</span>
+        </button>
+      </div>
     </div>
   );
 }
