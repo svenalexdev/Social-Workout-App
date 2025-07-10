@@ -43,7 +43,7 @@ function Navbar() {
           <img
             src={currentPath.startsWith('/groupfinder') ? '/GroupON.png' : '/GroupOFF.png'}
             alt="Groups"
-            className="w-6 h-6 mb-1"
+            className="w-8 h-8 -mb-1 object-contain"
           />
           <span className={`text-xs ${currentPath.startsWith('/groupfinder') ? 'text-white' : 'text-gray-400'}`}>
             Groups
