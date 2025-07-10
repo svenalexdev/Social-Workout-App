@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { useRef } from 'react';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -17,6 +18,11 @@ const Profile = () => {
         const userRes = await fetch(`${BACKEND_URL}/auth/me`, { credentials: 'include' });
         if (!userRes.ok) throw new Error('Failed to fetch user info');
         const userData = await userRes.json();
+
+        if (userData.image && !userData.image.startsWith('http')) {
+          userData.image = `${BACKEND_URL}${userData.image}`;
+          console.log(userData);
+        }
         setUser(userData);
 
         const userId = userData._id;
@@ -58,7 +64,43 @@ const Profile = () => {
       toast.error('Logout failed. Please try again.');
     }
   };
+  const handleImageUpload = async e => {
+    const BACKEND_URL = import.meta.env.VITE_API_URL;
+    const file = e.target.files[0];
 
+    if (!file) {
+      console.error('No file selected');
+      return;
+    }
+
+    console.log('Uploading file:', file.name, 'Size:', file.size);
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/users/${user._id}/image`, {
+        method: 'PUT',
+        body: formData
+      });
+
+      if (res.ok) {
+        const updatedUser = await res.json();
+        console.log('Upload successful, updated user:', updatedUser);
+        setUser(updatedUser); // Update state with new profile image
+      } else {
+        const errorData = await res.json();
+        console.error('Upload failed:', res.status, errorData);
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+    }
+  };
+  const fileInputRef = useRef();
+
+  const handleImageClick = () => {
+    fileInputRef.current.click();
+  };
   const openWorkoutModal = (workout) => {
     setSelectedWorkout(workout);
     setIsModalOpen(true);
@@ -69,30 +111,61 @@ const Profile = () => {
     setIsModalOpen(false);
   };
 
+  const capitalizeWords = str => {
+    if (!str) return '';
+    const withSpaces = str.replace(/([a-z])([A-Z])/g, '$1 $2');
+    return withSpaces.replace(/\b\w/g, char => char.toUpperCase());
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-[#121212] text-white">
       <div className="flex-1 flex flex-col gap-17 p-2 w-full">
         <div className="flex flex-col items-center">
-          <div className="w-24 h-24 bg-[#575757] rounded-full overflow-hidden flex items-center justify-center text-4xl font-bold">
+          <div
+            className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-[#575757] cursor-pointer"
+            onClick={handleImageClick}
+          >
             {user?.image ? (
               <img src={user.image} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              <span>{user?.name?.[0] || '?'}</span>
+              <span className="text-4xl font-bold text-white">{user?.name?.[0] || '?'}</span>
             )}
+
+            {/* Camera icon bottom-right */}
+            <div className="absolute bottom-1 right-1 bg-[#F2AB40] rounded-full p-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 7h2l2-3h6l2 3h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V9a2 2 0 012-2z"
+                />
+                <circle cx="12" cy="13" r="3" stroke="currentColor" strokeWidth={2} />
+              </svg>
+            </div>
           </div>
+
+          <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
+          <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
           <h2 className="text-2xl font-bold mt-2">{user?.name || 'User'}</h2>
           <p className="text-gray-400">{user?.email}</p>
         </div>
 
         <div>
           <h3 className="text-center text-2xl font-bold mb-4">Recent Workouts</h3>
-          <div className="grid grid-cols-2 gap-4 w-full">
+          <div className="flex flex-col gap-4 w-full">
             {isLoading ? (
-              <div className="col-span-2 text-center text-gray-400 py-8">
+              <div className="text-center text-gray-400 py-8">
                 <div className="animate-pulse">Loading workouts...</div>
               </div>
             ) : recentWorkouts.length === 0 ? (
-              <div className="col-span-2 text-center text-gray-400 py-8">
+              <div className="text-center text-gray-400 py-8">
                 <p className="text-lg">No recent workouts</p>
                 <p className="text-sm mt-1">Start your fitness journey!</p>
               </div>
@@ -122,7 +195,7 @@ const Profile = () => {
                     </div>
 
                     {/* Stats row */}
-                    <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="grid grid-cols-3 gap-3 mb-3">
                       <div className="text-center bg-[#1a1a1a] rounded-lg py-2">
                         <p className="text-lg font-bold text-[#F2AB40]">{totalExercises}</p>
                         <p className="text-xs text-gray-400">Exercises</p>
@@ -131,16 +204,11 @@ const Profile = () => {
                         <p className="text-lg font-bold text-[#F2AB40]">{totalSets}</p>
                         <p className="text-xs text-gray-400">Sets</p>
                       </div>
-                    </div>
-
-                    {/* Duration */}
-                    {duration && (
-                      <div className="text-center mb-3">
-                        <span className="text-xs bg-gray-700 text-gray-300 px-3 py-1 rounded-full">
-                          🕐 {duration} min
-                        </span>
+                      <div className="text-center bg-[#1a1a1a] rounded-lg py-2">
+                        <p className="text-lg font-bold text-[#F2AB40]">{duration || '--'}</p>
+                        <p className="text-xs text-gray-400">Minutes</p>
                       </div>
-                    )}
+                    </div>
 
                     {/* Exercise preview */}
                     <div className="text-center">
@@ -149,8 +217,10 @@ const Profile = () => {
                           {/* Show first 2 exercises */}
                           {workout.exercises.slice(0, 2).map((exercise, exerciseIdx) => (
                             <div key={exerciseIdx} className="mb-1">
-                              <p className="text-sm text-gray-300 font-medium truncate">{exercise.name}</p>
-                              <p className="text-xs text-gray-500">{exercise.target}</p>
+                              <p className="text-sm text-gray-300 font-medium truncate">
+                                {capitalizeWords(exercise.name)}
+                              </p>
+                              <p className="text-xs text-gray-500">{capitalizeWords(exercise.target)}</p>
                             </div>
                           ))}
                           {workout.exercises.length > 2 && (
@@ -181,19 +251,17 @@ const Profile = () => {
 
       {/* Workout Detail Modal */}
       {isModalOpen && selectedWorkout && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
           onClick={closeWorkoutModal}
         >
-          <div 
+          <div
             className="bg-[#1a1a1a] rounded-xl max-w-md w-full max-h-[80vh] overflow-y-auto border border-gray-600"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             {/* Modal Header */}
             <div className="p-4 border-b border-gray-600 flex justify-between items-center sticky top-0 bg-[#1a1a1a]">
-              <h3 className="text-xl font-bold text-white">
-                {selectedWorkout.planName || 'Workout Details'}
-              </h3>
+              <h3 className="text-xl font-bold text-white">{selectedWorkout.planName || 'Workout Details'}</h3>
               <button
                 onClick={closeWorkoutModal}
                 className="text-gray-400 hover:text-white text-2xl w-8 h-8 flex items-center justify-center"
@@ -242,14 +310,14 @@ const Profile = () => {
                     {selectedWorkout.exercises.map((exercise, idx) => (
                       <div key={idx} className="p-3 bg-[#2a2a2a] rounded-lg">
                         <div className="flex justify-between items-start mb-1">
-                          <h5 className="font-medium text-white">{exercise.name}</h5>
+                          <h5 className="font-medium text-white">{capitalizeWords(exercise.name)}</h5>
                           <span className="text-xs bg-[#F2AB40] text-black px-2 py-1 rounded">
                             {exercise.totalSetsCompleted || 0} sets
                           </span>
                         </div>
-                        <p className="text-gray-400 text-sm">Target: {exercise.target || 'N/A'}</p>
+                        <p className="text-gray-400 text-sm">Target: {capitalizeWords(exercise.target || 'N/A')}</p>
                         {exercise.equipment && (
-                          <p className="text-gray-400 text-sm">Equipment: {exercise.equipment}</p>
+                          <p className="text-gray-400 text-sm">Equipment: {capitalizeWords(exercise.equipment)}</p>
                         )}
                       </div>
                     ))}
