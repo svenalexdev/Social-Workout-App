@@ -220,6 +220,7 @@ function CreatePlan() {
                   setSelectedExercise([]);
                   setSearchTerm('');
                   setVisibleCount(100);
+                  setSelectedBodyparts([]);
                 }}
                 className="absolute top-3 left-4 text-2xl hover:text-white font-bold"
               >
@@ -231,6 +232,8 @@ function CreatePlan() {
                     setShowExercises(false);
                     setEditableExercises(prev => [...prev, ...selectedExercise]);
                     setSelectedExercise([]);
+                    setVisibleCount(100);
+                    setSelectedBodyparts([]);
                   }}
                   className="btn text-lg bg-gray-500 border-none text-white mr-1"
                 >
@@ -335,7 +338,7 @@ function CreatePlan() {
                   </h2>
                 )}
               </div>
-              <div className="flex items-center space-x-2 ml-8 mb-2">
+              <div className="flex items-center space-x-2 mt-1 ml-8 mb-2">
                 <Switch
                   checked={isPublic}
                   onChange={setIsPublic}
@@ -399,7 +402,7 @@ function CreatePlan() {
                   </h2>
                 )}
               </div>
-              <div className="flex items-center space-x-2 ml-8 mb-2">
+              <div className="flex items-center space-x-2 mt-1 ml-8 mb-2">
                 <Switch
                   checked={isPublic}
                   onChange={setIsPublic}
