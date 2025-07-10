@@ -7,6 +7,7 @@ function MainLayout() {
   return (
     <AuthContextProvider>
       <div className=" text-gray-300 flex flex-col min-h-screen pb-15">
+        <div className="bg-black h-[50px] sticky"></div>
         <main className="grow flex flex-col justify-between">
           <Outlet />
           <ToastContainer

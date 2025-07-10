@@ -9,11 +9,10 @@ import capitalizeWords from '../utils/helpers.js';
 const baseURL = `${import.meta.env.VITE_API_URL}`;
 
 function CreatePlan() {
-
   // ai chat button
   const [chatOpen, setChatOpen] = useState(false);
   const toggleChatOpen = () => setChatOpen(prev => !prev);
-  
+
   // Site navigation
   const navigate = useNavigate();
 
@@ -175,8 +174,6 @@ function CreatePlan() {
     }
   };
 
-
-
   // Other
   // Variable to filter exercises based on search term (search bar), and bodyparts based on filter - all lower-cased for case-insensitivity
   const filteredExercises = exercises.filter(ex => {
@@ -278,206 +275,206 @@ function CreatePlan() {
       {/* Only show main content and AI button when model is NOT open */}
       {!showExercises && (
         <>
-      {/* Conditional rendering branch 1 */}
-      {!createPlan ? (
-        <div>
-          <div className="flex justify-around items-center">
-            <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
-              X
-            </button>
-            <h1 className="text-center font-bold text-lg">{planName}</h1>
-            <button onClick={handleSaveButton} className="btn text-lg bg-gray-500 border-none text-white">
-              Save
-            </button>
-          </div>
-          {/* Editable title */}
-          <div className="flex mt-12 ml-6 items-center">
-            {isEditingName ? (
-              <input
-                type="text"
-                name="planName"
-                value={planName}
-                onChange={handleNameChange}
-                onBlur={handleNameBlur}
-                onKeyDown={handleNameKeyDown}
-                autoFocus
-                className="text-2xl font-bold p-3 bg-gray-700 rounded"
-              />
-            ) : (
-              <h2
-                className="text-2xl font-bold p-2"
-                onClick={() => {
-                  setIsEditingName(true);
-                }}
-              >
-                {planName}
-              </h2>
-            )}
-          </div>
-          <div className="flex items-center space-x-2 ml-8 mb-2">
-            <Switch
-              checked={isPublic}
-              onChange={setIsPublic}
-              className={`${isPublic ? 'bg-blue-600' : 'bg-gray-200'}
-            relative inline-flex h-6 w-11 items-center rounded-full`}
-            >
-              <span
-                className={`${isPublic ? 'translate-x-6' : 'translate-x-1'}
-              inline-block h-4 w-4 transform rounded-full bg-white transition`}
-              />
-            </Switch>
-            <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
-          </div>
-          <div className="flex justify-center mt-8">
-            <button onClick={handleAddExercise} className="btn text-lg bg-gray-500 border-none text-white w-xs">
-              Add exercises
-            </button>
-          </div>
-          <div className="fixed bottom-22 right-5 z-[9999]">
-            <div className="flex flex-col items-end justify-end gap-4">
-              <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
-                <ChatWindow />
+          {/* Conditional rendering branch 1 */}
+          {!createPlan ? (
+            <div>
+              <div className="flex justify-around items-center">
+                <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
+                  X
+                </button>
+                <h1 className="text-center font-bold text-lg">{planName}</h1>
+                <button onClick={handleSaveButton} className="btn text-lg bg-gray-500 border-none text-white">
+                  Save
+                </button>
               </div>
-              <button
-                onClick={toggleChatOpen}
-                className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
-              >
-                Create with AI
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div>
-          {/* Conditional rendering branch 2 */}
-          <div className="flex justify-around items-center">
-            <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
-              X
-            </button>
-            <h1 className="text-center font-bold text-lg">{planName}</h1>
-            <button onClick={handleSaveButton} className="btn text-lg bg-gray-500 border-none text-white">
-              Save
-            </button>
-          </div>
-          {/* Editable title */}
-          <div className="flex mt-12 ml-6 items-center">
-            {isEditingName ? (
-              <input
-                type="text"
-                name="planName"
-                value={planName}
-                onChange={handleNameChange}
-                onBlur={handleNameBlur}
-                onKeyDown={handleNameKeyDown}
-                autoFocus
-                className="text-2xl font-bold p-3 bg-gray-700 rounded"
-              />
-            ) : (
-              <h2 className="text-2xl font-bold p-2 cursor-pointer" onClick={() => setIsEditingName(true)}>
-                {planName}
-              </h2>
-            )}
-          </div>
-          <div className="flex items-center space-x-2 ml-8 mb-2">
-            <Switch
-              checked={isPublic}
-              onChange={setIsPublic}
-              className={`${isPublic ? 'bg-blue-600' : 'bg-gray-200'}
-            relative inline-flex h-6 w-11 items-center rounded-full`}
-            >
-              <span
-                className={`${isPublic ? 'translate-x-6' : 'translate-x-1'}
-              inline-block h-4 w-4 transform rounded-full bg-white transition`}
-              />
-            </Switch>
-            <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
-          </div>
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={() => setShowExercises(true)}
-              className="btn text-lg bg-gray-500 border-none text-white w-xs"
-            >
-              Add exercises
-            </button>
-          </div>
-          <div className="mt-8">
-            {editableExercises.map((exercise, idx) => (
-              <div key={idx} className="ml-2 mr-2 mt-5 mb-6 p-3 rounded-lg bg-gray-800">
-                <div className="flex items-center">
-                  <img src={exercise.gifUrl} className="w-11 h-11 rounded object-cover" />
-                  <div className="font-bold text-lg ml-4 mr-4">{capitalizeWords(exercise.name)}</div>
-                  <button
+              {/* Editable title */}
+              <div className="flex mt-12 ml-6 items-center">
+                {isEditingName ? (
+                  <input
+                    type="text"
+                    name="planName"
+                    value={planName}
+                    onChange={handleNameChange}
+                    onBlur={handleNameBlur}
+                    onKeyDown={handleNameKeyDown}
+                    autoFocus
+                    className="text-2xl font-bold p-3 bg-gray-700 rounded"
+                  />
+                ) : (
+                  <h2
+                    className="text-2xl font-bold p-2"
                     onClick={() => {
-                      handleRemoveExercise(idx);
+                      setIsEditingName(true);
                     }}
-                    className="ml-auto"
                   >
-                    ⛔️
+                    {planName}
+                  </h2>
+                )}
+              </div>
+              <div className="flex items-center space-x-2 ml-8 mb-2">
+                <Switch
+                  checked={isPublic}
+                  onChange={setIsPublic}
+                  className={`${isPublic ? 'bg-blue-600' : 'bg-gray-200'}
+            relative inline-flex h-6 w-11 items-center rounded-full`}
+                >
+                  <span
+                    className={`${isPublic ? 'translate-x-6' : 'translate-x-1'}
+              inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                  />
+                </Switch>
+                <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
+              </div>
+              <div className="flex justify-center mt-8">
+                <button onClick={handleAddExercise} className="btn text-lg bg-gray-500 border-none text-white w-xs">
+                  Add exercises
+                </button>
+              </div>
+              <div className="fixed bottom-22 right-5 z-[9999]">
+                <div className="flex flex-col items-end justify-end gap-4">
+                  <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
+                    <ChatApp />
+                  </div>
+                  <button
+                    onClick={toggleChatOpen}
+                    className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
+                  >
+                    Create with AI
                   </button>
                 </div>
-                <div className="grid grid-cols-4 gap-2 text-xs font-semibold mt-4 mb-1">
-                  <span>Sets</span>
-                  <span>Reps</span>
-                  <span>Weight</span>
-                  <span>Rest</span>
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                  <input
-                    type="number"
-                    name={`sets-${idx}`}
-                    placeholder="0"
-                    value={exercise.sets?.toString() ?? ''}
-                    onChange={e => handleExerciseChange(idx, 'sets', e.target.value)}
-                    className="bg-gray-700 rounded px-2 py-1 text-center"
-                    min={0}
-                  />
-                  <input
-                    type="number"
-                    name={`reps-${idx}`}
-                    placeholder="0"
-                    value={exercise.reps?.toString() ?? ''}
-                    onChange={e => handleExerciseChange(idx, 'reps', e.target.value)}
-                    className="bg-gray-700 rounded px-2 py-1 text-center"
-                    min={0}
-                  />
-                  <input
-                    type="number"
-                    name={`weight-${idx}`}
-                    placeholder="0"
-                    value={exercise.weight?.toString() ?? ''}
-                    onChange={e => handleExerciseChange(idx, 'weight', e.target.value)}
-                    className="bg-gray-700 rounded px-2 py-1 text-center"
-                    min={0}
-                  />
-                  <input
-                    type="number"
-                    name={`restTime-${idx}`}
-                    placeholder="0"
-                    value={exercise.restTime?.toString() ?? ''}
-                    onChange={e => handleExerciseChange(idx, 'restTime', e.target.value)}
-                    className="bg-gray-700 rounded px-2 py-1 text-center"
-                    min={0}
-                  />
-                </div>
               </div>
-            ))}
-          </div>
-          <div className="fixed bottom-22 right-5 z-[9999]">
-            <div className="flex flex-col items-end justify-end gap-4">
-              <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
-                <ChatWindow />
-              </div>
-              <button
-                onClick={toggleChatOpen}
-                className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
-              >
-                Create with AI
-              </button>
             </div>
-          </div>
-        </div>
-      )}
-      </>
+          ) : (
+            <div>
+              {/* Conditional rendering branch 2 */}
+              <div className="flex justify-around items-center">
+                <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
+                  X
+                </button>
+                <h1 className="text-center font-bold text-lg">{planName}</h1>
+                <button onClick={handleSaveButton} className="btn text-lg bg-gray-500 border-none text-white">
+                  Save
+                </button>
+              </div>
+              {/* Editable title */}
+              <div className="flex mt-12 ml-6 items-center">
+                {isEditingName ? (
+                  <input
+                    type="text"
+                    name="planName"
+                    value={planName}
+                    onChange={handleNameChange}
+                    onBlur={handleNameBlur}
+                    onKeyDown={handleNameKeyDown}
+                    autoFocus
+                    className="text-2xl font-bold p-3 bg-gray-700 rounded"
+                  />
+                ) : (
+                  <h2 className="text-2xl font-bold p-2 cursor-pointer" onClick={() => setIsEditingName(true)}>
+                    {planName}
+                  </h2>
+                )}
+              </div>
+              <div className="flex items-center space-x-2 ml-8 mb-2">
+                <Switch
+                  checked={isPublic}
+                  onChange={setIsPublic}
+                  className={`${isPublic ? 'bg-blue-600' : 'bg-gray-200'}
+            relative inline-flex h-6 w-11 items-center rounded-full`}
+                >
+                  <span
+                    className={`${isPublic ? 'translate-x-6' : 'translate-x-1'}
+              inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                  />
+                </Switch>
+                <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
+              </div>
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={() => setShowExercises(true)}
+                  className="btn text-lg bg-gray-500 border-none text-white w-xs"
+                >
+                  Add exercises
+                </button>
+              </div>
+              <div className="mt-8">
+                {editableExercises.map((exercise, idx) => (
+                  <div key={idx} className="ml-2 mr-2 mt-5 mb-6 p-3 rounded-lg bg-gray-800">
+                    <div className="flex items-center">
+                      <img src={exercise.gifUrl} className="w-11 h-11 rounded object-cover" />
+                      <div className="font-bold text-lg ml-4 mr-4">{capitalizeWords(exercise.name)}</div>
+                      <button
+                        onClick={() => {
+                          handleRemoveExercise(idx);
+                        }}
+                        className="ml-auto"
+                      >
+                        ⛔️
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 text-xs font-semibold mt-4 mb-1">
+                      <span>Sets</span>
+                      <span>Reps</span>
+                      <span>Weight</span>
+                      <span>Rest</span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      <input
+                        type="number"
+                        name={`sets-${idx}`}
+                        placeholder="0"
+                        value={exercise.sets?.toString() ?? ''}
+                        onChange={e => handleExerciseChange(idx, 'sets', e.target.value)}
+                        className="bg-gray-700 rounded px-2 py-1 text-center"
+                        min={0}
+                      />
+                      <input
+                        type="number"
+                        name={`reps-${idx}`}
+                        placeholder="0"
+                        value={exercise.reps?.toString() ?? ''}
+                        onChange={e => handleExerciseChange(idx, 'reps', e.target.value)}
+                        className="bg-gray-700 rounded px-2 py-1 text-center"
+                        min={0}
+                      />
+                      <input
+                        type="number"
+                        name={`weight-${idx}`}
+                        placeholder="0"
+                        value={exercise.weight?.toString() ?? ''}
+                        onChange={e => handleExerciseChange(idx, 'weight', e.target.value)}
+                        className="bg-gray-700 rounded px-2 py-1 text-center"
+                        min={0}
+                      />
+                      <input
+                        type="number"
+                        name={`restTime-${idx}`}
+                        placeholder="0"
+                        value={exercise.restTime?.toString() ?? ''}
+                        onChange={e => handleExerciseChange(idx, 'restTime', e.target.value)}
+                        className="bg-gray-700 rounded px-2 py-1 text-center"
+                        min={0}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="fixed bottom-22 right-5 z-[9999]">
+                <div className="flex flex-col items-end justify-end gap-4">
+                  <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
+                    <ChatWindow />
+                  </div>
+                  <button
+                    onClick={toggleChatOpen}
+                    className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
+                  >
+                    Create with AI
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* always visible */}
