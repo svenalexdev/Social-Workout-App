@@ -2,9 +2,10 @@ import { useState, useEffect, use } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
 import { setCookie, getCookie, deleteCookie } from '../utils/cookieUtils.js';
+
+import ChatApp from '../components/AiChat/Form.jsx';
 import BodypartFilter from '../components/BodypartFilter.jsx';
 import capitalizeWords from '../utils/helpers.js';
-import ChatWindow from '../components/AiChat/ChatWindow.jsx';
 const baseURL = `${import.meta.env.VITE_API_URL}`;
 
 function CreatePlan() {
