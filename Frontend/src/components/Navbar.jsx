@@ -4,70 +4,62 @@ import { useAuth } from '../context';
 function Navbar() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-
-  const goToProfile = () => {
-    if (isAuthenticated) {
-      navigate('/profile');
-    } else {
-      navigate('/signin');
-    }
-  };
-
-  const goToPlans = () => {
-    navigate('/plans');
-  };
-
-  const goToGroupFinder = () => {
-    navigate('/groupfinder');
-  };
-
-  const goToHome = () => {
-    navigate('/');
-  };
-
   const currentPath = window.location.pathname;
 
+  const goToProfile = () => {
+    isAuthenticated ? navigate('/profile') : navigate('/signin');
+  };
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-900 border-t border-gray-700 px-4 py-2">
+    <div className="fixed bottom-0 left-0 right-0 z-40 + bg-[#2e3a50] border-t border-gray-700 px-4 py-2">
       <div className="flex justify-around items-center max-w-md mx-auto">
+        {/* Home */}
         <button
-          onClick={goToHome}
-          className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl ${
-            currentPath === '/' ? 'bg-[#F2AB40] text-black' : 'text-gray-400 hover:text-white'
-          }`}
+          onClick={() => navigate('/')}
+          className="flex flex-col items-center justify-center py-2 px-3 rounded-xl"
         >
-          <div className="text-xl mb-1">🏠</div>
-          <span className="text-xs">Home</span>
+          <img src={currentPath === '/' ? '/HomeON.png' : '/HomeOFF.png'} alt="Home" className="w-6 h-6 mb-1" />
+          <span className={`text-xs ${currentPath === '/' ? 'text-white' : 'text-gray-400'}`}>Home</span>
         </button>
 
+        {/* Plans */}
         <button
-          onClick={goToPlans}
-          className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl ${
-            currentPath.startsWith('/plans') ? 'bg-[#F2AB40] text-black' : 'text-gray-400 hover:text-white'
-          }`}
+          onClick={() => navigate('/plans')}
+          className="flex flex-col items-center justify-center py-2 px-3 rounded-xl"
         >
-          <div className="text-xl mb-1">📋</div>
-          <span className="text-xs">Plans</span>
+          <img
+            src={currentPath.startsWith('/plans') ? '/PlansON.png' : '/PlansOFF.png'}
+            alt="Plans"
+            className="w-6 h-6 mb-1"
+          />
+          <span className={`text-xs ${currentPath.startsWith('/plans') ? 'text-white' : 'text-gray-400'}`}>Plans</span>
         </button>
 
+        {/* Groups */}
         <button
-          onClick={goToGroupFinder}
-          className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl ${
-            currentPath.startsWith('/groupfinder') ? 'bg-[#F2AB40] text-black' : 'text-gray-400 hover:text-white'
-          }`}
+          onClick={() => navigate('/groupfinder')}
+          className="flex flex-col items-center justify-center py-2 px-3 rounded-xl"
         >
-          <div className="text-xl mb-1">👥</div>
-          <span className="text-xs">Groups</span>
+          <img
+            src={currentPath.startsWith('/groupfinder') ? '/GroupON.png' : '/GroupOFF.png'}
+            alt="Groups"
+            className="w-6 h-6 mb-1"
+          />
+          <span className={`text-xs ${currentPath.startsWith('/groupfinder') ? 'text-white' : 'text-gray-400'}`}>
+            Groups
+          </span>
         </button>
 
-        <button
-          onClick={goToProfile}
-          className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl ${
-            currentPath.startsWith('/profile') ? 'bg-[#F2AB40] text-black' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          <div className="text-xl mb-1">👤</div>
-          <span className="text-xs">Profile</span>
+        {/* Profile */}
+        <button onClick={goToProfile} className="flex flex-col items-center justify-center py-2 px-3 rounded-xl">
+          <img
+            src={currentPath.startsWith('/profile') ? '/ProfileON.png' : '/ProfileOFF.png'}
+            alt="Profile"
+            className="w-6 h-6 mb-1"
+          />
+          <span className={`text-xs ${currentPath.startsWith('/profile') ? 'text-white' : 'text-gray-400'}`}>
+            Profile
+          </span>
         </button>
       </div>
     </div>
