@@ -110,4 +110,10 @@ const groupFinderSchema = z.object({
 
 const signInSchema = userSchema.omit({ name: true, stats: true });
 
-export { userSchema, planSchema, logSchema, signInSchema, groupFinderSchema };
+const userMessageSchema = z.object({
+  message: z.string().min(1, 'Must have a message'),
+  // stream: z.boolean().default(false),
+  chatId: z.string().length(24).nullish()
+});
+
+export { userSchema, planSchema, logSchema, signInSchema, groupFinderSchema, userMessageSchema };

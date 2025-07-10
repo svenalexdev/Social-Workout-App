@@ -4,9 +4,15 @@ import { Switch } from '@headlessui/react';
 import { setCookie, getCookie, deleteCookie } from '../utils/cookieUtils.js';
 import BodypartFilter from '../components/BodypartFilter.jsx';
 import capitalizeWords from '../utils/helpers.js';
+import ChatWindow from '../components/AiChat/ChatWindow.jsx';
 const baseURL = `${import.meta.env.VITE_API_URL}`;
 
 function CreatePlan() {
+
+  // ai chat button
+  const [chatOpen, setChatOpen] = useState(false);
+  const toggleChatOpen = () => setChatOpen(prev => !prev);
+  
   // Site navigation
   const navigate = useNavigate();
 
@@ -268,6 +274,9 @@ function CreatePlan() {
           </div>
         </div>
       )}
+      {/* Only show main content and AI button when model is NOT open */}
+      {!showExercises && (
+        <>
       {/* Conditional rendering branch 1 */}
       {!createPlan ? (
         <div>
@@ -323,11 +332,19 @@ function CreatePlan() {
               Add exercises
             </button>
           </div>
-          {/* <div className="flex justify-center mt-40">
-            <button className="btn text-lg bg-gray-500 border-none text-white h-35 w-35">
-              Create Plan <br /> with AI
-            </button>
-          </div> */}
+          <div className="fixed bottom-22 right-5 z-[9999]">
+            <div className="flex flex-col items-end justify-end gap-4">
+              <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
+                <ChatWindow />
+              </div>
+              <button
+                onClick={toggleChatOpen}
+                className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
+              >
+                Create with AI
+              </button>
+            </div>
+          </div>
         </div>
       ) : (
         <div>
@@ -444,8 +461,38 @@ function CreatePlan() {
               </div>
             ))}
           </div>
+          <div className="fixed bottom-22 right-5 z-[9999]">
+            <div className="flex flex-col items-end justify-end gap-4">
+              <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
+                <ChatWindow />
+              </div>
+              <button
+                onClick={toggleChatOpen}
+                className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
+              >
+                Create with AI
+              </button>
+            </div>
+          </div>
         </div>
       )}
+      </>
+      )}
+
+      {/* always visible */}
+      {/* <div className="fixed bottom-22 right-5 z-[9999]">
+        <div className="flex flex-col items-end justify-end gap-4">
+          <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
+            <ChatWindow />
+          </div>
+          <button
+            onClick={toggleChatOpen}
+            className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
+          >
+            Create with AI
+          </button>
+        </div>
+      </div> */}
     </div>
   );
 }
