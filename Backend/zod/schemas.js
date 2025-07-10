@@ -112,7 +112,7 @@ const signInSchema = userSchema.omit({ name: true, stats: true });
 
 const userMessageSchema = z.object({
   message: z.string().min(1, 'Must have a message'),
-  stream: z.boolean().default(false),
+  // stream: z.boolean().default(false),
   chatId: z.string().length(24).nullish()
 });
 
