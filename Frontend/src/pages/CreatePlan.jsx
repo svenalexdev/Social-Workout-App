@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
 import { setCookie, getCookie, deleteCookie } from '../utils/cookieUtils.js';
@@ -28,6 +28,10 @@ function CreatePlan() {
   const [searchTerm, setSearchTerm] = useState('');
   const [exercises, setExercises] = useState([]); // exercise fetch
   const [selectedBodyparts, setSelectedBodyparts] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(100);
+
+  // Ref
+  const listRef = useRef(null);
 
   // Effect management
   useEffect(() => {
@@ -53,6 +57,14 @@ function CreatePlan() {
       setShouldOpenModal(false);
     }
   }, [createPlan, shouldOpenModal]);
+
+  // Scroll back to top and reset to 100 when a bodypart filter changes/is deselected or searchterm changes/is reset
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollTop = 0;
+    }
+    setVisibleCount(100);
+  }, [searchTerm, selectedBodyparts]);
 
   // Auto-save plan to cookies
   useEffect(() => {
@@ -96,6 +108,8 @@ function CreatePlan() {
     };
   }, []);
 
+  // Handler
+  // Handler for title renaming
   const handleNameBlur = () => setIsEditingName(false);
   const handleNameChange = e => setPlanName(e.target.value);
   const handleNameKeyDown = e => {
@@ -139,6 +153,15 @@ function CreatePlan() {
       updated[idx] = { ...updated[idx], [field]: Number(value) };
       return updated;
     });
+  };
+
+  // Handler to extend exercise list in batch sizes of 100 when scrolling down
+  const handleScroll = () => {
+    const el = listRef.current;
+    if (!el) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+      setVisibleCount(prev => Math.min(prev + 100, filteredExercises.length));
+    }
   };
 
   // Save button handler to get cookies, POST information and delete it afterwards
@@ -196,6 +219,7 @@ function CreatePlan() {
                   setShowExercises(false);
                   setSelectedExercise([]);
                   setSearchTerm('');
+                  setVisibleCount(100);
                 }}
                 className="absolute top-3 left-4 text-2xl hover:text-white font-bold"
               >
@@ -227,9 +251,9 @@ function CreatePlan() {
               {/* Bodypart Filter UI */}
               <BodypartFilter selectedBodyparts={selectedBodyparts} onSelect={handleSelect} onRemove={handleRemove} />
             </div>
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto" ref={listRef} onScroll={handleScroll}>
               <ul>
-                {filteredExercises.map((ex, idx) => (
+                {filteredExercises.slice(0, visibleCount).map((ex, idx) => (
                   <li
                     key={ex.exerciseId}
                     // Select several exercises in the list - if already selected, deselect
@@ -462,7 +486,7 @@ function CreatePlan() {
               <div className="fixed bottom-22 right-5 z-[9999]">
                 <div className="flex flex-col items-end justify-end gap-4">
                   <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
-                    <ChatWindow />
+                    <ChatApp />
                   </div>
                   <button
                     onClick={toggleChatOpen}
