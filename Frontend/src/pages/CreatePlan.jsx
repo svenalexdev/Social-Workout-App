@@ -21,7 +21,7 @@ function CreatePlan() {
   const [selectedExercise, setSelectedExercise] = useState([]);
   const [createPlan, setCreatePlan] = useState(false);
   const [editableExercises, setEditableExercises] = useState([]);
-  const [planName, setPlanName] = useState('New Template');
+  const [planName, setPlanName] = useState('New Plan');
   const [isEditingName, setIsEditingName] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [shouldOpenModal, setShouldOpenModal] = useState(false);
@@ -328,14 +328,17 @@ function CreatePlan() {
                     className="text-2xl font-bold p-3 bg-gray-700 rounded"
                   />
                 ) : (
-                  <h2
-                    className="text-2xl font-bold p-2"
-                    onClick={() => {
-                      setIsEditingName(true);
-                    }}
+                  <div
+                    className="flex items-center text-2xl font-bold p-2 w-full cursor-pointer group active:bg-gray-700 rounded"
+                    onClick={() => setIsEditingName(true)}
+                    title="Tap to edit"
+                    aria-label="Edit name"
                   >
-                    {planName}
-                  </h2>
+                    <span className="text-left group-hover:text-[#ffa622] transition-colors">{planName}</span>
+                    <span className="ml-2 text-lg text-gray-400 group-hover:text-[#ffa622] transition-colors select-none">
+                      ✏️
+                    </span>
+                  </div>
                 )}
               </div>
               <div className="flex items-center space-x-2 mt-1 ml-8 mb-2">
@@ -397,9 +400,17 @@ function CreatePlan() {
                     className="text-2xl font-bold p-3 bg-gray-700 rounded"
                   />
                 ) : (
-                  <h2 className="text-2xl font-bold p-2 cursor-pointer" onClick={() => setIsEditingName(true)}>
-                    {planName}
-                  </h2>
+                  <div
+                    className="flex items-center text-2xl font-bold p-2 w-full cursor-pointer group active:bg-gray-700 rounded"
+                    onClick={() => setIsEditingName(true)}
+                    title="Tap to edit"
+                    aria-label="Edit name"
+                  >
+                    <span className="text-left group-hover:text-[#ffa622] transition-colors">{planName}</span>
+                    <span className="ml-2 text-lg text-gray-400 group-hover:text-[#ffa622] transition-colors select-none">
+                      ✏️
+                    </span>
+                  </div>
                 )}
               </div>
               <div className="flex items-center space-x-2 mt-1 ml-8 mb-2">
