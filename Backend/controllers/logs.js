@@ -10,11 +10,19 @@ const getLog = async (req, res) => {
 
 const createLog = async (req, res) => {
   const { planId } = req.sanitizedBody;
+  const userId = req.userId; // Get userId from authenticated token
 
-  const found = await Plan.findById(planId);
+  // Validate that the plan exists
+  const foundPlan = await Plan.findById(planId);
+  if (!foundPlan) throw new Error('Plan not found', { cause: 404 });
 
-  if (!found) throw new Error('UserId or PlanId not found', { cause: 401 });
-  const logs = await Log.create(req.sanitizedBody);
+  // Validate that the user exists
+  const foundUser = await User.findById(userId);
+  if (!foundUser) throw new Error('User not found', { cause: 404 });
+
+  // Use authenticated userId instead of body userId
+  const logData = { ...req.sanitizedBody, userId };
+  const logs = await Log.create(logData);
   res.json(logs);
 };
 
@@ -51,13 +59,20 @@ const deleteLog = async (req, res) => {
 
 const getLogByUserId = async (req, res) => {
   const { id } = req.params;
+  const authenticatedUserId = req.userId; // Get from token
+
   if (!isValidObjectId(id)) throw new Error('Invalid id', { cause: 400 });
+
+  // Ensure users can only access their own logs
+  if (id !== authenticatedUserId) {
+    throw new Error('Unauthorized: You can only access your own logs', { cause: 403 });
+  }
 
   const logs = await Log.find({ userId: id });
 
   if (!logs) throw new Error('User id not found', { cause: 404 });
-   
-   const Logs = logs.map(log => {
+
+  const Logs = logs.map(log => {
     const logObj = log.toObject();
     delete logObj.userId;
     return logObj;
