@@ -2,7 +2,8 @@ import { useState, useEffect, use } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
 import { setCookie, getCookie, deleteCookie } from '../utils/cookieUtils.js';
-import ChatWindow from '../components/AiChat/ChatWindow.jsx';
+
+import ChatApp from '../components/AiChat/Form.jsx';
 const baseURL = `${import.meta.env.VITE_API_URL}`;
 
 function CreatePlan() {
@@ -437,7 +438,7 @@ function CreatePlan() {
      <div className='fixed bottom-8 right-8 z-[9999]'>
            <div className='flex flex-col items-end justify-end gap-4'>
              <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
-               <ChatWindow />
+               <ChatApp />
              </div>
              <button onClick={toggleChatOpen} className=' btn btn-primary btn-xl btn-circle'>
                Chat
