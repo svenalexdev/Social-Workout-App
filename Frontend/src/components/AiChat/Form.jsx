@@ -3,8 +3,9 @@ import { toast, ToastContainer } from 'react-toastify';
 import { createChat } from '../../data/gemini';
 import Chat from './Chat';
 import { useNavigate } from 'react-router';
+import { setCookie } from '../../utils/cookieUtils';
 
-const ChatApp = () => {
+const ChatApp = ({ onSuccess }) => {
   const chatRef = useRef();
   const [messages, setMessages] = useState([]);
   const [prompt, setPrompt] = useState('');
@@ -34,22 +35,64 @@ const ChatApp = () => {
 
       const response = await createChat({ message: prompt });
 
-      const aiExercises = JSON.parse(response.aiResponse);
+      // Console log the raw AI response for debugging
+      console.log('Raw AI Response:', response.aiResponse);
+
+      // Clean up the AI response by removing markdown code blocks if present
+      let cleanedResponse = response.aiResponse;
+      if (cleanedResponse.includes('```json')) {
+        cleanedResponse = cleanedResponse.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+      }
+      if (cleanedResponse.includes('```')) {
+        cleanedResponse = cleanedResponse.replace(/```/g, '');
+      }
+
+      // Console log the cleaned response
+      console.log('Cleaned AI Response:', cleanedResponse);
+
+      let aiExercises;
+      try {
+        aiExercises = JSON.parse(cleanedResponse);
+        console.log('Parsed AI Exercises:', aiExercises);
+      } catch (error) {
+        console.error('JSON Parse Error:', error);
+        console.error('Failed to parse response:', cleanedResponse);
+        toast.error('Failed to parse AI response. Please try again.');
+        return;
+      }
 
       const rawPlan = localStorage.getItem('plan');
-     
+      let parsedPlan;
+
       if (!rawPlan) {
-        toast.error('Plan not found in localStorage!');
+        // Create a base plan if none exists
+        console.log('No plan found in localStorage, creating base plan');
+        parsedPlan = {
+          userId: '', // Will be set when saving
+          name: 'AI Generated Plan',
+          isPublic: false,
+          exercise: []
+        };
       } else {
-        const parsedPlan = JSON.parse(rawPlan);
+        parsedPlan = JSON.parse(rawPlan);
+      }
 
-        parsedPlan.exercise = aiExercises;
+      // Set the AI generated exercises
+      parsedPlan.exercise = aiExercises;
 
-        localStorage.setItem('plan', JSON.stringify(parsedPlan));
+      // Save to localStorage and cookies
+      localStorage.setItem('plan', JSON.stringify(parsedPlan));
+      setCookie('plan', JSON.stringify(parsedPlan));
+
+      toast.success('Workout plan generated successfully!');
+
+      // Call onSuccess callback to trigger plan loading and close the form
+      if (onSuccess) {
+        onSuccess();
       }
 
       // set coockie
-      document.cookie = `workoutPlan=${encodeURIComponent(response.aiResponse)};max-age=86400`;
+      // document.cookie = `workoutPlan=${encodeURIComponent(response.aiResponse)};max-age=86400`;
       //localStorage.setItem('workoutPlan', response.aiResponse);
 
       const aiMsg = {
@@ -61,7 +104,7 @@ const ChatApp = () => {
       setMessages(prev => [...prev, aiMsg]);
       setPrompt('');
     } catch (error) {
-      toast.error(error.message);
+      console.error(error.message);
     } finally {
       setLoading(false);
     }
