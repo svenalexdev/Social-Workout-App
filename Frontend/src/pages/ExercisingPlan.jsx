@@ -599,14 +599,16 @@ function ExercisingPlan() {
   const currentExerciseName = currentExerciseDetails.name || `Exercise ${currentExercise.exerciseId}`;
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
+    <div className="min-h-screen bg-[#121212] text-white p-4 pt-safe">
       {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-white">{workoutData.name}</h1>
+      <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-2xl p-6 mb-6 mt-12 shadow-2xl border border-gray-700 backdrop-blur-sm">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-white">{workoutData.name}</h1>
+        </div>
       </div>
 
       {/* Fixed Timer & Date Bar */}
-      <div className="sticky top-4 z-10 bg-gray-900 rounded-lg p-4 mb-6 border border-gray-600 backdrop-blur-sm">
+      <div className="sticky top-safe z-10 bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-lg p-4 mb-6 border border-gray-700 backdrop-blur-sm shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 text-gray-300">
             <span className="flex items-center gap-1">📅 {new Date().toLocaleDateString()}</span>
@@ -614,7 +616,7 @@ function ExercisingPlan() {
           </div>
           <button
             onClick={abortWorkout}
-            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors"
+            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors font-semibold"
           >
             Cancel
           </button>
@@ -633,46 +635,30 @@ function ExercisingPlan() {
           return (
             <div
               key={exercise._id}
-              className={`rounded-lg border ${
-                isCurrent ? 'bg-gray-700 border-blue-500 border-2' : 'bg-gray-800 border-gray-600'
-              }`}
+              className="rounded-lg border bg-[#1a1a1a] border-gray-600 hover:border-[#F2AB40] transition-all duration-300 hover:shadow-xl"
             >
               {/* Exercise Header */}
               <div
-                className="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-750"
+                className="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-600/20 transition-colors"
                 onClick={() => toggleExerciseCollapse(exercise.exerciseId)}
               >
                 {/* Exercise Image */}
-                {isCurrent ? (
-                  <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center overflow-hidden">
-                    {exerciseDetails.gifUrl ? (
-                      <img
-                        src={exerciseDetails.gifUrl}
-                        alt={exerciseDetails.name || 'Exercise'}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-300 rounded-lg"></div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center overflow-hidden">
-                    {exerciseDetails.gifUrl ? (
-                      <img
-                        src={exerciseDetails.gifUrl}
-                        alt={exerciseDetails.name || 'Exercise'}
-                        className="w-full h-full object-cover rounded-lg opacity-60"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-500 rounded-lg opacity-60"></div>
-                    )}
-                  </div>
-                )}
+                <div className="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center overflow-hidden">
+                  {exerciseDetails.gifUrl ? (
+                    <img
+                      src={exerciseDetails.gifUrl}
+                      alt={exerciseDetails.name || 'Exercise'}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-500 rounded-lg"></div>
+                  )}
+                </div>
                 {/* Exercise Info */}
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <h3 className={`font-bold ${isCurrent ? 'text-2xl text-white' : 'text-lg'}`}>{exerciseName}</h3>
+                      <h3 className="font-bold text-lg text-white">{exerciseName}</h3>
                     </div>
                     {!isCollapsed && (
                       <button
@@ -680,7 +666,7 @@ function ExercisingPlan() {
                           e.stopPropagation();
                           setShowDetailsFor(showDetailsFor === exercise.exerciseId ? null : exercise.exerciseId);
                         }}
-                        className="bg-gray-500 hover:bg-gray-600 text-white text-xs px-3 py-1 rounded-full transition-colors"
+                        className="bg-[#1a1a1a] border border-gray-600 hover:border-[#F2AB40] hover:bg-[#F2AB40] hover:text-black text-white text-xs px-3 py-1 rounded-full transition-colors font-semibold"
                       >
                         Details
                       </button>
@@ -736,11 +722,11 @@ function ExercisingPlan() {
                         key={setNumber}
                         className={`grid grid-cols-5 gap-2 p-2 rounded transition-colors ${
                           isLastCompletedSet
-                            ? 'bg-gray-700' // Lighter background for most recent completed set
-                            : 'bg-gray-900'
+                            ? 'bg-[#2a2a2a]' // Lighter background for most recent completed set
+                            : 'bg-[#1a1a1a]'
                         } ${isSetCompleted ? 'opacity-80' : ''}`}
                       >
-                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-600">
+                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#2a2a2a] border border-gray-600 text-white font-semibold">
                           {setNumber}
                         </span>
                         <span className="text-gray-400 flex items-center text-sm">
@@ -750,7 +736,7 @@ function ExercisingPlan() {
                           type="number"
                           value={setData.weight || setDefaults.weight}
                           onChange={e => handleInputChange(exercise.exerciseId, setNumber, 'weight', e.target.value)}
-                          className="bg-gray-700 rounded px-2 py-1 text-center"
+                          className="bg-[#1a1a1a] border border-gray-600 rounded px-2 py-1 text-center text-white focus:border-[#F2AB40] focus:outline-none transition-colors"
                           step="0.5"
                           min="0"
                         />
@@ -758,7 +744,7 @@ function ExercisingPlan() {
                           type="number"
                           value={setData.reps || setDefaults.reps}
                           onChange={e => handleInputChange(exercise.exerciseId, setNumber, 'reps', e.target.value)}
-                          className="bg-gray-700 rounded px-2 py-1 text-center"
+                          className="bg-[#1a1a1a] border border-gray-600 rounded px-2 py-1 text-center text-white focus:border-[#F2AB40] focus:outline-none transition-colors"
                           min="1"
                           max="99"
                         />
@@ -766,8 +752,8 @@ function ExercisingPlan() {
                           onClick={() => toggleSetCompletion(exercise.exerciseId, setNumber)}
                           className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors ${
                             isSetCompleted
-                              ? 'bg-green-500 border-green-500 text-white'
-                              : 'border-gray-500 hover:border-green-400'
+                              ? 'bg-[#F2AB40] border-[#F2AB40] text-black'
+                              : 'border-gray-600 hover:border-[#F2AB40] hover:bg-[#F2AB40]/20'
                           }`}
                         >
                           {isSetCompleted && '✓'}
@@ -788,7 +774,9 @@ function ExercisingPlan() {
           onClick={finishWorkout}
           disabled={!canFinishWorkout}
           className={`w-full py-4 rounded-lg text-lg font-bold transition-colors ${
-            canFinishWorkout ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+            canFinishWorkout
+              ? 'bg-[#F2AB40] hover:bg-[#e09b2d] text-black'
+              : 'bg-[#1a1a1a] border border-gray-600 text-gray-400 cursor-not-allowed'
           }`}
         >
           {canFinishWorkout ? '🏁 Finish Workout' : '🏁 Complete some sets to finish'}
@@ -798,12 +786,12 @@ function ExercisingPlan() {
       {/* Sticky Pause Timer - Bottom */}
       {pauseTimer.isActive && (
         <div className="fixed bottom-12 left-0 right-0 z-40">
-          <div className="bg-orange-600 rounded-t-lg p-4 border border-orange-500 backdrop-blur-sm shadow-lg">
+          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-t-lg p-4 border border-gray-600 backdrop-blur-sm shadow-lg mx-4">
             <div className="flex items-center justify-between">
               {/* Decrease Timer Button */}
               <button
                 onClick={() => adjustPauseTimer(-10)}
-                className="bg-orange-700 hover:bg-orange-800 text-white px-4 py-2 rounded-lg transition-colors font-bold"
+                className="bg-[#1a1a1a] border border-gray-600 hover:border-[#F2AB40] hover:bg-[#F2AB40] hover:text-black text-white px-4 py-2 rounded-lg transition-colors font-bold"
               >
                 -10s
               </button>
@@ -811,14 +799,14 @@ function ExercisingPlan() {
               {/* Timer Display */}
               <div className="flex-1 text-center">
                 <div className="text-white text-sm font-medium mb-1">Rest Time</div>
-                <div className="text-white text-2xl font-bold">{formatTime(pauseTimer.remainingTime)}</div>
-                <div className="text-orange-200 text-xs">{pauseTimer.exerciseName}</div>
+                <div className="text-[#F2AB40] text-2xl font-bold">{formatTime(pauseTimer.remainingTime)}</div>
+                <div className="text-gray-300 text-xs">{pauseTimer.exerciseName}</div>
               </div>
 
               {/* Increase Timer Button */}
               <button
                 onClick={() => adjustPauseTimer(10)}
-                className="bg-orange-700 hover:bg-orange-800 text-white px-4 py-2 rounded-lg transition-colors font-bold"
+                className="bg-[#1a1a1a] border border-gray-600 hover:border-[#F2AB40] hover:bg-[#F2AB40] hover:text-black text-white px-4 py-2 rounded-lg transition-colors font-bold"
               >
                 +10s
               </button>
@@ -828,7 +816,7 @@ function ExercisingPlan() {
             <div className="mt-3 text-center">
               <button
                 onClick={stopPauseTimer}
-                className="bg-orange-800 hover:bg-orange-900 text-white px-6 py-2 rounded-lg transition-colors text-sm font-medium"
+                className="bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-6 py-2 rounded-lg transition-colors text-sm font-semibold"
               >
                 Skip Rest
               </button>
@@ -840,7 +828,7 @@ function ExercisingPlan() {
       {/* Exercise Details Popup Modal */}
       {showDetailsFor && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
             {(() => {
               const exercise = workoutData.exercise.find(ex => ex.exerciseId === showDetailsFor);
               if (!exercise) return null;
@@ -850,13 +838,13 @@ function ExercisingPlan() {
               return (
                 <>
                   {/* Modal Header */}
-                  <div className="flex items-center justify-between p-6 border-b border-gray-700">
+                  <div className="flex items-center justify-between p-6 border-b border-gray-600">
                     <h2 className="text-2xl font-bold text-white">
                       {exerciseDetails.name || `Exercise ${exercise.exerciseId}`}
                     </h2>
                     <button
                       onClick={() => setShowDetailsFor(null)}
-                      className="text-gray-400 hover:text-white text-2xl font-bold"
+                      className="text-gray-400 hover:text-[#F2AB40] text-2xl font-bold transition-colors"
                     >
                       ×
                     </button>
@@ -866,7 +854,7 @@ function ExercisingPlan() {
                   <div className="p-6">
                     {/* Exercise GIF */}
                     <div className="mb-6 flex justify-center">
-                      <div className="w-64 h-64 bg-gray-700 rounded-lg overflow-hidden">
+                      <div className="w-64 h-64 bg-[#1a1a1a] border border-gray-600 rounded-lg overflow-hidden">
                         {exerciseDetails.gifUrl ? (
                           <img
                             src={exerciseDetails.gifUrl}
@@ -874,7 +862,7 @@ function ExercisingPlan() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gray-600 rounded-lg flex items-center justify-center">
+                          <div className="w-full h-full bg-[#1a1a1a] rounded-lg flex items-center justify-center">
                             <span className="text-gray-400">No image available</span>
                           </div>
                         )}
@@ -896,7 +884,7 @@ function ExercisingPlan() {
                           <ol className="text-gray-300 space-y-2">
                             {exerciseDetails.instructions.map((instruction, index) => (
                               <li key={index} className="flex items-start">
-                                <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5 flex-shrink-0">
+                                <span className="bg-[#F2AB40] text-black rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5 flex-shrink-0">
                                   {index + 1}
                                 </span>
                                 <span className="leading-relaxed">{instruction}</span>
@@ -909,25 +897,25 @@ function ExercisingPlan() {
                       {/* Exercise Info Grid */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                         {exerciseDetails.target && (
-                          <div className="bg-gray-700 p-4 rounded-lg">
+                          <div className="bg-[#1a1a1a] border border-gray-600 p-4 rounded-lg">
                             <h4 className="text-white font-semibold mb-1">Primary Target</h4>
                             <p className="text-gray-300 capitalize">{exerciseDetails.target}</p>
                           </div>
                         )}
                         {exerciseDetails.equipment && (
-                          <div className="bg-gray-700 p-4 rounded-lg">
+                          <div className="bg-[#1a1a1a] border border-gray-600 p-4 rounded-lg">
                             <h4 className="text-white font-semibold mb-1">Equipment</h4>
                             <p className="text-gray-300 capitalize">{exerciseDetails.equipment}</p>
                           </div>
                         )}
                         {exerciseDetails.bodyPart && (
-                          <div className="bg-gray-700 p-4 rounded-lg">
+                          <div className="bg-[#1a1a1a] border border-gray-600 p-4 rounded-lg">
                             <h4 className="text-white font-semibold mb-1">Body Part</h4>
                             <p className="text-gray-300 capitalize">{exerciseDetails.bodyPart}</p>
                           </div>
                         )}
                         {exerciseDetails.secondaryMuscles && exerciseDetails.secondaryMuscles.length > 0 && (
-                          <div className="bg-gray-700 p-4 rounded-lg">
+                          <div className="bg-[#1a1a1a] border border-gray-600 p-4 rounded-lg">
                             <h4 className="text-white font-semibold mb-1">Secondary Muscles</h4>
                             <p className="text-gray-300 capitalize">{exerciseDetails.secondaryMuscles.join(', ')}</p>
                           </div>
@@ -935,7 +923,7 @@ function ExercisingPlan() {
                       </div>
 
                       {/* Workout Parameters */}
-                      <div className="bg-blue-900 bg-opacity-50 p-4 rounded-lg mt-6">
+                      <div className="bg-gradient-to-r from-[#F2AB40]/20 to-[#e09b2d]/20 border border-[#F2AB40]/30 p-4 rounded-lg mt-6">
                         <h4 className="text-white font-semibold mb-2">Today's Workout</h4>
                         <div className="text-gray-300">
                           <div className="font-medium mb-2">{exercise.sets} sets</div>

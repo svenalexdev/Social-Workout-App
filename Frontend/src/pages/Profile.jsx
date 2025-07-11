@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useContext  } from 'react';
 import { toast } from 'react-toastify';
 import { useRef } from 'react';
+import { AuthContext } from '../context/index.js';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -48,21 +49,12 @@ const Profile = () => {
     fetchProfileAndWorkouts();
   }, []);
 
+  const { logout } = useContext(AuthContext);
   const handleLogout = async () => {
-    try {
-      const BACKEND_URL = import.meta.env.VITE_API_URL;
-      await fetch(`${BACKEND_URL}/auth/signout`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      toast.success('Successfully logged out!');
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1200);
-    } catch (error) {
-      console.error('Logout failed:', error.message);
-      toast.error('Logout failed. Please try again.');
-    }
+    await logout();
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 1200);
   };
   const handleImageUpload = async e => {
     const BACKEND_URL = import.meta.env.VITE_API_URL;
@@ -101,7 +93,7 @@ const Profile = () => {
   const handleImageClick = () => {
     fileInputRef.current.click();
   };
-  const openWorkoutModal = (workout) => {
+  const openWorkoutModal = workout => {
     setSelectedWorkout(workout);
     setIsModalOpen(true);
   };
@@ -119,7 +111,7 @@ const Profile = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#121212] text-white">
-      <div className="flex-1 flex flex-col gap-17 p-2 w-full">
+      <div className="flex-1 flex flex-col gap-17 p-2 w-full pt-6">
         <div className="flex flex-col items-center">
           <div
             className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-[#575757] cursor-pointer"

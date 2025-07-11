@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { Switch } from '@headlessui/react';
 import { setCookie, getCookie, deleteCookie } from '../utils/cookieUtils.js';
@@ -44,17 +44,20 @@ function CreatePlan() {
   const [selectedExercise, setSelectedExercise] = useState([]);
   const [createPlan, setCreatePlan] = useState(false);
   const [editableExercises, setEditableExercises] = useState([]);
-  const [planName, setPlanName] = useState('New Template');
+  const [planName, setPlanName] = useState('New Plan');
   const [isEditingName, setIsEditingName] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [shouldOpenModal, setShouldOpenModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [exercises, setExercises] = useState([]); // exercise fetch
   const [selectedBodyparts, setSelectedBodyparts] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(100);
+
+  // Ref
+  const listRef = useRef(null);
 
   // State to track if we've loaded plan from cookies
   const [planLoadedFromCookies, setPlanLoadedFromCookies] = useState(false);
-
   // Effect management - legacy exercises cookie support (deprecated)
   useEffect(() => {
     if (createPlan && !planLoadedFromCookies) {
@@ -96,6 +99,14 @@ function CreatePlan() {
       setShouldOpenModal(false);
     }
   }, [createPlan, shouldOpenModal]);
+
+  // Scroll back to top and reset to 100 when a bodypart filter changes/is deselected or searchterm changes/is reset
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollTop = 0;
+    }
+    setVisibleCount(100);
+  }, [searchTerm, selectedBodyparts]);
 
   // Auto-save plan to cookies (only after we've loaded from cookies to avoid overriding)
   useEffect(() => {
@@ -278,6 +289,38 @@ function CreatePlan() {
     }
   }, [exercises]); // Update exercise data when exercises are fetched
 
+  // Check for plan when exercises are loaded (for name resolution)
+  useEffect(() => {
+    if (exercises.length > 0 && !planLoadedFromCookies) {
+      loadPlanFromCookies();
+    }
+  }, [exercises, planLoadedFromCookies]);
+
+  // Update exercise data when exercises are fetched
+  useEffect(() => {
+    if (exercises.length > 0 && editableExercises.length > 0) {
+      const updatedExercises = editableExercises.map(e => {
+        const found = exercises.find(ex => ex.exerciseId === e.exerciseId);
+        if (found) {
+          // Always update with full exercise data from database
+          return {
+            ...e,
+            name: found.name,
+            gifUrl: found.gifUrl,
+            target: found.target,
+            equipment: found.equipment,
+            bodyPart: found.bodyPart
+          };
+        }
+        return e;
+      });
+      setEditableExercises(updatedExercises);
+      console.log('Updated exercises with full data:', updatedExercises);
+    }
+  }, [exercises]); // Update exercise data when exercises are fetched
+
+  // Handler
+  // Handler for title renaming
   const handleNameBlur = () => setIsEditingName(false);
   const handleNameChange = e => setPlanName(e.target.value);
   const handleNameKeyDown = e => {
@@ -323,6 +366,15 @@ function CreatePlan() {
     });
   };
 
+  // Handler to extend exercise list in batch sizes of 100 when scrolling down
+  const handleScroll = () => {
+    const el = listRef.current;
+    if (!el) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+      setVisibleCount(prev => Math.min(prev + 100, filteredExercises.length));
+    }
+  };
+
   // Save button handler to get cookies, POST information and delete it afterwards
   const handleSaveButton = async () => {
     if (editableExercises.length === 0) {
@@ -366,31 +418,35 @@ function CreatePlan() {
   // console.log(filteredExercises);
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
+    <div className="min-h-screen bg-[#121212] text-white p-4">
       {/* Modal / popup to show exercise list  */}
       {showExercises && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
           <div className="bg-gray-800 rounded-2xl max-w-lg w-full h-[600px] min-h-full overflow-hidden relative flex flex-col">
-            <div className="sticky top-0 z-10 pb-2">
-              {/* Close Button */}
-              <button
-                onClick={() => {
-                  setShowExercises(false);
-                  setSelectedExercise([]);
-                  setSearchTerm('');
-                }}
-                className="absolute top-3 left-4 text-2xl hover:text-white font-bold"
-              >
-                ×
-              </button>
-              <div className="flex justify-end mt-2 mr-2">
+            <div className="sticky top-0 z-10 pb-2 px-3">
+              <div className="flex justify-between items-center py-3">
+                {/* Close Button */}
+                <button
+                  onClick={() => {
+                    setShowExercises(false);
+                    setSelectedExercise([]);
+                    setSearchTerm('');
+                    setVisibleCount(100);
+                    setSelectedBodyparts([]);
+                  }}
+                  className="btn text-lg bg-gray-500 border-none text-white"
+                >
+                  ×
+                </button>
                 <button
                   onClick={() => {
                     setShowExercises(false);
                     setEditableExercises(prev => [...prev, ...selectedExercise]);
                     setSelectedExercise([]);
+                    setVisibleCount(100);
+                    setSelectedBodyparts([]);
                   }}
-                  className="btn text-lg bg-gray-500 border-none text-white mr-1"
+                  className="btn text-lg bg-gray-500 border-none text-white"
                 >
                   Add ({selectedExercise.length})
                 </button>
@@ -409,9 +465,9 @@ function CreatePlan() {
               {/* Bodypart Filter UI */}
               <BodypartFilter selectedBodyparts={selectedBodyparts} onSelect={handleSelect} onRemove={handleRemove} />
             </div>
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto px-3" ref={listRef} onScroll={handleScroll}>
               <ul>
-                {filteredExercises.map((ex, idx) => (
+                {filteredExercises.slice(0, visibleCount).map((ex, idx) => (
                   <li
                     key={ex.exerciseId}
                     // Select several exercises in the list - if already selected, deselect
@@ -434,7 +490,7 @@ function CreatePlan() {
                       )
                     }
                     // Mark a selected exercise with color
-                    className={`flex items-center text-xl font-bold mt-2 p-2 rounded ${
+                    className={`flex items-center text-lg font-bold py-2 rounded-none ${
                       selectedExercise.some(item => item.exerciseId === ex.exerciseId)
                         ? 'bg-green-800'
                         : 'hover:bg-slate-600'
@@ -459,18 +515,20 @@ function CreatePlan() {
         <>
           {/* Conditional rendering branch 1 */}
           {!createPlan ? (
-            <div>
-              <div className="flex justify-around items-center">
+            <div className="p-3">
+              <div className="flex justify-between items-center ">
                 <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
                   X
                 </button>
-                <h1 className="text-center font-bold text-lg">{planName}</h1>
+                <h1 className="flex-1 text-center font-bold text-lg mx-2 truncate overflow-hidden whitespace-nowrap">
+                  {planName}
+                </h1>
                 <button onClick={handleSaveButton} className="btn text-lg bg-gray-500 border-none text-white">
                   Save
                 </button>
               </div>
               {/* Editable title */}
-              <div className="flex mt-12 ml-6 items-center">
+              <div className="flex mt-6 items-center">
                 {isEditingName ? (
                   <input
                     type="text"
@@ -483,17 +541,33 @@ function CreatePlan() {
                     className="text-2xl font-bold p-3 bg-gray-700 rounded"
                   />
                 ) : (
-                  <h2
-                    className="text-2xl font-bold p-2"
-                    onClick={() => {
-                      setIsEditingName(true);
-                    }}
+                  <div
+                    className="flex items-center text-2xl font-bold w-full cursor-pointer group active:bg-gray-700 rounded"
+                    onClick={() => setIsEditingName(true)}
+                    title="Tap to edit"
+                    aria-label="Edit name"
                   >
-                    {planName}
-                  </h2>
+                    <span className="text-left group-hover:text-[#ffa622] transition-colors">{planName}</span>
+                    <span className="ml-2 text-lg text-gray-400 group-hover:text-[#ffa622] transition-colors select-none">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5 inline"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16.5 3.5a2.121 2.121 0 013 3L7 19.5 3 21l1.5-4L16.5 3.5z"
+                        />
+                      </svg>
+                    </span>
+                  </div>
                 )}
               </div>
-              <div className="flex items-center space-x-2 ml-8 mb-2">
+              <div className="flex items-center space-x-2 mt-2 mb-2">
                 <Switch
                   checked={isPublic}
                   onChange={setIsPublic}
@@ -507,52 +581,44 @@ function CreatePlan() {
                 </Switch>
                 <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
               </div>
-              <div className="mt-8 px-4">
+              <div className="flex justify-center mt-8">
                 <button onClick={handleAddExercise} className="btn text-lg bg-gray-500 border-none text-white w-full">
                   Add exercises
                 </button>
               </div>
-
-              {/* Add AI button for initial state as well */}
-              <div className="mt-4 px-4">
-                <button
-                  onClick={() => {
-                    toggleChatOpen();
-                    setCreatePlan(true);
-                  }}
-                  className="btn text-lg bg-[#ffa622] border-none text-white w-full"
-                >
-                  Create with AI
-                </button>
-              </div>
-
-              {/* AI Chat Form for initial state */}
-              {chatOpen && (
-                <div className="mt-6 mx-4">
-                  <ChatApp
-                    onSuccess={() => {
-                      setTimeout(() => {
-                        loadPlanFromCookies();
-                      }, 100);
+              <div className="fixed bottom-24 right-5 z-[9999]">
+                <div className="flex flex-col items-end justify-end gap-4">
+                  <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
+                    <ChatApp />
+                  </div>
+                  <button
+                    onClick={() => {
+                      toggleChatOpen();
+                      setCreatePlan(true);
                     }}
-                  />
+                    className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
+                  >
+                    Create with AI
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           ) : (
-            <div>
+            <div className="p-3">
               {/* Conditional rendering branch 2 */}
-              <div className="flex justify-around items-center">
+              <div className="flex justify-between items-center">
                 <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
                   X
                 </button>
-                <h1 className="text-center font-bold text-lg">{planName}</h1>
+                <h1 className="flex-1 text-center font-bold text-lg mx-2 truncate overflow-hidden whitespace-nowrap">
+                  {planName}
+                </h1>
                 <button onClick={handleSaveButton} className="btn text-lg bg-gray-500 border-none text-white">
                   Save
                 </button>
               </div>
               {/* Editable title */}
-              <div className="flex mt-12 ml-6 items-center">
+              <div className="flex mt-6 items-center">
                 {isEditingName ? (
                   <input
                     type="text"
@@ -565,12 +631,33 @@ function CreatePlan() {
                     className="text-2xl font-bold p-3 bg-gray-700 rounded"
                   />
                 ) : (
-                  <h2 className="text-2xl font-bold p-2 cursor-pointer" onClick={() => setIsEditingName(true)}>
-                    {planName}
-                  </h2>
+                  <div
+                    className="flex items-center text-2xl font-bold w-full cursor-pointer group active:bg-gray-700 rounded"
+                    onClick={() => setIsEditingName(true)}
+                    title="Tap to edit"
+                    aria-label="Edit name"
+                  >
+                    <span className="text-left group-hover:text-[#ffa622] transition-colors">{planName}</span>
+                    <span className="ml-2 text-lg text-gray-400 group-hover:text-[#ffa622] transition-colors select-none">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5 inline"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16.5 3.5a2.121 2.121 0 013 3L7 19.5 3 21l1.5-4L16.5 3.5z"
+                        />
+                      </svg>
+                    </span>
+                  </div>
                 )}
               </div>
-              <div className="flex items-center space-x-2 ml-8 mb-2">
+              <div className="flex items-center space-x-2 mt-2 mb-2">
                 <Switch
                   checked={isPublic}
                   onChange={setIsPublic}
@@ -616,7 +703,7 @@ function CreatePlan() {
               )}
               <div className="mt-8">
                 {editableExercises.map((exercise, idx) => (
-                  <div key={idx} className="ml-2 mr-2 mt-5 mb-6 p-3 rounded-lg bg-gray-800">
+                  <div key={idx} className="mt-5 mb-6 p-3 rounded-lg bg-gray-800">
                     <div className="flex items-center">
                       {exercise.gifUrl ? (
                         <img src={exercise.gifUrl} className="w-11 h-11 rounded object-cover" alt={exercise.name} />
@@ -630,9 +717,22 @@ function CreatePlan() {
                         onClick={() => {
                           handleRemoveExercise(idx);
                         }}
-                        className="ml-auto"
+                        className="ml-auto text-gray-400"
                       >
-                        ⛔️
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-6 h-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h10"
+                          />
+                        </svg>
                       </button>
                     </div>
                     <div className="grid grid-cols-4 gap-2 text-xs font-semibold mt-4 mb-1">
@@ -708,25 +808,6 @@ function CreatePlan() {
           )}
         </>
       )}
-
-      {/* always visible */}
-      {/* <div className="fixed bottom-22 right-5 z-[9999]">
-        <div className="flex flex-col items-end justify-end gap-4">
-          <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
-            <ChatApp onSuccess={() => {
-              setTimeout(() => {
-                loadPlanFromCookies();
-              }, 100);
-            }} />
-          </div>
-          <button
-            onClick={toggleChatOpen}
-            className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
-          >
-            Create with AI
-          </button>
-        </div>
-      </div> */}
     </div>
   );
 }

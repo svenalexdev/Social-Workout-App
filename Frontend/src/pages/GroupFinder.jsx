@@ -508,7 +508,7 @@ const GroupFinder = () => {
     <>
       {/* Main GroupFinder View */}
       {!selectedActivity && !managingActivity ? (
-        <div className="min-h-screen bg-black text-white p-4">
+        <div className="min-h-screen bg-black text-white p-4 pt-6">
           <div className="flex items-center">
             <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
               X
@@ -708,8 +708,8 @@ const GroupFinder = () => {
             </>
           )}
           {/* Filter UI */}
-          <BodypartFilter selectedBodyparts={selectedBodyparts} onSelect={handleSelect} onRemove={handleRemove} />
-          <div className="mt-10 flex">
+          <BodypartFilter selectedBodyparts={selectedBodyparts} onSelect={handleSelect} onRemove={handleRemove} className='mt-10' />
+          <div className="mt-3 flex">
             <h2 className="font-bold text-xl">Matching Activities</h2>
           </div>
           {/* Loading state */}
