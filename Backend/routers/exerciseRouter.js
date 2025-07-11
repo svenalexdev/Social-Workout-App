@@ -10,6 +10,7 @@ import {
   getEquipmentList,
   getTargetList,
   getExercisesBe,
+  getExercisesMinimal,
   syncExercisesFromApi
 } from '../controllers/exercises.js';
 
@@ -17,6 +18,7 @@ const exerciseRouter = Router();
 
 // exerciseRouter.get('/', getAllExercises);
 exerciseRouter.get('/', getExercisesBe);
+exerciseRouter.get('/minimal', getExercisesMinimal);
 exerciseRouter.get('/name/:name', getExerciseByName);
 exerciseRouter.get('/exercise/:id', getExerciseById);
 exerciseRouter.get('/target/:target', getExercisesByTarget);
