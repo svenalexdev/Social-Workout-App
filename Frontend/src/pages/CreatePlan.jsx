@@ -464,6 +464,19 @@ function CreatePlan() {
                   </div>
                 ))}
               </div>
+              <div className="fixed bottom-22 right-5 z-[9999]">
+                <div className="flex flex-col items-end justify-end gap-4">
+                  <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
+                    <ChatApp />
+                  </div>
+                  <button
+                    onClick={toggleChatOpen}
+                    className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
+                  >
+                    Create with AI
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </>
