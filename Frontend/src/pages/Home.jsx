@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router';
 import { useAuth } from '../context/index.js';
 import { useState, useEffect } from 'react';
-import { getCookie, setCookie } from '../utils/cookieUtils';
+import { getCookie, setCookie, deleteCookie } from '../utils/cookieUtils';
 
 function Home() {
   const { logout, isAuthenticated, user } = useAuth();
@@ -206,6 +206,13 @@ function Home() {
 
   const handleSignOut = async () => {
     await logout();
+    
+    // Delete all cookies
+    deleteCookie('userId');
+    deleteCookie('sessionToken');
+    deleteCookie('plan');
+    deleteCookie('exercises');
+    
     navigate('/'); // Redirect to home after logout
   };
 
