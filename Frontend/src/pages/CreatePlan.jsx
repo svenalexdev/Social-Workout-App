@@ -70,6 +70,7 @@ function CreatePlan() {
       }))
     };
     setCookie('plan', JSON.stringify(plan));
+    localStorage.setItem('plan', JSON.stringify(plan));
   }, [planName, editableExercises, isPublic]);
 
   // Fetch exercises
@@ -336,7 +337,11 @@ function CreatePlan() {
                     <ChatApp />
                   </div>
                   <button
-                    onClick={toggleChatOpen}
+                    // onClick={toggleChatOpen}
+                    onClick={() => {
+                      toggleChatOpen;
+                      setCreatePlan(true);
+                    }}
                     className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
                   >
                     Create with AI
