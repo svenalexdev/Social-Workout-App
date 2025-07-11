@@ -475,9 +475,22 @@ function CreatePlan() {
                         onClick={() => {
                           handleRemoveExercise(idx);
                         }}
-                        className="ml-auto"
+                        className="ml-auto text-gray-400"
                       >
-                        ⛔️
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-6 h-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h10"
+                          />
+                        </svg>
                       </button>
                     </div>
                     <div className="grid grid-cols-4 gap-2 text-xs font-semibold mt-4 mb-1">
@@ -544,21 +557,6 @@ function CreatePlan() {
           )}
         </>
       )}
-
-      {/* always visible */}
-      {/* <div className="fixed bottom-22 right-5 z-[9999]">
-        <div className="flex flex-col items-end justify-end gap-4">
-          <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
-            <ChatWindow />
-          </div>
-          <button
-            onClick={toggleChatOpen}
-            className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
-          >
-            Create with AI
-          </button>
-        </div>
-      </div> */}
     </div>
   );
 }

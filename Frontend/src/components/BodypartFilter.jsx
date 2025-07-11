@@ -17,7 +17,7 @@ const allBodyparts = [
 const BodypartFilter = ({selectedBodyparts, onSelect, onRemove}) => {
   return (
     <div className="overflow-x-auto">
-      <div className="flex gap-2 pb-2" style={{ minWidth: 'max-content' }}>
+      <div className="flex gap-2 pb-2 mb-2" style={{ minWidth: 'max-content' }}>
         {allBodyparts.map(part => {
           const selected = selectedBodyparts.includes(part);
           return (
