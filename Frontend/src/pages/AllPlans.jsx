@@ -168,7 +168,7 @@ const AllPlans = () => {
     <>
       {/* Main AllPlans View */}
       {!selectedPlan ? (
-        <div className="min-h-screen bg-[#f8f8f8] text-black font-montserrat p-4 space-y-6">
+        <div className="min-h-screen bg-[#f8f8f8] text-black font-montserrat p-4 pt-6 space-y-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold mb-4">All My Plans</h2>
             <button

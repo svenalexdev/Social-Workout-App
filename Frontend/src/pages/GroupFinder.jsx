@@ -508,7 +508,7 @@ const GroupFinder = () => {
     <>
       {/* Main GroupFinder View */}
       {!selectedActivity && !managingActivity ? (
-        <div className="min-h-screen bg-black text-white p-4">
+        <div className="min-h-screen bg-black text-white p-4 pt-6">
           <div className="flex items-center">
             <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
               X

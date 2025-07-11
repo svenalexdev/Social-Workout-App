@@ -212,10 +212,10 @@ function Home() {
   // If user is not authenticated, show login/signup options
   if (!isAuthenticated) {
     return (
-      <div className="bg-[#121212] text-white p-4">
+      <div className="bg-[#121212] text-white">
         <div className="flex flex-col items-center justify-center min-h-[93vh]">
           <h1 className="text-4xl font-bold mb-8">Workout Tracker</h1>
-          <div className="flex flex-col gap-4 w-full max-w-sm">
+          <div className="flex flex-col gap-4 w-full max-w-sm px-4">
             <button
               className="bg-[#F2AB40] text-black px-6 py-3 text-lg rounded-lg hover:bg-[#e09b2d] transition-colors font-semibold"
               onClick={GoToSignUp}
@@ -235,21 +235,37 @@ function Home() {
   }
 
   return (
-    <div className="bg-[#121212] text-white p-4 min-h-screen">
+    <div className="bg-[#121212] text-white min-h-screen pt-safe pb-safe w-full">
       {/* Enhanced Greeting Section */}
-      <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-xl p-6 mb-6 mt-4 shadow-lg border border-gray-600">
-        <div className="flex items-center justify-between">
+      <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-none sm:rounded-2xl p-8 mb-6 mt-12 shadow-2xl border-none sm:border border-gray-700 backdrop-blur-sm mx-0 sm:mx-4">
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="relative mb-4">
+            <div className="w-24 h-24 bg-gradient-to-br from-[#F2AB40] to-[#e09b2d] rounded-full flex items-center justify-center text-black font-bold text-2xl shadow-lg ring-4 ring-[#F2AB40]/20">
+              {user?.image ? (
+                <img
+                  src={user.image.startsWith('http') ? user.image : `${import.meta.env.VITE_API_URL}${user.image}`}
+                  alt="Profile"
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <span>{(user?.username || user?.name || 'U').charAt(0).toUpperCase()}</span>
+              )}
+            </div>
+          </div>
+
           <div>
-            <h2 className="text-2xl font-bold mb-2 text-center">
-              Hey <span className="text-[#F2AB40]">{user?.username || user?.name || 'User'}</span>
+            <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+              Hey <span className="text-[#F2AB40] font-extrabold">{user?.username || user?.name || 'User'}</span>
             </h2>
-            <p className="text-gray-400 text-lg">Ready for your next training?</p>
+            <p className="text-gray-400 text-base font-medium tracking-wide whitespace-nowrap">
+              Ready for your next training?
+            </p>
           </div>
         </div>
       </div>
 
       {/* Posted Activities Section */}
-      <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-xl p-6 mb-6 shadow-lg border border-gray-600">
+      <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-none sm:rounded-xl p-6 mb-20 shadow-lg border-none sm:border border-gray-600 mx-0 sm:mx-4">
         <h3 className="text-lg font-semibold mb-4">Posted Activities</h3>
 
         {loading ? (
@@ -273,7 +289,8 @@ function Home() {
                   <span>{new Date(activity.time).toLocaleDateString()}</span>
                 </div>
                 <div className="text-xs bg-[#F2AB40] text-black px-2 py-1 rounded-full font-medium inline-block">
-                  {activity.attendees?.length || 0}/{activity.attendeesLimit} attendees
+                  {activity.attendees?.length || activity.attendess?.length || 0}/
+                  {activity.attendeesLimit || activity.attendeessLimit} attendees
                 </div>
               </div>
             ))}

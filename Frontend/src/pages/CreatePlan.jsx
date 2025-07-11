@@ -262,7 +262,6 @@ function CreatePlan() {
     }
   }, [exercises]); // Update exercise data when exercises are fetched
 
-
   // Check for plan when exercises are loaded (for name resolution)
   useEffect(() => {
     if (exercises.length > 0 && !planLoadedFromCookies) {

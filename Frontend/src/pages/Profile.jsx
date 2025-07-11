@@ -111,7 +111,7 @@ const Profile = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#121212] text-white">
-      <div className="flex-1 flex flex-col gap-17 p-2 w-full">
+      <div className="flex-1 flex flex-col gap-17 p-2 w-full pt-6">
         <div className="flex flex-col items-center">
           <div
             className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-[#575757] cursor-pointer"
