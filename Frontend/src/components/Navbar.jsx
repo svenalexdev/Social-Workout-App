@@ -22,7 +22,7 @@ function Navbar() {
             <img
               src={currentPath === '/' ? '/HomeON.png' : '/HomeOFF.png'}
               alt="Home"
-              className={`w-6 h-6 mb-1 ${currentPath === '/' ? '' : 'filter brightness-50 opacity-60'}`}
+              className="w-6 h-6 mb-1"
             />
             <span className={`text-xs ${currentPath === '/' ? 'text-white' : 'text-gray-400'}`}>Home</span>
           </button>
@@ -35,7 +35,7 @@ function Navbar() {
             <img
               src={currentPath.startsWith('/plans') ? '/PlansON.png' : '/PlansOFF.png'}
               alt="Plans"
-              className={`w-6 h-6 mb-1 ${currentPath.startsWith('/plans') ? '' : 'filter brightness-50 opacity-60'}`}
+              className="w-6 h-6 mb-1"
             />
             <span className={`text-xs ${currentPath.startsWith('/plans') ? 'text-white' : 'text-gray-400'}`}>
               Plans
@@ -50,9 +50,7 @@ function Navbar() {
             <img
               src={currentPath.startsWith('/groupfinder') ? '/GroupON.png' : '/GroupOFF.png'}
               alt="Groups"
-              className={`w-8 h-8 -mb-1 object-contain ${
-                currentPath.startsWith('/groupfinder') ? '' : 'filter brightness-150 opacity-60'
-              }`}
+              className="w-8 h-8 -mb-1 object-contain"
             />
             <span className={`text-xs ${currentPath.startsWith('/groupfinder') ? 'text-white' : 'text-gray-400'}`}>
               Groups
@@ -64,7 +62,7 @@ function Navbar() {
             <img
               src={currentPath.startsWith('/profile') ? '/ProfileON.png' : '/ProfileOFF.png'}
               alt="Profile"
-              className={`w-6 h-6 mb-1 ${currentPath.startsWith('/profile') ? '' : 'filter brightness-150 opacity-60'}`}
+              className="w-6 h-6 mb-1"
             />
             <span className={`text-xs ${currentPath.startsWith('/profile') ? 'text-white' : 'text-gray-400'}`}>
               Profile
