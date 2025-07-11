@@ -708,8 +708,8 @@ const GroupFinder = () => {
             </>
           )}
           {/* Filter UI */}
-          <BodypartFilter selectedBodyparts={selectedBodyparts} onSelect={handleSelect} onRemove={handleRemove} />
-          <div className="mt-10 flex">
+          <BodypartFilter selectedBodyparts={selectedBodyparts} onSelect={handleSelect} onRemove={handleRemove} className='mt-10' />
+          <div className="mt-3 flex">
             <h2 className="font-bold text-xl">Matching Activities</h2>
           </div>
           {/* Loading state */}
