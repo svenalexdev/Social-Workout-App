@@ -11,10 +11,33 @@ const baseURL = `${import.meta.env.VITE_API_URL}`;
 function CreatePlan() {
   // ai chat button
   const [chatOpen, setChatOpen] = useState(false);
-  const toggleChatOpen = () => setChatOpen(prev => !prev);
+  const toggleChatOpen = () => {
+    if (!chatOpen) {
+      // When opening AI chat, ensure there's a base plan in localStorage
+      const userID = getCookie('userId');
+      const basePlan = {
+        userId: userID || '',
+        name: 'AI Generated Plan',
+        isPublic: false,
+        exercise: []
+      };
+      localStorage.setItem('plan', JSON.stringify(basePlan));
+      console.log('Created base plan for AI generation');
+    }
+    setChatOpen(prev => !prev);
+  };
 
   // Site navigation
   const navigate = useNavigate();
+
+  // Clear stored plan data on component mount (fresh start every visit)
+  useEffect(() => {
+    // Clear both localStorage and cookies
+    localStorage.removeItem('plan');
+    deleteCookie('plan');
+    deleteCookie('exercises'); // Also clear legacy exercises cookie
+    console.log('Cleared stored plan data on page visit');
+  }, []); // Run only once on mount
 
   // State management
   const [showExercises, setShowExercises] = useState(false);
@@ -33,22 +56,41 @@ function CreatePlan() {
   // Ref
   const listRef = useRef(null);
 
-  // Effect management
+  // State to track if we've loaded plan from cookies
+  const [planLoadedFromCookies, setPlanLoadedFromCookies] = useState(false);
+  // Effect management - legacy exercises cookie support (deprecated)
   useEffect(() => {
-    if (createPlan) {
-      const stored = JSON.parse(getCookie('exercises') || '[]');
-      // Ensure each exercise has a name (check if still needed once fetched from API)
-      setEditableExercises(
-        stored.map(e => {
-          if (!e.name) {
+    if (createPlan && !planLoadedFromCookies) {
+      // Only load from 'exercises' cookie if we don't already have exercises from the plan
+      if (editableExercises.length === 0) {
+        const stored = JSON.parse(getCookie('exercises') || '[]');
+        // Ensure each exercise has full data from API
+        setEditableExercises(
+          stored.map(e => {
             const found = exercises.find(ex => ex.exerciseId === e.exerciseId);
-            return { ...e, name: found ? found.name : '' };
-          }
-          return e;
-        })
-      );
+            if (found) {
+              return {
+                ...e,
+                name: found.name,
+                gifUrl: found.gifUrl,
+                target: found.target,
+                equipment: found.equipment,
+                bodyPart: found.bodyPart
+              };
+            }
+            return {
+              ...e,
+              name: e.name || `Exercise ${e.exerciseId}`,
+              gifUrl: e.gifUrl || '',
+              target: e.target || '',
+              equipment: e.equipment || '',
+              bodyPart: e.bodyPart || ''
+            };
+          })
+        );
+      }
     }
-  }, [createPlan]);
+  }, [createPlan, planLoadedFromCookies]);
 
   // Open modal as soon as createPlan is true and modal requested (click on add exercises button)
   useEffect(() => {
@@ -66,8 +108,10 @@ function CreatePlan() {
     setVisibleCount(100);
   }, [searchTerm, selectedBodyparts]);
 
-  // Auto-save plan to cookies
+  // Auto-save plan to cookies (only after we've loaded from cookies to avoid overriding)
   useEffect(() => {
+    if (!planLoadedFromCookies) return; // Don't auto-save until we've loaded from cookies
+
     const userID = getCookie('userId');
     const plan = {
       userId: userID,
@@ -82,7 +126,8 @@ function CreatePlan() {
       }))
     };
     setCookie('plan', JSON.stringify(plan));
-  }, [planName, editableExercises, isPublic]);
+    localStorage.setItem('plan', JSON.stringify(plan));
+  }, [planName, editableExercises, isPublic, planLoadedFromCookies]);
 
   // Fetch exercises
   useEffect(() => {
@@ -107,6 +152,146 @@ function CreatePlan() {
       ignore = true;
     };
   }, []);
+
+  // Load plan data from cookies - triggered when AI generates a plan
+  const loadPlanFromCookies = () => {
+    const planData = getCookie('plan');
+    console.log('Checking for plan data in cookies:', planData);
+
+    if (planData) {
+      try {
+        const parsedPlan = JSON.parse(planData);
+        console.log('Loaded plan from cookies:', parsedPlan);
+
+        // Set plan name if available
+        if (parsedPlan.name && parsedPlan.name !== 'New Template') {
+          setPlanName(parsedPlan.name);
+          console.log('Set plan name:', parsedPlan.name);
+        }
+
+        // Set public status if available
+        if (typeof parsedPlan.isPublic === 'boolean') {
+          setIsPublic(parsedPlan.isPublic);
+          console.log('Set public status:', parsedPlan.isPublic);
+        }
+
+        // Set exercises if available
+        if (parsedPlan.exercise && Array.isArray(parsedPlan.exercise) && parsedPlan.exercise.length > 0) {
+          console.log('Found exercises in plan:', parsedPlan.exercise);
+          console.log(
+            'Available exercises in database:',
+            exercises.length > 0 ? exercises.slice(0, 3) : 'No exercises loaded yet'
+          );
+
+          // Add missing exercise properties (name, gifUrl, etc.)
+          const exercisesWithFullData = parsedPlan.exercise.map(e => {
+            console.log(`Looking for exercise with ID: ${e.exerciseId}`);
+            if (exercises.length > 0) {
+              const found = exercises.find(ex => ex.exerciseId === e.exerciseId);
+              if (found) {
+                console.log(`Found exercise in database:`, found.name);
+                return {
+                  ...e,
+                  name: found.name,
+                  gifUrl: found.gifUrl,
+                  target: found.target,
+                  equipment: found.equipment,
+                  bodyPart: found.bodyPart
+                };
+              } else {
+                console.log(`Exercise ID ${e.exerciseId} not found in database`);
+              }
+            }
+            // Fallback if exercise not found in database
+            return {
+              ...e,
+              name: e.name || `Exercise ${e.exerciseId}`,
+              gifUrl: e.gifUrl || '', // Will show no image if not available
+              target: e.target || '',
+              equipment: e.equipment || '',
+              bodyPart: e.bodyPart || ''
+            };
+          });
+
+          console.log('Setting editable exercises with full data:', exercisesWithFullData);
+          setEditableExercises(exercisesWithFullData);
+          setCreatePlan(true); // Show the create plan view since we have exercises
+          console.log('Set createPlan to true');
+
+          // Close AI chat if it was open
+          setChatOpen(false);
+          console.log('Closed AI chat');
+
+          setPlanLoadedFromCookies(true);
+          return true;
+        }
+      } catch (error) {
+        console.error('Failed to parse plan data from cookies:', error);
+      }
+    }
+    return false;
+  };
+
+  // Check for plan when exercises are loaded (for name resolution)
+  useEffect(() => {
+    if (exercises.length > 0 && !planLoadedFromCookies) {
+      loadPlanFromCookies();
+    }
+  }, [exercises, planLoadedFromCookies]);
+
+  // Update exercise data when exercises are fetched
+  useEffect(() => {
+    if (exercises.length > 0 && editableExercises.length > 0) {
+      const updatedExercises = editableExercises.map(e => {
+        const found = exercises.find(ex => ex.exerciseId === e.exerciseId);
+        if (found) {
+          // Always update with full exercise data from database
+          return {
+            ...e,
+            name: found.name,
+            gifUrl: found.gifUrl,
+            target: found.target,
+            equipment: found.equipment,
+            bodyPart: found.bodyPart
+          };
+        }
+        return e;
+      });
+      setEditableExercises(updatedExercises);
+      console.log('Updated exercises with full data:', updatedExercises);
+    }
+  }, [exercises]); // Update exercise data when exercises are fetched
+
+
+  // Check for plan when exercises are loaded (for name resolution)
+  useEffect(() => {
+    if (exercises.length > 0 && !planLoadedFromCookies) {
+      loadPlanFromCookies();
+    }
+  }, [exercises, planLoadedFromCookies]);
+
+  // Update exercise data when exercises are fetched
+  useEffect(() => {
+    if (exercises.length > 0 && editableExercises.length > 0) {
+      const updatedExercises = editableExercises.map(e => {
+        const found = exercises.find(ex => ex.exerciseId === e.exerciseId);
+        if (found) {
+          // Always update with full exercise data from database
+          return {
+            ...e,
+            name: found.name,
+            gifUrl: found.gifUrl,
+            target: found.target,
+            equipment: found.equipment,
+            bodyPart: found.bodyPart
+          };
+        }
+        return e;
+      });
+      setEditableExercises(updatedExercises);
+      console.log('Updated exercises with full data:', updatedExercises);
+    }
+  }, [exercises]); // Update exercise data when exercises are fetched
 
   // Handler
   // Handler for title renaming
@@ -381,7 +566,10 @@ function CreatePlan() {
                     <ChatApp />
                   </div>
                   <button
-                    onClick={toggleChatOpen}
+                    onClick={() => {
+                      toggleChatOpen();
+                      setCreatePlan(true);
+                    }}
                     className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
                   >
                     Create with AI
@@ -469,7 +657,13 @@ function CreatePlan() {
                 {editableExercises.map((exercise, idx) => (
                   <div key={idx} className="mt-5 mb-6 p-3 rounded-lg bg-gray-800">
                     <div className="flex items-center">
-                      <img src={exercise.gifUrl} className="w-11 h-11 rounded object-cover" />
+                      {exercise.gifUrl ? (
+                        <img src={exercise.gifUrl} className="w-11 h-11 rounded object-cover" alt={exercise.name} />
+                      ) : (
+                        <div className="w-11 h-11 rounded bg-gray-600 flex items-center justify-center text-xs text-gray-300">
+                          💪
+                        </div>
+                      )}
                       <div className="font-bold text-lg ml-4 mr-4">{capitalizeWords(exercise.name)}</div>
                       <button
                         onClick={() => {
@@ -543,7 +737,13 @@ function CreatePlan() {
               <div className="fixed bottom-24 right-5 z-[9999]">
                 <div className="flex flex-col items-end justify-end gap-4">
                   <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
-                    <ChatApp />
+                    <ChatApp
+                      onSuccess={() => {
+                        setTimeout(() => {
+                          loadPlanFromCookies();
+                        }, 100); // Small delay to ensure cookie is set
+                      }}
+                    />
                   </div>
                   <button
                     onClick={toggleChatOpen}
