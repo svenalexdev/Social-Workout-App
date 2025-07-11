@@ -172,44 +172,71 @@ function CreatePlan() {
             exercises.length > 0 ? exercises.slice(0, 3) : 'No exercises loaded yet'
           );
 
-          // Add missing exercise properties (name, gifUrl, etc.)
-          const exercisesWithFullData = parsedPlan.exercise.map(e => {
+          // Add missing exercise properties (name, gifUrl, etc.) and filter out invalid exercises
+          const validExercises = [];
+
+          parsedPlan.exercise.forEach(e => {
             console.log(`Looking for exercise with ID: ${e.exerciseId}`);
             if (exercises.length > 0) {
               const found = exercises.find(ex => ex.exerciseId === e.exerciseId);
               if (found) {
                 console.log(`Found exercise in database:`, found.name);
-                return {
+                validExercises.push({
                   ...e,
                   name: found.name,
                   gifUrl: found.gifUrl,
                   target: found.target,
                   equipment: found.equipment,
                   bodyPart: found.bodyPart
-                };
+                });
               } else {
-                console.log(`Exercise ID ${e.exerciseId} not found in database`);
+                console.log(`Exercise ID ${e.exerciseId} not found in database - removing from plan`);
+                // Exercise not found, don't add it to validExercises (effectively deleting it)
               }
+            } else {
+              // If exercises haven't loaded yet, keep the exercise but add fallback data
+              validExercises.push({
+                ...e,
+                name: e.name || `Exercise ${e.exerciseId}`,
+                gifUrl: e.gifUrl || '',
+                target: e.target || '',
+                equipment: e.equipment || '',
+                bodyPart: e.bodyPart || ''
+              });
             }
-            // Fallback if exercise not found in database
-            return {
-              ...e,
-              name: e.name || `Exercise ${e.exerciseId}`,
-              gifUrl: e.gifUrl || '', // Will show no image if not available
-              target: e.target || '',
-              equipment: e.equipment || '',
-              bodyPart: e.bodyPart || ''
-            };
           });
 
-          console.log('Setting editable exercises with full data:', exercisesWithFullData);
-          setEditableExercises(exercisesWithFullData);
-          setCreatePlan(true); // Show the create plan view since we have exercises
-          console.log('Set createPlan to true');
+          console.log('Valid exercises after filtering:', validExercises);
 
-          // Close AI chat if it was open
-          setChatOpen(false);
-          console.log('Closed AI chat');
+          if (validExercises.length > 0) {
+            setEditableExercises(validExercises);
+            setCreatePlan(true); // Show the create plan view since we have exercises
+            console.log('Set createPlan to true');
+
+            // Update localStorage and cookies with only valid exercises
+            const userID = getCookie('userId');
+            const updatedPlan = {
+              ...parsedPlan,
+              userId: userID || parsedPlan.userId,
+              exercise: validExercises.map(e => ({
+                exerciseId: e.exerciseId?.toString() ?? '',
+                sets: Number(e.sets) || 1,
+                reps: Number(e.reps) || 1,
+                weight: Number(e.weight) || 1,
+                restTime: Number(e.restTime) || 1
+              }))
+            };
+
+            localStorage.setItem('plan', JSON.stringify(updatedPlan));
+            setCookie('plan', JSON.stringify(updatedPlan));
+            console.log('Updated localStorage and cookies with valid exercises only');
+
+            // Close AI chat if it was open
+            setChatOpen(false);
+            console.log('Closed AI chat');
+          } else {
+            console.log('No valid exercises found, not setting createPlan to true');
+          }
 
           setPlanLoadedFromCookies(true);
           return true;
@@ -480,27 +507,37 @@ function CreatePlan() {
                 </Switch>
                 <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
               </div>
-              <div className="flex justify-center mt-8">
-                <button onClick={handleAddExercise} className="btn text-lg bg-gray-500 border-none text-white w-xs">
+              <div className="mt-8 px-4">
+                <button onClick={handleAddExercise} className="btn text-lg bg-gray-500 border-none text-white w-full">
                   Add exercises
                 </button>
               </div>
-              <div className="fixed bottom-22 right-5 z-[9999]">
-                <div className="flex flex-col items-end justify-end gap-4">
-                  <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
-                    <ChatApp />
-                  </div>
-                  <button
-                    onClick={() => {
-                      toggleChatOpen();
-                      setCreatePlan(true);
-                    }}
-                    className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
-                  >
-                    Create with AI
-                  </button>
-                </div>
+
+              {/* Add AI button for initial state as well */}
+              <div className="mt-4 px-4">
+                <button
+                  onClick={() => {
+                    toggleChatOpen();
+                    setCreatePlan(true);
+                  }}
+                  className="btn text-lg bg-[#ffa622] border-none text-white w-full"
+                >
+                  Create with AI
+                </button>
               </div>
+
+              {/* AI Chat Form for initial state */}
+              {chatOpen && (
+                <div className="mt-6 mx-4">
+                  <ChatApp
+                    onSuccess={() => {
+                      setTimeout(() => {
+                        loadPlanFromCookies();
+                      }, 100);
+                    }}
+                  />
+                </div>
+              )}
             </div>
           ) : (
             <div>
@@ -547,14 +584,36 @@ function CreatePlan() {
                 </Switch>
                 <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
               </div>
-              <div className="flex justify-center mt-8">
+              <div className="mt-8 px-4">
                 <button
                   onClick={() => setShowExercises(true)}
-                  className="btn text-lg bg-gray-500 border-none text-white w-xs"
+                  className="btn text-lg bg-gray-500 border-none text-white w-full"
                 >
                   Add exercises
                 </button>
               </div>
+
+              {/* AI Button - show below Add exercises when no exercises, or below exercises when they exist */}
+              {editableExercises.length === 0 && (
+                <div className="mt-4 px-4">
+                  <button onClick={toggleChatOpen} className="btn text-lg bg-[#ffa622] border-none text-white w-full">
+                    Create with AI
+                  </button>
+                </div>
+              )}
+
+              {/* AI Chat Form - integrated into the main flow */}
+              {chatOpen && (
+                <div className="mt-6 mx-4">
+                  <ChatApp
+                    onSuccess={() => {
+                      setTimeout(() => {
+                        loadPlanFromCookies();
+                      }, 100); // Small delay to ensure cookie is set
+                    }}
+                  />
+                </div>
+              )}
               <div className="mt-8">
                 {editableExercises.map((exercise, idx) => (
                   <div key={idx} className="ml-2 mr-2 mt-5 mb-6 p-3 rounded-lg bg-gray-800">
@@ -623,25 +682,28 @@ function CreatePlan() {
                   </div>
                 ))}
               </div>
-              <div className="fixed bottom-22 right-5 z-[9999]">
-                <div className="flex flex-col items-end justify-end gap-4">
-                  <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
-                    <ChatApp
-                      onSuccess={() => {
-                        setTimeout(() => {
-                          loadPlanFromCookies();
-                        }, 100); // Small delay to ensure cookie is set
-                      }}
-                    />
-                  </div>
-                  <button
-                    onClick={toggleChatOpen}
-                    className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
-                  >
-                    Create with AI
+
+              {/* AI Button - show below exercises when they exist */}
+              {editableExercises.length > 0 && (
+                <div className="mt-6 px-4 mb-4">
+                  <button onClick={toggleChatOpen} className="btn text-lg bg-[#ffa622] border-none text-white w-full">
+                    New Plan with AI
                   </button>
                 </div>
-              </div>
+              )}
+
+              {/* AI Chat Form - show below everything when exercises exist */}
+              {chatOpen && editableExercises.length > 0 && (
+                <div className="mt-6 mx-4">
+                  <ChatApp
+                    onSuccess={() => {
+                      setTimeout(() => {
+                        loadPlanFromCookies();
+                      }, 100); // Small delay to ensure cookie is set
+                    }}
+                  />
+                </div>
+              )}
             </div>
           )}
         </>
