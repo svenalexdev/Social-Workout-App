@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate, useLocation } from 'react-router';
 import { toast } from 'react-toastify';
 import { signin } from '../data/auth.js';
-import { setCookie } from '../utils/cookieUtils.js';
+import { setCookie, getCookie } from '../utils/cookieUtils.js';
 import { useAuth } from '../context/index.js';
 
 const LoginSignup = () => {
@@ -20,17 +20,27 @@ const LoginSignup = () => {
       e.preventDefault();
       if (!email || !password) throw new Error('All fields are required');
       setLoading(true);
+      
       const { userId, message } = await signin({ email, password });
-
+    
       toast.success(message || 'Welcome Back');
-      //alert('welcome Back');
-
+      
       setIsAuthenticated(true);
       setCheckSession(true);
+      
       setCookie('userId', userId);
+      
+      // Verify cookie was set
+      const cookieCheck = getCookie('userId');
+    
+      if (!cookieCheck) {
+        console.warn('Cookie not set, using localStorage as fallback');
+        localStorage.setItem('userId', userId);
+      }
 
       navigate('/plans');
     } catch (error) {
+      console.error('Login error:', error);
       toast.error(error.message);
     } finally {
       setLoading(false);
