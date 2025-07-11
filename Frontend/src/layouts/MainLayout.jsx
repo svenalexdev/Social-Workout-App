@@ -8,7 +8,7 @@ function MainLayout() {
     <AuthContextProvider>
       <div className=" text-gray-300 flex flex-col min-h-screen pb-15">
         <div className="bg-black h-[70px] fixed top-0 left-0 right-0 z-50"></div>
-        <main className="grow flex flex-col justify-between pt-[25px]">
+        <main className="grow flex flex-col justify-between pt-[70px]">
           <Outlet />
           <ToastContainer
             position="top-center"

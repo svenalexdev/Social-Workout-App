@@ -184,7 +184,7 @@ function CreatePlan() {
   // console.log(filteredExercises);
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
+    <div className="min-h-screen bg-black text-white p-4 pt-6">
       {/* Modal / popup to show exercise list  */}
       {showExercises && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
