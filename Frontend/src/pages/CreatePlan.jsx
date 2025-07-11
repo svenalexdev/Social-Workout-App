@@ -581,27 +581,37 @@ function CreatePlan() {
                 </Switch>
                 <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
               </div>
-              <div className="flex justify-center mt-8">
+              <div className="mt-8 px-4">
                 <button onClick={handleAddExercise} className="btn text-lg bg-gray-500 border-none text-white w-full">
                   Add exercises
                 </button>
               </div>
-              <div className="fixed bottom-24 right-5 z-[9999]">
-                <div className="flex flex-col items-end justify-end gap-4">
-                  <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
-                    <ChatApp />
-                  </div>
-                  <button
-                    onClick={() => {
-                      toggleChatOpen();
-                      setCreatePlan(true);
-                    }}
-                    className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
-                  >
-                    Create with AI
-                  </button>
-                </div>
+
+              {/* Add AI button for initial state as well */}
+              <div className="mt-4 px-4">
+                <button
+                  onClick={() => {
+                    toggleChatOpen();
+                    setCreatePlan(true);
+                  }}
+                  className="btn text-lg bg-[#ffa622] border-none text-white w-full"
+                >
+                  Create with AI
+                </button>
               </div>
+
+              {/* AI Chat Form for initial state */}
+              {chatOpen && (
+                <div className="mt-6 mx-4">
+                  <ChatApp
+                    onSuccess={() => {
+                      setTimeout(() => {
+                        loadPlanFromCookies();
+                      }, 100);
+                    }}
+                  />
+                </div>
+              )}
             </div>
           ) : (
             <div className="p-3">

@@ -601,14 +601,14 @@ function ExercisingPlan() {
   return (
     <div className="min-h-screen bg-[#121212] text-white p-4 pt-safe">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-2xl p-6 mb-6 mt-12 shadow-2xl border border-gray-700 backdrop-blur-sm">
+      <div className=" p-3 mb-3">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-white">{workoutData.name}</h1>
         </div>
       </div>
 
       {/* Fixed Timer & Date Bar */}
-      <div className="sticky top-safe z-10 bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-lg p-4 mb-6 border border-gray-700 backdrop-blur-sm shadow-lg">
+      <div className="sticky top-15 z-1000 bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-lg p-4 mb-6 border border-gray-700 backdrop-blur-sm shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 text-gray-300">
             <span className="flex items-center gap-1">📅 {new Date().toLocaleDateString()}</span>
