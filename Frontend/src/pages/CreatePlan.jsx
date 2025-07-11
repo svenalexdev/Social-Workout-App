@@ -70,6 +70,7 @@ function CreatePlan() {
       }))
     };
     setCookie('plan', JSON.stringify(plan));
+    localStorage.setItem('plan', JSON.stringify(plan));
   }, [planName, editableExercises, isPublic]);
 
   // Fetch exercises
@@ -336,7 +337,11 @@ function CreatePlan() {
                     <ChatApp />
                   </div>
                   <button
-                    onClick={toggleChatOpen}
+                    // onClick={toggleChatOpen}
+                    onClick={() => {
+                      toggleChatOpen;
+                      setCreatePlan(true);
+                    }}
                     className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
                   >
                     Create with AI
@@ -458,19 +463,6 @@ function CreatePlan() {
                     </div>
                   </div>
                 ))}
-              </div>
-              <div className="fixed bottom-22 right-5 z-[9999]">
-                <div className="flex flex-col items-end justify-end gap-4">
-                  <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
-                    <ChatWindow />
-                  </div>
-                  <button
-                    onClick={toggleChatOpen}
-                    className=" btn h-25 w-25 border-none btn-primary btn-xl btn-circle bg-[#ffa622]"
-                  >
-                    Create with AI
-                  </button>
-                </div>
               </div>
             </div>
           )}
