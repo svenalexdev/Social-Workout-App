@@ -207,7 +207,7 @@ function CreatePlan() {
   // console.log(filteredExercises);
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
+    <div className="min-h-screen bg-[#121212] text-white p-4">
       {/* Modal / popup to show exercise list  */}
       {showExercises && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
@@ -305,17 +305,19 @@ function CreatePlan() {
           {/* Conditional rendering branch 1 */}
           {!createPlan ? (
             <div>
-              <div className="flex justify-around items-center">
+              <div className="flex justify-between items-center px-2 py-2">
                 <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
                   X
                 </button>
-                <h1 className="text-center font-bold text-lg">{planName}</h1>
+                <h1 className="flex-1 text-center font-bold text-lg mx-2 truncate overflow-hidden whitespace-nowrap">
+                  {planName}
+                </h1>
                 <button onClick={handleSaveButton} className="btn text-lg bg-gray-500 border-none text-white">
                   Save
                 </button>
               </div>
               {/* Editable title */}
-              <div className="flex mt-12 ml-6 items-center">
+              <div className="flex mt-5 ml-6 items-center">
                 {isEditingName ? (
                   <input
                     type="text"
@@ -377,11 +379,13 @@ function CreatePlan() {
           ) : (
             <div>
               {/* Conditional rendering branch 2 */}
-              <div className="flex justify-around items-center">
+              <div className="flex justify-between items-center px-4 py-2">
                 <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
                   X
                 </button>
-                <h1 className="text-center font-bold text-lg">{planName}</h1>
+                <h1 className="flex-1 text-center font-bold text-lg mx-2 truncate overflow-hidden whitespace-nowrap">
+                  {planName}
+                </h1>
                 <button onClick={handleSaveButton} className="btn text-lg bg-gray-500 border-none text-white">
                   Save
                 </button>
