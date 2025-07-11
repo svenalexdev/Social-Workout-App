@@ -462,7 +462,7 @@ function CreatePlan() {
               <div className="fixed bottom-22 right-5 z-[9999]">
                 <div className="flex flex-col items-end justify-end gap-4">
                   <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
-                    <ChatWindow />
+                    <ChatApp />
                   </div>
                   <button
                     onClick={toggleChatOpen}
