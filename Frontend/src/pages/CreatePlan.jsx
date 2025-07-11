@@ -212,21 +212,21 @@ function CreatePlan() {
       {showExercises && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
           <div className="bg-gray-800 rounded-2xl max-w-lg w-full h-[600px] min-h-full overflow-hidden relative flex flex-col">
-            <div className="sticky top-0 z-10 pb-2">
-              {/* Close Button */}
-              <button
-                onClick={() => {
-                  setShowExercises(false);
-                  setSelectedExercise([]);
-                  setSearchTerm('');
-                  setVisibleCount(100);
-                  setSelectedBodyparts([]);
-                }}
-                className="absolute top-3 left-4 text-2xl hover:text-white font-bold"
-              >
-                ×
-              </button>
-              <div className="flex justify-end mt-2 mr-2">
+            <div className="sticky top-0 z-10 pb-2 px-3">
+              <div className="flex justify-between items-center py-3">
+                {/* Close Button */}
+                <button
+                  onClick={() => {
+                    setShowExercises(false);
+                    setSelectedExercise([]);
+                    setSearchTerm('');
+                    setVisibleCount(100);
+                    setSelectedBodyparts([]);
+                  }}
+                  className="btn text-lg bg-gray-500 border-none text-white"
+                >
+                  ×
+                </button>
                 <button
                   onClick={() => {
                     setShowExercises(false);
@@ -235,7 +235,7 @@ function CreatePlan() {
                     setVisibleCount(100);
                     setSelectedBodyparts([]);
                   }}
-                  className="btn text-lg bg-gray-500 border-none text-white mr-1"
+                  className="btn text-lg bg-gray-500 border-none text-white"
                 >
                   Add ({selectedExercise.length})
                 </button>
@@ -254,7 +254,7 @@ function CreatePlan() {
               {/* Bodypart Filter UI */}
               <BodypartFilter selectedBodyparts={selectedBodyparts} onSelect={handleSelect} onRemove={handleRemove} />
             </div>
-            <div className="overflow-y-auto" ref={listRef} onScroll={handleScroll}>
+            <div className="overflow-y-auto px-3" ref={listRef} onScroll={handleScroll}>
               <ul>
                 {filteredExercises.slice(0, visibleCount).map((ex, idx) => (
                   <li
@@ -279,7 +279,7 @@ function CreatePlan() {
                       )
                     }
                     // Mark a selected exercise with color
-                    className={`flex items-center text-xl font-bold mt-2 p-2 rounded ${
+                    className={`flex items-center text-lg font-bold py-2 rounded-none ${
                       selectedExercise.some(item => item.exerciseId === ex.exerciseId)
                         ? 'bg-green-800'
                         : 'hover:bg-slate-600'
@@ -304,8 +304,8 @@ function CreatePlan() {
         <>
           {/* Conditional rendering branch 1 */}
           {!createPlan ? (
-            <div>
-              <div className="flex justify-between items-center px-2 py-2">
+            <div className="p-3">
+              <div className="flex justify-between items-center ">
                 <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
                   X
                 </button>
@@ -317,7 +317,7 @@ function CreatePlan() {
                 </button>
               </div>
               {/* Editable title */}
-              <div className="flex mt-5 ml-6 items-center">
+              <div className="flex mt-6 items-center">
                 {isEditingName ? (
                   <input
                     type="text"
@@ -331,19 +331,32 @@ function CreatePlan() {
                   />
                 ) : (
                   <div
-                    className="flex items-center text-2xl font-bold p-2 w-full cursor-pointer group active:bg-gray-700 rounded"
+                    className="flex items-center text-2xl font-bold w-full cursor-pointer group active:bg-gray-700 rounded"
                     onClick={() => setIsEditingName(true)}
                     title="Tap to edit"
                     aria-label="Edit name"
                   >
                     <span className="text-left group-hover:text-[#ffa622] transition-colors">{planName}</span>
                     <span className="ml-2 text-lg text-gray-400 group-hover:text-[#ffa622] transition-colors select-none">
-                      ✏️
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5 inline"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16.5 3.5a2.121 2.121 0 013 3L7 19.5 3 21l1.5-4L16.5 3.5z"
+                        />
+                      </svg>
                     </span>
                   </div>
                 )}
               </div>
-              <div className="flex items-center space-x-2 mt-1 ml-8 mb-2">
+              <div className="flex items-center space-x-2 mt-2 mb-2">
                 <Switch
                   checked={isPublic}
                   onChange={setIsPublic}
@@ -358,11 +371,11 @@ function CreatePlan() {
                 <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
               </div>
               <div className="flex justify-center mt-8">
-                <button onClick={handleAddExercise} className="btn text-lg bg-gray-500 border-none text-white w-xs">
+                <button onClick={handleAddExercise} className="btn text-lg bg-gray-500 border-none text-white w-full">
                   Add exercises
                 </button>
               </div>
-              <div className="fixed bottom-22 right-5 z-[9999]">
+              <div className="fixed bottom-24 right-5 z-[9999]">
                 <div className="flex flex-col items-end justify-end gap-4">
                   <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
                     <ChatApp />
@@ -377,9 +390,9 @@ function CreatePlan() {
               </div>
             </div>
           ) : (
-            <div>
+            <div className="p-3">
               {/* Conditional rendering branch 2 */}
-              <div className="flex justify-between items-center px-4 py-2">
+              <div className="flex justify-between items-center">
                 <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
                   X
                 </button>
@@ -391,7 +404,7 @@ function CreatePlan() {
                 </button>
               </div>
               {/* Editable title */}
-              <div className="flex mt-12 ml-6 items-center">
+              <div className="flex mt-6 items-center">
                 {isEditingName ? (
                   <input
                     type="text"
@@ -405,19 +418,32 @@ function CreatePlan() {
                   />
                 ) : (
                   <div
-                    className="flex items-center text-2xl font-bold p-2 w-full cursor-pointer group active:bg-gray-700 rounded"
+                    className="flex items-center text-2xl font-bold w-full cursor-pointer group active:bg-gray-700 rounded"
                     onClick={() => setIsEditingName(true)}
                     title="Tap to edit"
                     aria-label="Edit name"
                   >
                     <span className="text-left group-hover:text-[#ffa622] transition-colors">{planName}</span>
                     <span className="ml-2 text-lg text-gray-400 group-hover:text-[#ffa622] transition-colors select-none">
-                      ✏️
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5 inline"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16.5 3.5a2.121 2.121 0 013 3L7 19.5 3 21l1.5-4L16.5 3.5z"
+                        />
+                      </svg>
                     </span>
                   </div>
                 )}
               </div>
-              <div className="flex items-center space-x-2 mt-1 ml-8 mb-2">
+              <div className="flex items-center space-x-2 mt-2 mb-2">
                 <Switch
                   checked={isPublic}
                   onChange={setIsPublic}
@@ -434,14 +460,14 @@ function CreatePlan() {
               <div className="flex justify-center mt-8">
                 <button
                   onClick={() => setShowExercises(true)}
-                  className="btn text-lg bg-gray-500 border-none text-white w-xs"
+                  className="btn text-lg bg-gray-500 border-none text-white w-full"
                 >
                   Add exercises
                 </button>
               </div>
               <div className="mt-8">
                 {editableExercises.map((exercise, idx) => (
-                  <div key={idx} className="ml-2 mr-2 mt-5 mb-6 p-3 rounded-lg bg-gray-800">
+                  <div key={idx} className="mt-5 mb-6 p-3 rounded-lg bg-gray-800">
                     <div className="flex items-center">
                       <img src={exercise.gifUrl} className="w-11 h-11 rounded object-cover" />
                       <div className="font-bold text-lg ml-4 mr-4">{capitalizeWords(exercise.name)}</div>
@@ -501,7 +527,7 @@ function CreatePlan() {
                   </div>
                 ))}
               </div>
-              <div className="fixed bottom-22 right-5 z-[9999]">
+              <div className="fixed bottom-24 right-5 z-[9999]">
                 <div className="flex flex-col items-end justify-end gap-4">
                   <div className={`${chatOpen ? 'block' : 'hidden'} shadow-lg rounded-lg`}>
                     <ChatApp />
