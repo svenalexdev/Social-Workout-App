@@ -30,6 +30,20 @@ export const getExercisesBe = async (req, res) => {
   res.json(exercise);
 };
 
+// New endpoint to get only exercise names and IDs
+export const getExercisesMinimal = async (req, res) => {
+  try {
+    const exercises = await Exercise.find({}, { exerciseId: 1, name: 1, _id: 0 });
+    res.json(exercises);
+  } catch (error) {
+    console.error('Error fetching minimal exercise data:', error.message);
+    res.status(500).json({
+      error: 'Failed to fetch exercise names and IDs',
+      message: error.message
+    });
+  }
+};
+
 export const getExerciseByName = async (req, res) => {
   try {
     const { name } = req.params;
