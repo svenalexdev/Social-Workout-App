@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { AuthContext } from './index.js';
 import { me, signout } from '../data/auth';
+import { deleteCookie, getCookie } from '../utils/cookieUtils.js';
 
 const AuthContextProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -14,7 +15,8 @@ const AuthContextProvider = ({ children }) => {
       setIsAuthenticated(false);
       setUser(null);
       localStorage.removeItem('userId');
-      Cookies.remove('token');
+      deleteCookie('userId');
+      deleteCookie('token');
       toast.success('Hope to see you soon.');
     } catch (error) {
       toast.error(error.message || 'Trouble signing out, please try again');
@@ -33,7 +35,8 @@ const AuthContextProvider = ({ children }) => {
         setIsAuthenticated(false);
         setUser(null);
         localStorage.removeItem('userId');
-        Cookies.remove('token');
+        deleteCookie('userId');
+        deleteCookie('token');
         // toast.error(error.message || 'Error signing in, please sign in again');
       } finally {
         setCheckSession(false);

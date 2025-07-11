@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useContext  } from 'react';
 import { toast } from 'react-toastify';
 import { useRef } from 'react';
+import { AuthContext } from '../context/index.js';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -48,21 +49,12 @@ const Profile = () => {
     fetchProfileAndWorkouts();
   }, []);
 
+  const { logout } = useContext(AuthContext);
   const handleLogout = async () => {
-    try {
-      const BACKEND_URL = import.meta.env.VITE_API_URL;
-      await fetch(`${BACKEND_URL}/auth/signout`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      toast.success('Successfully logged out!');
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1200);
-    } catch (error) {
-      console.error('Logout failed:', error.message);
-      toast.error('Logout failed. Please try again.');
-    }
+    await logout();
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 1200);
   };
   const handleImageUpload = async e => {
     const BACKEND_URL = import.meta.env.VITE_API_URL;
@@ -101,7 +93,7 @@ const Profile = () => {
   const handleImageClick = () => {
     fileInputRef.current.click();
   };
-  const openWorkoutModal = (workout) => {
+  const openWorkoutModal = workout => {
     setSelectedWorkout(workout);
     setIsModalOpen(true);
   };
