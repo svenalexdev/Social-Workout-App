@@ -101,7 +101,7 @@ const Profile = () => {
   const handleImageClick = () => {
     fileInputRef.current.click();
   };
-  const openWorkoutModal = (workout) => {
+  const openWorkoutModal = workout => {
     setSelectedWorkout(workout);
     setIsModalOpen(true);
   };

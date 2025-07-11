@@ -39,12 +39,12 @@ const LoginSignup = () => {
   if (isAuthenticated) return <Navigate to={location.state?.next || '/'} />;
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
-      <h2 className="mt-10 text-center text-3xl font-bold text-white mb-10"> Sign in</h2>
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <div>
-          <label className="block text-sm font-medium text-gray-300">Email address</label>
-          <div className="mt-2">
+    <div className="min-h-screen bg-[#121212] text-white p-4">
+      <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-2xl p-8 mx-auto mt-12 max-w-md shadow-2xl border border-gray-700 backdrop-blur-sm">
+        <h2 className="text-center text-3xl font-bold text-white mb-8">Sign in</h2>
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Email address</label>
             <input
               id="email"
               name="email"
@@ -52,14 +52,13 @@ const LoginSignup = () => {
               onChange={handleChange}
               value={email}
               required
-              className="block w-full bg-gray-900 rounded-lg p-2 text-gray-300 border border-gray-600 backdrop-blur-sm"
+              className="block w-full bg-[#1a1a1a] rounded-lg p-3 text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
+              placeholder="Enter your email"
             />
           </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-300">Password</label>
-          <div className="mt-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
             <input
               id="password"
               name="password"
@@ -67,27 +66,29 @@ const LoginSignup = () => {
               onChange={handleChange}
               value={password}
               required
-              className="block w-full bg-gray-900 rounded-lg p-2 text-gray-300 border border-gray-600 backdrop-blur-sm"
+              className="block w-full bg-[#1a1a1a] rounded-lg p-3 text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
+              placeholder="Enter your password"
             />
           </div>
-        </div>
 
-        <div>
-          <button
-            type="submit"
-            className="flex w-full justify-center rounded-lg bg-indigo-600 p-3 mt-9 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Sign in
-          </button>
-        </div>
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex w-full justify-center rounded-lg bg-[#F2AB40] text-black p-3 text-sm font-semibold shadow-lg hover:bg-[#e09b2d] transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </div>
 
-        <p className="mt-4 text-center text-sm">
-          Don't have an account?{' '}
-          <Link to="/signup" className="text-primary hover:underline">
-            Sign up!
-          </Link>
-        </p>
-      </form>
+          <p className="mt-6 text-center text-sm text-gray-400">
+            Don't have an account?{' '}
+            <Link to="/signup" className="text-[#F2AB40] hover:text-[#e09b2d] font-medium transition-colors">
+              Sign up!
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 };
