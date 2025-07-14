@@ -219,22 +219,36 @@ function Home() {
   // If user is not authenticated, show login/signup options
   if (!isAuthenticated) {
     return (
-      <div className="bg-[#121212] text-white">
-        <div className="flex flex-col items-center justify-center min-h-[93vh]">
-          <h1 className="text-4xl font-bold mb-8">Workout Tracker</h1>
-          <div className="flex flex-col gap-4 w-full max-w-sm px-4">
-            <button
-              className="bg-[#F2AB40] text-black px-6 py-3 text-lg rounded-lg hover:bg-[#e09b2d] transition-colors font-semibold"
-              onClick={GoToSignUp}
-            >
-              Sign Up
-            </button>
-            <button
-              className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] text-white px-6 py-3 text-lg rounded-lg hover:border-[#F2AB40] border border-gray-600 transition-all"
-              onClick={GoToSignIn}
-            >
-              Sign In
-            </button>
+      <div
+        style={{
+          backgroundImage: "url('/start-bg8.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+        className="bg-[#121212] text-white"
+      >
+        <div className="flex flex-col justify-between items-center  h-screen w-full py-30">
+          <div>
+            <p className="font-semibold mb-2 text-xl text-center">Welcome to</p>
+            <h1 className="text-4xl font-semibold mb-10">Workout Tracker</h1>
+          </div>
+          <div>
+            <div className="flex flex-col gap-4 w-full max-w-sm">
+              <button
+                className="bg-[#F2AB40] text-black px-6 py-3 text-lg rounded-lg hover:bg-[#e09b2d] transition-colors font-semibold"
+                onClick={GoToSignUp}
+              >
+                Sign Up
+              </button>
+              <button
+                className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] text-white px-6 py-3 text-lg rounded-lg hover:border-[#F2AB40] border border-gray-600 transition-all font-semibold"
+                onClick={GoToSignIn}
+              >
+                Sign In
+              </button>
+            </div>
+            <h2 className="mt-5 font-semibold text-xl">Plan It. Share It. Sweat Together.</h2>
           </div>
         </div>
       </div>
