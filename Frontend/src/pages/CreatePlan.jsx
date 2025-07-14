@@ -459,7 +459,7 @@ function CreatePlan() {
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   placeholder="Search exercises..."
-                  className="w-full max-w-xs p-2 mb-4 rounded bg-[#1a1a1a] border border-gray-600  placeholder-gray-500 mt-4"
+                  className="w-full p-2 mb-3 rounded bg-[#1a1a1a] border border-gray-600  placeholder-gray-500"
                 />
               </div>
               {/* Bodypart Filter UI */}
