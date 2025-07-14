@@ -622,7 +622,7 @@ function CreatePlan() {
 
               {/* AI Chat Form for initial state */}
               {chatOpen && (
-                <div className="mt-6 mx-4">
+                <div className="mt-6">
                   <ChatApp
                     onSuccess={() => {
                       setTimeout(() => {
@@ -744,7 +744,7 @@ function CreatePlan() {
 
               {/* AI Chat Form - integrated into the main flow */}
               {chatOpen && (
-                <div className="mt-6 mx-4">
+                <div className="mt-6">
                   <ChatApp
                     onSuccess={() => {
                       setTimeout(() => {
@@ -862,7 +862,7 @@ function CreatePlan() {
 
               {/* AI Chat Form - show below everything when exercises exist */}
               {chatOpen && editableExercises.length > 0 && (
-                <div className="mt-6 mx-4">
+                <div className="mt-6">
                   <ChatApp
                     onSuccess={() => {
                       setTimeout(() => {
