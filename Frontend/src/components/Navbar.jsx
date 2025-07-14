@@ -11,7 +11,7 @@ function Navbar() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#2e3a50] border-t border-gray-700 pb-safe">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#2e3a50] border-t border-gray-700 pb-2">
       <div className="px-4 py-3">
         <div className="flex justify-around items-center max-w-md mx-auto">
           {/* Home */}
@@ -19,11 +19,7 @@ function Navbar() {
             onClick={() => navigate('/')}
             className="flex flex-col items-center justify-center py-2 px-3 rounded-xl"
           >
-            <img
-              src={currentPath === '/' ? '/HomeON.png' : '/HomeOFF.png'}
-              alt="Home"
-              className="w-6 h-6 mb-1"
-            />
+            <img src={currentPath === '/' ? '/HomeON.png' : '/HomeOFF.png'} alt="Home" className="w-6 h-6 mb-1" />
             <span className={`text-xs ${currentPath === '/' ? 'text-white' : 'text-gray-400'}`}>Home</span>
           </button>
 

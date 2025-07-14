@@ -718,9 +718,7 @@ function CreatePlan() {
                       {exercise.gifUrl ? (
                         <img src={exercise.gifUrl} className="w-11 h-11 rounded object-cover" alt={exercise.name} />
                       ) : (
-                        <div className="w-11 h-11 rounded bg-gray-600 flex items-center justify-center text-xs text-gray-300">
-                          💪
-                        </div>
+                        <div className="w-11 h-11 rounded bg-gray-600 flex items-center justify-center text-xs text-gray-300"></div>
                       )}
                       <div className="font-bold text-lg ml-4 mr-4">{capitalizeWords(exercise.name)}</div>
                       <button
