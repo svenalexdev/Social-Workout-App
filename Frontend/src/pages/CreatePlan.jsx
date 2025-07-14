@@ -745,51 +745,51 @@ function CreatePlan() {
                         </svg>
                       </button>
                     </div>
-                    <div className="grid grid-cols-4 gap-2 text-xs font-semibold mt-4 mb-1">
-                      <span>Sets</span>
-                      <span>Reps</span>
-                      <span>Weight</span>
-                      <span>Rest</span>
+                      <div className="grid grid-cols-4 gap-2 text-xs font-semibold mt-4 mb-1 text-center">
+                        <span>Sets</span>
+                        <span>Reps</span>
+                        <span>Weight</span>
+                        <span>Rest</span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        <input
+                          type="number"
+                          name={`sets-${idx}`}
+                          placeholder="0"
+                          value={exercise.sets?.toString() ?? ''}
+                          onChange={e => handleExerciseChange(idx, 'sets', e.target.value)}
+                          className="bg-gray-700 rounded px-2 py-1 text-center"
+                          min={0}
+                        />
+                        <input
+                          type="number"
+                          name={`reps-${idx}`}
+                          placeholder="0"
+                          value={exercise.reps?.toString() ?? ''}
+                          onChange={e => handleExerciseChange(idx, 'reps', e.target.value)}
+                          className="bg-gray-700 rounded px-2 py-1 text-center"
+                          min={0}
+                        />
+                        <input
+                          type="number"
+                          name={`weight-${idx}`}
+                          placeholder="0"
+                          value={exercise.weight?.toString() ?? ''}
+                          onChange={e => handleExerciseChange(idx, 'weight', e.target.value)}
+                          className="bg-gray-700 rounded px-2 py-1 text-center"
+                          min={0}
+                        />
+                        <input
+                          type="number"
+                          name={`restTime-${idx}`}
+                          placeholder="0"
+                          value={exercise.restTime?.toString() ?? ''}
+                          onChange={e => handleExerciseChange(idx, 'restTime', e.target.value)}
+                          className="bg-gray-700 rounded px-2 py-1 text-center"
+                          min={0}
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-2">
-                      <input
-                        type="number"
-                        name={`sets-${idx}`}
-                        placeholder="0"
-                        value={exercise.sets?.toString() ?? ''}
-                        onChange={e => handleExerciseChange(idx, 'sets', e.target.value)}
-                        className="bg-gray-700 rounded px-2 py-1 text-center"
-                        min={0}
-                      />
-                      <input
-                        type="number"
-                        name={`reps-${idx}`}
-                        placeholder="0"
-                        value={exercise.reps?.toString() ?? ''}
-                        onChange={e => handleExerciseChange(idx, 'reps', e.target.value)}
-                        className="bg-gray-700 rounded px-2 py-1 text-center"
-                        min={0}
-                      />
-                      <input
-                        type="number"
-                        name={`weight-${idx}`}
-                        placeholder="0"
-                        value={exercise.weight?.toString() ?? ''}
-                        onChange={e => handleExerciseChange(idx, 'weight', e.target.value)}
-                        className="bg-gray-700 rounded px-2 py-1 text-center"
-                        min={0}
-                      />
-                      <input
-                        type="number"
-                        name={`restTime-${idx}`}
-                        placeholder="0"
-                        value={exercise.restTime?.toString() ?? ''}
-                        onChange={e => handleExerciseChange(idx, 'restTime', e.target.value)}
-                        className="bg-gray-700 rounded px-2 py-1 text-center"
-                        min={0}
-                      />
-                    </div>
-                  </div>
                 ))}
               </div>
 
