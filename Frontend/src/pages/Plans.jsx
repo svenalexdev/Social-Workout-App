@@ -218,7 +218,7 @@ const Plans = () => {
       {/* Main Plans View */}
       {!selectedPlan && !selectedRecommendedPlan && !selectedPlanDetails ? (
         <div className="bg-[#121212] text-white min-h-screen pt-safe pb-5 w-full max-w-md mx-auto">
-          <div className="p-8 pb-15">
+          <div className="p-6 pb-2">
             {/* Enhanced Header Section */}
             <div className="flex flex-col items-center justify-center text-center">
               <div className="flex justify-between items-center w-full">
@@ -282,7 +282,6 @@ const Plans = () => {
                       <p className="text-gray-400 text-sm mb-2">{exerciseList}</p>
                       <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
                         <span>{plan.exercise ? `${plan.exercise.length} exercises` : 'No exercises'}</span>
-                        <span>{new Date(plan.createdAt || Date.now()).toLocaleDateString()}</span>
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -290,7 +289,7 @@ const Plans = () => {
                             e.stopPropagation();
                             GoToStartRoutine(plan._id);
                           }}
-                          className="text-xs bg-[#F2AB40] text-black px-2 py-1 rounded-full font-medium"
+                          className="flex-1 text-sm bg-[#F2AB40] text-black px-3 py-2 rounded-full font-medium hover:bg-[#e09b2d] transition-colors"
                         >
                           Start Routine
                         </button>
@@ -299,7 +298,7 @@ const Plans = () => {
                             e.stopPropagation();
                             handleCreateActivity(plan);
                           }}
-                          className="text-xs bg-gray-600 text-white px-2 py-1 rounded-full font-medium hover:bg-[#F2AB40] hover:text-black transition-colors"
+                          className="flex-1 text-sm bg-gray-600 text-white px-3 py-2 rounded-full font-medium hover:bg-[#F2AB40] hover:text-black transition-colors"
                         >
                           Create Activity
                         </button>
@@ -307,14 +306,14 @@ const Plans = () => {
                     </div>
                   );
                 })}
-                {plans.length > 3 && (
-                  <button
-                    onClick={GoToSeeAllMyPlans}
-                    className="w-full text-center py-2 text-[#F2AB40] hover:text-[#e09b2d] transition-colors"
-                  >
-                    See All My Plans →
-                  </button>
-                )}
+
+                {/* See All Plans Button */}
+                <button
+                  onClick={GoToSeeAllMyPlans}
+                  className="w-full text-center py-3 text-[#F2AB40] transition-colors rounded-lg hover:bg-[#F2AB40] hover:text-black font-semibold mt-4"
+                >
+                  See All My Plans →
+                </button>
               </div>
             ) : (
               <div className="text-center py-8">
@@ -331,7 +330,7 @@ const Plans = () => {
 
           {/* Recommended Plans Section */}
           <div className="p-6 pt-2">
-            <h3 className="text-2xl font-semibold mb-4 text-center">Recommended Plans</h3>
+            <h3 className="text-2xl font-semibold mb-4">Recommended Plans</h3>
 
             <div className="space-y-4">
               {recommendedPlans.length === 0 ? (
@@ -382,7 +381,7 @@ const Plans = () => {
                               e.stopPropagation();
                               handleCreateActivity(plan);
                             }}
-                            className="bg-[#F2AB40] text-black px-3 py-1 rounded text-xs hover:bg-[#e09b2d] transition-colors font-semibold"
+                            className="flex-1 bg-[#F2AB40] text-black px-4 py-2 rounded-full text-sm hover:bg-[#e09b2d] transition-colors font-medium"
                           >
                             Create Activity
                           </button>

@@ -509,48 +509,54 @@ const GroupFinder = () => {
     <>
       {/* Main GroupFinder View */}
       {!selectedActivity && !managingActivity ? (
-        <div className="min-h-screen bg-black text-white p-4 pt-6">
-          <div className="flex items-center">
-            {/* <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
+        <div className="bg-[#121212] text-white min-h-screen pt-safe pb-10 w-full max-w-md mx-auto">
+          <div className="p-6">
+            <div className="flex items-center">
+              {/* <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
               X
             </button> */}
-            <h1 className="flex-1 text-center font-bold text-2xl">Find A Group!</h1>
-            <div className="w-12" />
-          </div>{' '}
-          {/* My Posted Activities Section - Only show if user has posted activities */}
-          {myActivities.length > 0 && (
-            <>
-              <div className="mt-10 flex">
-                <h2 className="font-bold text-xl">My Posted Activities</h2>
-              </div>
-              <div className="mt-4 space-y-4">
-                {myActivities.map(activity => (
-                  <div
-                    key={activity._id}
-                    className="p-3 border border-blue-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden bg-blue-900/20"
-                  >
-                    <div className="flex items-center">
-                      <UserAvatar userId={activity.userId} name={activity.userId?.name} className="" size="h-20 w-20" />
-                      <div className="flex flex-col ml-2">
-                        <p>
-                          <span className="font-bold">Name: </span>
-                          {activity.name}
-                        </p>
-                        <p>
-                          <span className="font-bold">Created by: </span>
-                          {activity.userId?.name || 'You'}
-                        </p>
-                        <p>
-                          <span className="font-bold">Gym: </span>
-                          {activity.gym || 'Not specified'}
-                        </p>
-                        <p>
-                          <span className="font-bold">Time: </span>
-                          {activity.time || 'Not specified'}
-                        </p>
-                        <p className="text-blue-400 text-sm italic">Your activity</p>
+              <h1 className="flex-1 font-bold text-2xl mb-3">Find A Group!</h1>
+              <div className="w-12" />
+            </div>{' '}
+            {/* My Posted Activities Section - Only show if user has posted activities */}
+            {myActivities.length > 0 && (
+              <>
+                <div className="mt-10 flex">
+                  <h2 className="font-bold text-xl">My Posted Activities</h2>
+                </div>
+                <div className="mt-4 space-y-4">
+                  {myActivities.map(activity => (
+                    <div
+                      key={activity._id}
+                      className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-600 hover:border-[#F2AB40] transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
+                    >
+                      <div className="flex items-center">
+                        <UserAvatar
+                          userId={activity.userId}
+                          name={activity.userId?.name}
+                          className=""
+                          size="h-20 w-20"
+                        />
+                        <div className="flex flex-col ml-2">
+                          <p>
+                            <span className="font-bold">Name: </span>
+                            {activity.name}
+                          </p>
+                          <p>
+                            <span className="font-bold">Created by: </span>
+                            {activity.userId?.name || 'You'}
+                          </p>
+                          <p>
+                            <span className="font-bold">Gym: </span>
+                            {activity.gym || 'Not specified'}
+                          </p>
+                          <p>
+                            <span className="font-bold">Time: </span>
+                            {activity.time || 'Not specified'}
+                          </p>
+                          <p className="text-blue-400 text-sm italic">Your activity</p>
+                        </div>
                       </div>
-                    </div>
 
                       {/* Attendees */}
                       {activity.attendess && activity.attendess.length > 0 && (
@@ -689,7 +695,7 @@ const GroupFinder = () => {
                       <div className="flex justify-center mt-5">
                         <button
                           onClick={() => handleActivityClick(activity)}
-                          className="bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-sm font-semibold transition-colors mr-2"
+                          className="flex-1 bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-3 py-2 rounded-full text-sm font-medium transition-colors mr-2"
                         >
                           More Details
                         </button>
@@ -742,7 +748,7 @@ const GroupFinder = () => {
                   return (
                     <div
                       key={activity._id}
-                      className="p-3 border border-gray-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden"
+                      className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-600 hover:border-[#F2AB40] transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
                     >
                       <div className="flex items-center">
                         <UserAvatar
@@ -823,7 +829,7 @@ const GroupFinder = () => {
                       <div className="flex justify-center mt-5">
                         <button
                           onClick={() => handleActivityClick(activity)}
-                          className="bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-sm font-semibold transition-colors mr-2"
+                          className="flex-1 bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-3 py-2 rounded-full text-sm font-medium transition-colors mr-2"
                         >
                           More Details
                         </button>
@@ -836,7 +842,10 @@ const GroupFinder = () => {
 
                           if (userStatus === 'pending') {
                             return (
-                              <button className="btn bg-yellow-600 ml-5 h-8" disabled>
+                              <button
+                                className="flex-1 bg-yellow-600 text-white px-3 py-2 rounded-full text-sm font-medium ml-2"
+                                disabled
+                              >
                                 Pending
                               </button>
                             );
@@ -844,7 +853,7 @@ const GroupFinder = () => {
                             return (
                               <button
                                 onClick={() => handleLeaveActivity(activity)}
-                                className="btn bg-red-600 ml-5 h-8"
+                                className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-full text-sm font-medium transition-colors ml-2"
                                 disabled={isJoining}
                               >
                                 {isJoining ? 'Leaving...' : 'Leave'}
@@ -854,7 +863,7 @@ const GroupFinder = () => {
                             return (
                               <button
                                 onClick={() => handleJoinActivity(activity)}
-                                className="btn bg-green-600 ml-5 h-8"
+                                className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-full text-sm font-medium transition-colors ml-2"
                                 disabled={isJoining}
                               >
                                 {isJoining ? 'Joining...' : 'Ask to Join'}
@@ -865,7 +874,10 @@ const GroupFinder = () => {
                               activity.attendess?.filter(att => att.status === 'approved').length || 0;
                             const isAtLimit = activity.attendeessLimit && approvedCount >= activity.attendeessLimit;
                             return (
-                              <button className="btn bg-gray-500 ml-5 h-8" disabled>
+                              <button
+                                className="flex-1 bg-gray-500 text-white px-3 py-2 rounded-full text-sm font-medium ml-2"
+                                disabled
+                              >
                                 {isAtLimit ? 'Full' : 'Unavailable'}
                               </button>
                             );
@@ -882,7 +894,7 @@ const GroupFinder = () => {
       ) : managingActivity ? (
         /* Manage Activity Modal */
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-600 shadow-2xl">
+          <div className="bg-[#1a1a1a] rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-600 shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-white">Manage Activity</h2>
               <button
@@ -1111,8 +1123,8 @@ const GroupFinder = () => {
         </div>
       ) : (
         /* Full-Screen Activity Details Modal */
-        <div className="bg-[#121212] text-white min-h-screen pt-safe pb-safe w-full overflow-y-auto">
-          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-none sm:rounded-2xl shadow-2xl border-none sm:border border-gray-700 backdrop-blur-sm mx-0 sm:mx-4 p-6">
+        <div className="bg-[#121212] text-white min-h-screen pt-safe pb-5 w-full max-w-md mx-auto overflow-y-auto">
+          <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-600 shadow-xl m-4">
             {/* Header with close button */}
             <div className="flex items-center mb-6">
               <button
@@ -1301,7 +1313,7 @@ const GroupFinder = () => {
 
                       if (userStatus === 'pending') {
                         return (
-                          <button className="px-6 py-2 bg-yellow-600 text-white rounded-lg" disabled>
+                          <button className="px-6 py-2 bg-yellow-600 text-white rounded-lg font-semibold" disabled>
                             Request Pending
                           </button>
                         );
@@ -1309,7 +1321,7 @@ const GroupFinder = () => {
                         return (
                           <button
                             onClick={() => handleLeaveActivity(selectedActivity)}
-                            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
                             disabled={isJoining}
                           >
                             {isJoining ? 'Leaving...' : 'Leave Activity'}
@@ -1319,7 +1331,7 @@ const GroupFinder = () => {
                         return (
                           <button
                             onClick={() => handleJoinActivity(selectedActivity)}
-                            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
                             disabled={isJoining}
                           >
                             {isJoining ? 'Joining...' : 'Ask to Join'}
@@ -1331,7 +1343,7 @@ const GroupFinder = () => {
                         const isAtLimit =
                           selectedActivity.attendeessLimit && approvedCount >= selectedActivity.attendeessLimit;
                         return (
-                          <button className="px-6 py-2 bg-gray-500 text-white rounded-lg" disabled>
+                          <button className="px-6 py-2 bg-gray-500 text-white rounded-lg font-semibold" disabled>
                             {isAtLimit ? 'Activity Full' : 'Unavailable'}
                           </button>
                         );
