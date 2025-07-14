@@ -423,9 +423,9 @@ const Plans = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Time</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Date & Time</label>
                 <input
-                  type="time"
+                  type="datetime-local"
                   value={activityForm.time}
                   onChange={e => handleFormChange('time', e.target.value)}
                   className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white"

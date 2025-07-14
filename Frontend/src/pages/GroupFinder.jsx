@@ -26,12 +26,13 @@ const GroupFinder = () => {
   const [userImages, setUserImages] = useState({}); // Cache for user images
 
   // Default fallback image
-  const defaultImage = 'https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg';
+  const defaultImage =
+    'https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg';
 
   // Function to fetch user data and cache the image
-  const fetchUserImage = async (userId) => {
+  const fetchUserImage = async userId => {
     if (!userId) return defaultImage;
-    
+
     // Return cached image if available
     if (userImages[userId]) {
       return userImages[userId];
@@ -42,15 +43,15 @@ const GroupFinder = () => {
       const response = await axios.get(`${BACKEND_URL}/users/${userId}`, {
         withCredentials: true
       });
-      
+
       const imageUrl = response.data.image || defaultImage;
-      
+
       // Cache the image
       setUserImages(prev => ({
         ...prev,
         [userId]: imageUrl
       }));
-      
+
       return imageUrl;
     } catch (error) {
       console.error('Failed to fetch user image:', error);
@@ -66,18 +67,18 @@ const GroupFinder = () => {
   // UserAvatar component
   const UserAvatar = ({ userId, name, status, className, size = 'h-8 w-8' }) => {
     const [imageSrc, setImageSrc] = useState(defaultImage);
-    
+
     useEffect(() => {
       const loadImage = async () => {
         const extractedUserId = typeof userId === 'object' ? userId._id : userId;
         const image = await fetchUserImage(extractedUserId);
         setImageSrc(image);
       };
-      
+
       loadImage();
     }, [userId]);
 
-    const getAttendeeStyle = (status) => {
+    const getAttendeeStyle = status => {
       switch (status) {
         case 'approved':
           return 'opacity-100';
@@ -510,9 +511,9 @@ const GroupFinder = () => {
       {!selectedActivity && !managingActivity ? (
         <div className="min-h-screen bg-black text-white p-4 pt-6">
           <div className="flex items-center">
-            <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
+            {/* <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
               X
-            </button>
+            </button> */}
             <h1 className="flex-1 text-center font-bold text-2xl">Find A Group!</h1>
             <div className="w-12" />
           </div>{' '}
@@ -529,12 +530,7 @@ const GroupFinder = () => {
                     className="p-3 border border-blue-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden bg-blue-900/20"
                   >
                     <div className="flex items-center">
-                      <UserAvatar
-                        userId={activity.userId}
-                        name={activity.userId?.name}
-                        className=""
-                        size="h-20 w-20"
-                      />
+                      <UserAvatar userId={activity.userId} name={activity.userId?.name} className="" size="h-20 w-20" />
                       <div className="flex flex-col ml-2">
                         <p>
                           <span className="font-bold">Name: </span>
@@ -708,7 +704,12 @@ const GroupFinder = () => {
             </>
           )}
           {/* Filter UI */}
-          <BodypartFilter selectedBodyparts={selectedBodyparts} onSelect={handleSelect} onRemove={handleRemove} className='mt-10' />
+          <BodypartFilter
+            selectedBodyparts={selectedBodyparts}
+            onSelect={handleSelect}
+            onRemove={handleRemove}
+            className="mt-10"
+          />
           <div className="mt-3 flex">
             <h2 className="font-bold text-xl">Matching Activities</h2>
           </div>
@@ -740,12 +741,7 @@ const GroupFinder = () => {
                     className="p-3 border border-gray-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden"
                   >
                     <div className="flex items-center">
-                      <UserAvatar
-                        userId={activity.userId}
-                        name={activity.userId?.name}
-                        className=""
-                        size="h-20 w-20"
-                      />
+                      <UserAvatar userId={activity.userId} name={activity.userId?.name} className="" size="h-20 w-20" />
                       <div className="flex flex-col ml-2">
                         <p>
                           <span className="font-bold">Name: </span>
@@ -913,9 +909,9 @@ const GroupFinder = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date & Time</label>
                 <input
-                  type="time"
+                  type="datetime-local"
                   value={editForm.time}
                   onChange={e => handleEditFormChange('time', e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-md text-black"
@@ -952,8 +948,7 @@ const GroupFinder = () => {
                   {managingActivity.attendeessLimit}
                 </p>
                 <p className="text-sm text-gray-600">
-                  <strong>Total Requests:</strong> {managingActivity.attendess?.length || 0} (including
-                  pending)
+                  <strong>Total Requests:</strong> {managingActivity.attendess?.length || 0} (including pending)
                 </p>
                 <p className="text-sm text-gray-600">
                   <strong>Created:</strong> {new Date(managingActivity.createdAt).toLocaleDateString()}
@@ -1235,17 +1230,15 @@ const GroupFinder = () => {
                     <div className="flex flex-wrap gap-2">
                       {selectedActivity.bodyParts.map((bodyPartObj, index) => (
                         <div key={index}>
-                          {Object.entries(bodyPartObj).map(
-                            ([part, value]) =>
-                              value &&
-                              value.trim() !== '' && (
-                                <span
-                                  key={part}
-                                  className="inline-block bg-blue-600 text-white px-3 py-1 rounded-full text-sm mr-2 mb-2"
-                                >
-                                  {capitalizeWords(part)}
-                                </span>
-                              )
+                          {Object.entries(bodyPartObj).map(([part, value]) =>
+                            part !== '_id' && value && value.trim() !== '' ? (
+                              <span
+                                key={part}
+                                className="inline-block bg-blue-600 text-white px-3 py-1 rounded-full text-sm mr-2 mb-2"
+                              >
+                                {capitalizeWords(part)}
+                              </span>
+                            ) : null
                           )}
                         </div>
                       ))}
@@ -1255,9 +1248,9 @@ const GroupFinder = () => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3 justify-center">
-                  {selectedActivity.showWorkoutPlan && selectedActivity.workoutPlanId && (
+                  {/* {selectedActivity.showWorkoutPlan && selectedActivity.workoutPlanId && (
                     <button className="btn bg-gray-600 text-white px-6 py-2">View Workout Plan</button>
-                  )}
+                  )} */}
                   {(() => {
                     const activityUserId =
                       typeof selectedActivity.userId === 'object'
