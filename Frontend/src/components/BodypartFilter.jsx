@@ -27,8 +27,8 @@ const BodypartFilter = ({selectedBodyparts, onSelect, onRemove}) => {
               className={`flex items-center px-3 py-1 rounded-full border transition-colors whitespace-nowrap flex-shrink-0
                       ${
                         selected
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-gray-700 text-gray-200 border-gray-500 hover:bg-blue-800'
+                          ? 'bg-[#F2AB40] text-white border-[#F2AB40]'
+                          : 'bg-gray-700 text-gray-200 border-gray-600 hover:bg-blue-800'
                       }`}
             >
               <span>{capitalizeWords(part)}</span>
