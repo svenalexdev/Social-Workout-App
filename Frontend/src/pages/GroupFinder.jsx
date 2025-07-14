@@ -26,12 +26,13 @@ const GroupFinder = () => {
   const [userImages, setUserImages] = useState({}); // Cache for user images
 
   // Default fallback image
-  const defaultImage = 'https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg';
+  const defaultImage =
+    'https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg';
 
   // Function to fetch user data and cache the image
-  const fetchUserImage = async (userId) => {
+  const fetchUserImage = async userId => {
     if (!userId) return defaultImage;
-    
+
     // Return cached image if available
     if (userImages[userId]) {
       return userImages[userId];
@@ -42,15 +43,15 @@ const GroupFinder = () => {
       const response = await axios.get(`${BACKEND_URL}/users/${userId}`, {
         withCredentials: true
       });
-      
+
       const imageUrl = response.data.image || defaultImage;
-      
+
       // Cache the image
       setUserImages(prev => ({
         ...prev,
         [userId]: imageUrl
       }));
-      
+
       return imageUrl;
     } catch (error) {
       console.error('Failed to fetch user image:', error);
@@ -66,18 +67,18 @@ const GroupFinder = () => {
   // UserAvatar component
   const UserAvatar = ({ userId, name, status, className, size = 'h-8 w-8' }) => {
     const [imageSrc, setImageSrc] = useState(defaultImage);
-    
+
     useEffect(() => {
       const loadImage = async () => {
         const extractedUserId = typeof userId === 'object' ? userId._id : userId;
         const image = await fetchUserImage(extractedUserId);
         setImageSrc(image);
       };
-      
+
       loadImage();
     }, [userId]);
 
-    const getAttendeeStyle = (status) => {
+    const getAttendeeStyle = status => {
       switch (status) {
         case 'approved':
           return 'opacity-100';
@@ -508,462 +509,478 @@ const GroupFinder = () => {
     <>
       {/* Main GroupFinder View */}
       {!selectedActivity && !managingActivity ? (
-        <div className="min-h-screen bg-black text-white p-4 pt-6">
-          <div className="flex items-center">
-            <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
-              X
-            </button>
-            <h1 className="flex-1 text-center font-bold text-2xl">Find A Group!</h1>
-            <div className="w-12" />
-          </div>{' '}
-          {/* My Posted Activities Section - Only show if user has posted activities */}
-          {myActivities.length > 0 && (
-            <>
-              <div className="mt-10 flex">
-                <h2 className="font-bold text-xl">My Posted Activities</h2>
-              </div>
-              <div className="mt-4 space-y-4">
-                {myActivities.map(activity => (
-                  <div
-                    key={activity._id}
-                    className="p-3 border border-blue-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden bg-blue-900/20"
-                  >
-                    <div className="flex items-center">
-                      <UserAvatar
-                        userId={activity.userId}
-                        name={activity.userId?.name}
-                        className=""
-                        size="h-20 w-20"
-                      />
-                      <div className="flex flex-col ml-2">
-                        <p>
-                          <span className="font-bold">Name: </span>
-                          {activity.name}
-                        </p>
-                        <p>
-                          <span className="font-bold">Created by: </span>
-                          {activity.userId?.name || 'You'}
-                        </p>
-                        <p>
-                          <span className="font-bold">Gym: </span>
-                          {activity.gym || 'Not specified'}
-                        </p>
-                        <p>
-                          <span className="font-bold">Time: </span>
-                          {activity.time || 'Not specified'}
-                        </p>
-                        <p className="text-blue-400 text-sm italic">Your activity</p>
-                      </div>
-                    </div>
-
-                    {/* Attendees */}
-                    {activity.attendess && activity.attendess.length > 0 && (
-                      <div className="attendees flex mt-2">
-                        {activity.attendess.slice(0, 3).map((attendee, index) => {
-                          return (
-                            <UserAvatar
-                              key={index}
-                              userId={attendee.userId}
-                              name={attendee.userId?.name}
-                              status={attendee.status}
-                              className={`${index > 0 ? 'ml-2' : ''}`}
-                              size="h-8 w-8"
-                            />
-                          );
-                        })}
-                        {activity.attendess.length > 3 && (
-                          <div className="ml-2 h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
-                            +{activity.attendess.length - 3}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Attendee limit info */}
-                    {activity.attendeessLimit && (
-                      <p className="mt-2 text-sm text-gray-400">
-                        Spots: {activity.attendess?.filter(att => att.status === 'approved').length || 0}/
-                        {activity.attendeessLimit}
-                      </p>
-                    )}
-
-                    {/* Description */}
-                    {activity.description && (
-                      <p className="mt-4 max-h-16 overflow-hidden break-words">
-                        {activity.description.length > 90
-                          ? activity.description.slice(0, 90) + '...'
-                          : activity.description}
-                      </p>
-                    )}
-
-                    {/* Attendee Management Section - Show if there are attendees */}
-                    {activity.attendess && activity.attendess.length > 0 && (
-                      <div className="mt-3 border-t border-blue-400 pt-3">
-                        <h4 className="text-sm font-medium text-blue-200 mb-2">
-                          Manage Requests ({activity.attendess.filter(att => att.status === 'pending').length} pending)
-                        </h4>
-                        <div className="space-y-2 max-h-32 overflow-y-auto">
-                          {activity.attendess.map((attendee, index) => {
-                            return (
-                              <div
-                                key={index}
-                                className="flex items-center justify-between bg-black bg-opacity-30 p-2 rounded"
-                              >
-                                <div className="flex items-center">
-                                  <UserAvatar
-                                    userId={attendee.userId}
-                                    name={attendee.userId?.name}
-                                    status={attendee.status}
-                                    className="mr-2"
-                                    size="h-6 w-6"
-                                  />
-                                  <div>
-                                    <p className="text-xs font-medium text-white">
-                                      {attendee.userId?.name || 'Unknown User'}
-                                    </p>
-                                    <p
-                                      className={`text-xs capitalize font-medium ${
-                                        attendee.status === 'approved'
-                                          ? 'text-green-400'
-                                          : attendee.status === 'pending'
-                                          ? 'text-yellow-400'
-                                          : 'text-gray-400'
-                                      }`}
-                                    >
-                                      {attendee.status}
-                                      {attendee.status === 'pending' && ' ⏳'}
-                                      {attendee.status === 'approved' && ' ✅'}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                {attendee.status === 'pending' && (
-                                  <div className="flex gap-1">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const attendeeUserId =
-                                          typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
-                                        handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'approved');
-                                      }}
-                                      className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
-                                      disabled={isUpdating}
-                                    >
-                                      ✓
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const attendeeUserId =
-                                          typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
-                                        handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'declined');
-                                      }}
-                                      className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
-                                      disabled={isUpdating}
-                                    >
-                                      ✗
-                                    </button>
-                                  </div>
-                                )}
-
-                                {attendee.status === 'approved' && (
-                                  <div className="flex gap-1">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const attendeeUserId =
-                                          typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
-                                        handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'declined');
-                                      }}
-                                      className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
-                                      disabled={isUpdating}
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
+        <div className="bg-[#121212] text-white min-h-screen pt-safe pb-safe w-full">
+          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-none sm:rounded-2xl shadow-2xl border-none sm:border border-gray-700 backdrop-blur-sm mx-0 sm:mx-4 p-6 mb-8">
+            <div className="flex items-center mb-8">
+              <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
+                X
+              </button>
+              <h1 className="flex-1 text-center font-bold text-2xl">Find A Group!</h1>
+              <div className="w-12" />
+            </div>
+            {/* My Posted Activities Section - Only show if user has posted activities */}
+            {myActivities.length > 0 && (
+              <>
+                <div className="mt-12 flex">
+                  <h2 className="font-bold text-xl">My Posted Activities</h2>
+                </div>
+                <div className="mt-4 space-y-4">
+                  {myActivities.map(activity => (
+                    <div
+                      key={activity._id}
+                      className="p-3 border border-blue-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden bg-blue-900/20"
+                    >
+                      <div className="flex items-center">
+                        <UserAvatar
+                          userId={activity.userId}
+                          name={activity.userId?.name}
+                          className=""
+                          size="h-20 w-20"
+                        />
+                        <div className="flex flex-col ml-2">
+                          <p>
+                            <span className="font-bold">Name: </span>
+                            {activity.name}
+                          </p>
+                          <p>
+                            <span className="font-bold">Created by: </span>
+                            {activity.userId?.name || 'You'}
+                          </p>
+                          <p>
+                            <span className="font-bold">Gym: </span>
+                            {activity.gym || 'Not specified'}
+                          </p>
+                          <p>
+                            <span className="font-bold">Time: </span>
+                            {activity.time || 'Not specified'}
+                          </p>
+                          <p className="text-blue-400 text-sm italic">Your activity</p>
                         </div>
                       </div>
-                    )}
 
-                    <div className="flex justify-center mt-5">
-                      <button onClick={() => handleActivityClick(activity)} className="btn bg-green-600 h-8 mr-2">
-                        More Details
-                      </button>
-                      <button onClick={() => handleManageActivity(activity)} className="btn bg-blue-600 h-8 relative">
-                        Manage
-                        {activity.attendess?.some(att => att.status === 'pending') && (
-                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                            {activity.attendess.filter(att => att.status === 'pending').length}
-                          </span>
-                        )}
-                      </button>
+                      {/* Attendees */}
+                      {activity.attendess && activity.attendess.length > 0 && (
+                        <div className="attendees flex mt-2">
+                          {activity.attendess.slice(0, 3).map((attendee, index) => {
+                            return (
+                              <UserAvatar
+                                key={index}
+                                userId={attendee.userId}
+                                name={attendee.userId?.name}
+                                status={attendee.status}
+                                className={`${index > 0 ? 'ml-2' : ''}`}
+                                size="h-8 w-8"
+                              />
+                            );
+                          })}
+                          {activity.attendess.length > 3 && (
+                            <div className="ml-2 h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
+                              +{activity.attendess.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Attendee limit info */}
+                      {activity.attendeessLimit && (
+                        <p className="mt-2 text-sm text-gray-400">
+                          Spots: {activity.attendess?.filter(att => att.status === 'approved').length || 0}/
+                          {activity.attendeessLimit}
+                        </p>
+                      )}
+
+                      {/* Description */}
+                      {activity.description && (
+                        <p className="mt-4 max-h-16 overflow-hidden break-words">
+                          {activity.description.length > 90
+                            ? activity.description.slice(0, 90) + '...'
+                            : activity.description}
+                        </p>
+                      )}
+
+                      {/* Attendee Management Section - Show if there are attendees */}
+                      {activity.attendess && activity.attendess.length > 0 && (
+                        <div className="mt-3 border-t border-blue-400 pt-3">
+                          <h4 className="text-sm font-medium text-blue-200 mb-2">
+                            Manage Requests ({activity.attendess.filter(att => att.status === 'pending').length}{' '}
+                            pending)
+                          </h4>
+                          <div className="space-y-2 max-h-32 overflow-y-auto">
+                            {activity.attendess.map((attendee, index) => {
+                              return (
+                                <div
+                                  key={index}
+                                  className="flex items-center justify-between bg-black bg-opacity-30 p-2 rounded"
+                                >
+                                  <div className="flex items-center">
+                                    <UserAvatar
+                                      userId={attendee.userId}
+                                      name={attendee.userId?.name}
+                                      status={attendee.status}
+                                      className="mr-2"
+                                      size="h-6 w-6"
+                                    />
+                                    <div>
+                                      <p className="text-xs font-medium text-white">
+                                        {attendee.userId?.name || 'Unknown User'}
+                                      </p>
+                                      <p
+                                        className={`text-xs capitalize font-medium ${
+                                          attendee.status === 'approved'
+                                            ? 'text-green-400'
+                                            : attendee.status === 'pending'
+                                            ? 'text-yellow-400'
+                                            : 'text-gray-400'
+                                        }`}
+                                      >
+                                        {attendee.status}
+                                        {attendee.status === 'pending' && ' ⏳'}
+                                        {attendee.status === 'approved' && ' ✅'}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  {attendee.status === 'pending' && (
+                                    <div className="flex gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const attendeeUserId =
+                                            typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                          handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'approved');
+                                        }}
+                                        className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
+                                        disabled={isUpdating}
+                                      >
+                                        ✓
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const attendeeUserId =
+                                            typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                          handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'declined');
+                                        }}
+                                        className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                        disabled={isUpdating}
+                                      >
+                                        ✗
+                                      </button>
+                                    </div>
+                                  )}
+
+                                  {attendee.status === 'approved' && (
+                                    <div className="flex gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const attendeeUserId =
+                                            typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                          handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'declined');
+                                        }}
+                                        className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                        disabled={isUpdating}
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex justify-center mt-5">
+                        <button
+                          onClick={() => handleActivityClick(activity)}
+                          className="bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-sm font-semibold transition-colors mr-2"
+                        >
+                          More Details
+                        </button>
+                        <button onClick={() => handleManageActivity(activity)} className="btn bg-blue-600 h-8 relative">
+                          Manage
+                          {activity.attendess?.some(att => att.status === 'pending') && (
+                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                              {activity.attendess.filter(att => att.status === 'pending').length}
+                            </span>
+                          )}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </>
+            )}
+            {/* Filter UI */}
+            <BodypartFilter
+              selectedBodyparts={selectedBodyparts}
+              onSelect={handleSelect}
+              onRemove={handleRemove}
+              className="mt-16"
+            />
+            <div className="mt-6 flex">
+              <h2 className="font-bold text-2xl">Matching Activities</h2>
+            </div>
+            {/* Loading state */}
+            {loading && (
+              <div className="mt-4 text-center">
+                <p>Loading activities...</p>
               </div>
-            </>
-          )}
-          {/* Filter UI */}
-          <BodypartFilter selectedBodyparts={selectedBodyparts} onSelect={handleSelect} onRemove={handleRemove} className='mt-10' />
-          <div className="mt-3 flex">
-            <h2 className="font-bold text-xl">Matching Activities</h2>
-          </div>
-          {/* Loading state */}
-          {loading && (
-            <div className="mt-4 text-center">
-              <p>Loading activities...</p>
-            </div>
-          )}
-          {/* Error state */}
-          {error && (
-            <div className="mt-4 text-center text-red-500">
-              <p>Error: {error}</p>
-            </div>
-          )}
-          {/* No activities */}
-          {!loading && !error && filteredOtherActivities.length === 0 && (
-            <div className="mt-4 text-center text-gray-400">
-              <p>No activities found matching your criteria.</p>
-            </div>
-          )}
-          {/* Activities list */}
-          {!loading && !error && filteredOtherActivities.length > 0 && (
-            <div className="mt-4 space-y-4">
-              {filteredOtherActivities.map(activity => {
-                return (
-                  <div
-                    key={activity._id}
-                    className="p-3 border border-gray-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden"
-                  >
-                    <div className="flex items-center">
-                      <UserAvatar
-                        userId={activity.userId}
-                        name={activity.userId?.name}
-                        className=""
-                        size="h-20 w-20"
-                      />
-                      <div className="flex flex-col ml-2">
-                        <p>
-                          <span className="font-bold">Name: </span>
-                          {activity.name}
+            )}
+            {/* Error state */}
+            {error && (
+              <div className="mt-4 text-center text-red-500">
+                <p>Error: {error}</p>
+              </div>
+            )}
+            {/* No activities */}
+            {!loading && !error && filteredOtherActivities.length === 0 && (
+              <div className="mt-4 text-center text-gray-400">
+                <p>No activities found matching your criteria.</p>
+              </div>
+            )}
+            {/* Activities list */}
+            {!loading && !error && filteredOtherActivities.length > 0 && (
+              <div className="mt-4 space-y-4">
+                {filteredOtherActivities.map(activity => {
+                  return (
+                    <div
+                      key={activity._id}
+                      className="p-3 border border-gray-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden"
+                    >
+                      <div className="flex items-center">
+                        <UserAvatar
+                          userId={activity.userId}
+                          name={activity.userId?.name}
+                          className=""
+                          size="h-20 w-20"
+                        />
+                        <div className="flex flex-col ml-2">
+                          <p>
+                            <span className="font-bold">Name: </span>
+                            {activity.name}
+                          </p>
+                          <p>
+                            <span className="font-bold">Created by: </span>
+                            {activity.userId?.name || 'Unknown User'}
+                          </p>
+                          <p>
+                            <span className="font-bold">Gym: </span>
+                            {activity.gym || 'Not specified'}
+                          </p>
+                          <p>
+                            <span className="font-bold">Time: </span>
+                            {activity.time || 'Not specified'}
+                          </p>
+                          {(() => {
+                            const userStatus = getUserStatusInActivity(activity);
+                            if (userStatus === 'pending') {
+                              return <p className="text-yellow-400 text-sm italic">Join request pending </p>;
+                            } else if (userStatus === 'approved') {
+                              return <p className="text-green-400 text-sm italic">You're joining this! </p>;
+                            }
+                            return null;
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Attendees */}
+                      {activity.attendess && activity.attendess.length > 0 && (
+                        <div className="attendees flex mt-2">
+                          {activity.attendess.slice(0, 3).map((attendee, index) => {
+                            return (
+                              <UserAvatar
+                                key={index}
+                                userId={attendee.userId}
+                                name={attendee.userId?.name}
+                                status={attendee.status}
+                                className={`${index > 0 ? 'ml-2' : ''}`}
+                                size="h-8 w-8"
+                              />
+                            );
+                          })}
+                          {activity.attendess.length > 3 && (
+                            <div className="ml-2 h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
+                              +{activity.attendess.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Attendee limit info */}
+                      {activity.attendeessLimit && (
+                        <p className="mt-2 text-sm text-gray-400">
+                          Spots: {activity.attendess?.filter(att => att.status === 'approved').length || 0}/
+                          {activity.attendeessLimit}
                         </p>
-                        <p>
-                          <span className="font-bold">Created by: </span>
-                          {activity.userId?.name || 'Unknown User'}
+                      )}
+
+                      {/* Description */}
+                      {activity.description && (
+                        <p className="mt-4 max-h-16 overflow-hidden break-words">
+                          {activity.description.length > 90
+                            ? activity.description.slice(0, 90) + '...'
+                            : activity.description}
                         </p>
-                        <p>
-                          <span className="font-bold">Gym: </span>
-                          {activity.gym || 'Not specified'}
-                        </p>
-                        <p>
-                          <span className="font-bold">Time: </span>
-                          {activity.time || 'Not specified'}
-                        </p>
+                      )}
+
+                      <div className="flex justify-center mt-5">
+                        <button
+                          onClick={() => handleActivityClick(activity)}
+                          className="bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-sm font-semibold transition-colors mr-2"
+                        >
+                          More Details
+                        </button>
+                        {/* {activity.showWorkoutPlan && activity.workoutPlanId && (
+                        <button className="btn bg-gray-500 h-8">See Workout Plan</button>
+                      )} */}
                         {(() => {
                           const userStatus = getUserStatusInActivity(activity);
+                          const canJoin = canUserJoinActivity(activity);
+
                           if (userStatus === 'pending') {
-                            return <p className="text-yellow-400 text-sm italic">Join request pending ⏳</p>;
+                            return (
+                              <button className="btn bg-yellow-600 ml-5 h-8" disabled>
+                                Pending
+                              </button>
+                            );
                           } else if (userStatus === 'approved') {
-                            return <p className="text-green-400 text-sm italic">You're joining this! ✅</p>;
+                            return (
+                              <button
+                                onClick={() => handleLeaveActivity(activity)}
+                                className="btn bg-red-600 ml-5 h-8"
+                                disabled={isJoining}
+                              >
+                                {isJoining ? 'Leaving...' : 'Leave'}
+                              </button>
+                            );
+                          } else if (canJoin) {
+                            return (
+                              <button
+                                onClick={() => handleJoinActivity(activity)}
+                                className="btn bg-green-600 ml-5 h-8"
+                                disabled={isJoining}
+                              >
+                                {isJoining ? 'Joining...' : 'Ask to Join'}
+                              </button>
+                            );
+                          } else {
+                            const approvedCount =
+                              activity.attendess?.filter(att => att.status === 'approved').length || 0;
+                            const isAtLimit = activity.attendeessLimit && approvedCount >= activity.attendeessLimit;
+                            return (
+                              <button className="btn bg-gray-500 ml-5 h-8" disabled>
+                                {isAtLimit ? 'Full' : 'Unavailable'}
+                              </button>
+                            );
                           }
-                          return null;
                         })()}
                       </div>
                     </div>
-
-                    {/* Attendees */}
-                    {activity.attendess && activity.attendess.length > 0 && (
-                      <div className="attendees flex mt-2">
-                        {activity.attendess.slice(0, 3).map((attendee, index) => {
-                          return (
-                            <UserAvatar
-                              key={index}
-                              userId={attendee.userId}
-                              name={attendee.userId?.name}
-                              status={attendee.status}
-                              className={`${index > 0 ? 'ml-2' : ''}`}
-                              size="h-8 w-8"
-                            />
-                          );
-                        })}
-                        {activity.attendess.length > 3 && (
-                          <div className="ml-2 h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
-                            +{activity.attendess.length - 3}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Attendee limit info */}
-                    {activity.attendeessLimit && (
-                      <p className="mt-2 text-sm text-gray-400">
-                        Spots: {activity.attendess?.filter(att => att.status === 'approved').length || 0}/
-                        {activity.attendeessLimit}
-                      </p>
-                    )}
-
-                    {/* Description */}
-                    {activity.description && (
-                      <p className="mt-4 max-h-16 overflow-hidden break-words">
-                        {activity.description.length > 90
-                          ? activity.description.slice(0, 90) + '...'
-                          : activity.description}
-                      </p>
-                    )}
-
-                    <div className="flex justify-center mt-5">
-                      <button onClick={() => handleActivityClick(activity)} className="btn bg-green-600 h-8 mr-2">
-                        More Details
-                      </button>
-                      {/* {activity.showWorkoutPlan && activity.workoutPlanId && (
-                        <button className="btn bg-gray-500 h-8">See Workout Plan</button>
-                      )} */}
-                      {(() => {
-                        const userStatus = getUserStatusInActivity(activity);
-                        const canJoin = canUserJoinActivity(activity);
-
-                        if (userStatus === 'pending') {
-                          return (
-                            <button className="btn bg-yellow-600 ml-5 h-8" disabled>
-                              Pending
-                            </button>
-                          );
-                        } else if (userStatus === 'approved') {
-                          return (
-                            <button
-                              onClick={() => handleLeaveActivity(activity)}
-                              className="btn bg-red-600 ml-5 h-8"
-                              disabled={isJoining}
-                            >
-                              {isJoining ? 'Leaving...' : 'Leave'}
-                            </button>
-                          );
-                        } else if (canJoin) {
-                          return (
-                            <button
-                              onClick={() => handleJoinActivity(activity)}
-                              className="btn bg-green-600 ml-5 h-8"
-                              disabled={isJoining}
-                            >
-                              {isJoining ? 'Joining...' : 'Ask to Join'}
-                            </button>
-                          );
-                        } else {
-                          const approvedCount =
-                            activity.attendess?.filter(att => att.status === 'approved').length || 0;
-                          const isAtLimit = activity.attendeessLimit && approvedCount >= activity.attendeessLimit;
-                          return (
-                            <button className="btn bg-gray-500 ml-5 h-8" disabled>
-                              {isAtLimit ? 'Full' : 'Unavailable'}
-                            </button>
-                          );
-                        }
-                      })()}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       ) : managingActivity ? (
         /* Manage Activity Modal */
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-600 shadow-2xl">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-black">Manage Activity</h2>
-              <button onClick={handleCloseManage} className="text-gray-500 hover:text-gray-700 text-2xl">
+              <h2 className="text-xl font-bold text-white">Manage Activity</h2>
+              <button
+                onClick={handleCloseManage}
+                className="text-gray-400 hover:text-[#F2AB40] text-2xl transition-colors"
+              >
                 ×
               </button>
             </div>
 
             <div className="mb-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-300">
                 <strong>Activity ID:</strong> {managingActivity._id}
               </p>
             </div>
 
             <form className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Activity Name *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Activity Name *</label>
                 <input
                   type="text"
                   value={editForm.name}
                   onChange={e => handleEditFormChange('name', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-black"
+                  className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
                   placeholder="e.g., Chest Day Workout"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Gym/Location *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Gym/Location *</label>
                 <input
                   type="text"
                   value={editForm.gym}
                   onChange={e => handleEditFormChange('gym', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-black"
+                  className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
                   placeholder="e.g., McFit Downtown"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Time</label>
                 <input
                   type="time"
                   value={editForm.time}
                   onChange={e => handleEditFormChange('time', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-black"
+                  className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Description *</label>
                 <textarea
                   value={editForm.description}
                   onChange={e => handleEditFormChange('description', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-black h-24"
+                  className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors h-20 resize-none"
                   placeholder="Describe the workout activity..."
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Max Attendees</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Max Attendees</label>
                 <input
                   type="number"
                   value={editForm.attendeessLimit}
                   onChange={e => handleEditFormChange('attendeessLimit', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-black"
+                  className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
                   min="1"
                   max="20"
                 />
               </div>
 
-              <div className="border-t pt-4">
-                <p className="text-sm text-gray-600 mb-2">
+              <div className="border-t border-gray-600 pt-4">
+                <p className="text-sm text-gray-300 mb-2">
                   <strong>Approved Attendees:</strong>{' '}
                   {managingActivity.attendess?.filter(att => att.status === 'approved').length || 0} /{' '}
                   {managingActivity.attendeessLimit}
                 </p>
-                <p className="text-sm text-gray-600">
-                  <strong>Total Requests:</strong> {managingActivity.attendess?.length || 0} (including
-                  pending)
+                <p className="text-sm text-gray-300">
+                  <strong>Total Requests:</strong> {managingActivity.attendess?.length || 0} (including pending)
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-300">
                   <strong>Created:</strong> {new Date(managingActivity.createdAt).toLocaleDateString()}
                 </p>
               </div>
 
               {/* Attendee Management Section */}
               {managingActivity.attendess && managingActivity.attendess.length > 0 && (
-                <div className="border-t pt-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Manage Join Requests</h3>
+                <div className="border-t border-gray-600 pt-4">
+                  <h3 className="text-sm font-medium text-gray-300 mb-3">Manage Join Requests</h3>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
                     {managingActivity.attendess.map((attendee, index) => {
                       const getAttendeeStyle = status => {
@@ -978,7 +995,10 @@ const GroupFinder = () => {
                       };
 
                       return (
-                        <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between bg-[#1a1a1a] p-3 rounded-lg border border-gray-600"
+                        >
                           <div className="flex items-center">
                             <UserAvatar
                               userId={attendee.userId}
@@ -988,16 +1008,16 @@ const GroupFinder = () => {
                               size="h-8 w-8"
                             />
                             <div>
-                              <p className="text-sm font-medium text-gray-900">
+                              <p className="text-sm font-medium text-white">
                                 {attendee.userId?.name || 'Unknown User'}
                               </p>
                               <p
                                 className={`text-xs capitalize font-medium ${
                                   attendee.status === 'approved'
-                                    ? 'text-green-600'
+                                    ? 'text-green-400'
                                     : attendee.status === 'pending'
-                                    ? 'text-yellow-600'
-                                    : 'text-gray-600'
+                                    ? 'text-yellow-400'
+                                    : 'text-gray-400'
                                 }`}
                               >
                                 {attendee.status}
@@ -1016,7 +1036,7 @@ const GroupFinder = () => {
                                     typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
                                   handleUpdateAttendeeStatus(managingActivity._id, attendeeUserId, 'approved');
                                 }}
-                                className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
+                                className="px-3 py-1 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
                                 disabled={isUpdating}
                               >
                                 ✓ Approve
@@ -1028,7 +1048,7 @@ const GroupFinder = () => {
                                     typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
                                   handleUpdateAttendeeStatus(managingActivity._id, attendeeUserId, 'declined');
                                 }}
-                                className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                className="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
                                 disabled={isUpdating}
                               >
                                 ✗ Decline
@@ -1045,7 +1065,7 @@ const GroupFinder = () => {
                                     typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
                                   handleUpdateAttendeeStatus(managingActivity._id, attendeeUserId, 'declined');
                                 }}
-                                className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                className="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
                                 disabled={isUpdating}
                               >
                                 Remove
@@ -1058,7 +1078,7 @@ const GroupFinder = () => {
                   </div>
 
                   {managingActivity.attendess.filter(att => att.status === 'pending').length > 0 && (
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-gray-400 mt-2">
                       💡 You have {managingActivity.attendess.filter(att => att.status === 'pending').length} pending
                       join request(s)
                     </p>
@@ -1070,7 +1090,7 @@ const GroupFinder = () => {
                 <button
                   type="button"
                   onClick={handleDeleteActivity}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
                   disabled={isUpdating}
                 >
                   {isUpdating ? 'Deleting...' : 'Delete Activity'}
@@ -1078,7 +1098,7 @@ const GroupFinder = () => {
                 <button
                   type="button"
                   onClick={handleCloseManage}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 bg-[#1a1a1a] border border-gray-600 text-gray-300 rounded-lg hover:border-[#F2AB40] hover:text-white transition-all"
                   disabled={isUpdating}
                 >
                   Cancel
@@ -1086,7 +1106,7 @@ const GroupFinder = () => {
                 <button
                   type="button"
                   onClick={handleUpdateActivity}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-[#F2AB40] text-black rounded-lg hover:bg-[#e09b2d] transition-colors font-semibold disabled:opacity-50"
                   disabled={isUpdating}
                 >
                   {isUpdating ? 'Updating...' : 'Update Activity'}
@@ -1097,11 +1117,14 @@ const GroupFinder = () => {
         </div>
       ) : (
         /* Full-Screen Activity Details Modal */
-        <div className="fixed inset-0 bg-black text-white z-50 overflow-y-auto">
-          <div className="min-h-screen p-4">
+        <div className="bg-[#121212] text-white min-h-screen pt-safe pb-safe w-full overflow-y-auto">
+          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-none sm:rounded-2xl shadow-2xl border-none sm:border border-gray-700 backdrop-blur-sm mx-0 sm:mx-4 p-6">
             {/* Header with close button */}
             <div className="flex items-center mb-6">
-              <button onClick={handleCloseDetails} className="btn text-lg bg-gray-500 border-none text-white">
+              <button
+                onClick={handleCloseDetails}
+                className="text-gray-400 hover:text-[#F2AB40] text-2xl transition-colors"
+              >
                 ✕
               </button>
               <h1 className="flex-1 text-center font-bold text-2xl">Activity Details</h1>
@@ -1111,7 +1134,7 @@ const GroupFinder = () => {
             {/* Activity Details */}
             <div className="max-w-2xl mx-auto">
               {/* Main Info */}
-              <div className="bg-gray-900 rounded-2xl p-6 mb-6">
+              <div className="bg-[#1a1a1a] rounded-2xl p-6 mb-6 border border-gray-600">
                 <div className="flex items-center mb-4">
                   <UserAvatar
                     userId={selectedActivity.userId}
@@ -1221,7 +1244,7 @@ const GroupFinder = () => {
                     <div className="mt-3 text-xs text-gray-400">
                       <p className="mb-1">Avatar status indicators:</p>
                       <div className="flex gap-4">
-                        <span>✅ Approved: Normal</span>
+                        <span> Approved: Normal</span>
                         <span>⏳ Pending: 50% opacity</span>
                       </div>
                     </div>
@@ -1235,13 +1258,14 @@ const GroupFinder = () => {
                     <div className="flex flex-wrap gap-2">
                       {selectedActivity.bodyParts.map((bodyPartObj, index) => (
                         <div key={index}>
+                          {' '}
                           {Object.entries(bodyPartObj).map(
                             ([part, value]) =>
                               value &&
                               value.trim() !== '' && (
                                 <span
                                   key={part}
-                                  className="inline-block bg-blue-600 text-white px-3 py-1 rounded-full text-sm mr-2 mb-2"
+                                  className="inline-block bg-[#F2AB40] text-black px-3 py-1 rounded-full text-sm mr-2 mb-2 font-medium"
                                 >
                                   {capitalizeWords(part)}
                                 </span>
@@ -1256,7 +1280,9 @@ const GroupFinder = () => {
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3 justify-center">
                   {selectedActivity.showWorkoutPlan && selectedActivity.workoutPlanId && (
-                    <button className="btn bg-gray-600 text-white px-6 py-2">View Workout Plan</button>
+                    <button className="px-6 py-2 bg-[#1a1a1a] border border-gray-600 text-gray-300 rounded-lg hover:border-[#F2AB40] hover:text-white transition-all">
+                      View Workout Plan
+                    </button>
                   )}
                   {(() => {
                     const activityUserId =
@@ -1270,7 +1296,7 @@ const GroupFinder = () => {
                         setSelectedActivity(null); // Close details view
                         handleManageActivity(selectedActivity);
                       }}
-                      className="btn bg-blue-600 text-white px-6 py-2 relative"
+                      className="px-6 py-2 bg-[#F2AB40] text-black rounded-lg hover:bg-[#e09b2d] transition-colors font-semibold relative"
                     >
                       Manage Activity
                       {selectedActivity.attendess?.some(att => att.status === 'pending') && (
@@ -1286,7 +1312,7 @@ const GroupFinder = () => {
 
                       if (userStatus === 'pending') {
                         return (
-                          <button className="btn bg-yellow-600 text-white px-6 py-2" disabled>
+                          <button className="px-6 py-2 bg-yellow-600 text-white rounded-lg" disabled>
                             Request Pending
                           </button>
                         );
@@ -1294,7 +1320,7 @@ const GroupFinder = () => {
                         return (
                           <button
                             onClick={() => handleLeaveActivity(selectedActivity)}
-                            className="btn bg-red-600 text-white px-6 py-2"
+                            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                             disabled={isJoining}
                           >
                             {isJoining ? 'Leaving...' : 'Leave Activity'}
@@ -1304,7 +1330,7 @@ const GroupFinder = () => {
                         return (
                           <button
                             onClick={() => handleJoinActivity(selectedActivity)}
-                            className="btn bg-green-600 text-white px-6 py-2"
+                            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                             disabled={isJoining}
                           >
                             {isJoining ? 'Joining...' : 'Ask to Join'}
@@ -1316,7 +1342,7 @@ const GroupFinder = () => {
                         const isAtLimit =
                           selectedActivity.attendeessLimit && approvedCount >= selectedActivity.attendeessLimit;
                         return (
-                          <button className="btn bg-gray-500 text-white px-6 py-2" disabled>
+                          <button className="px-6 py-2 bg-gray-500 text-white rounded-lg" disabled>
                             {isAtLimit ? 'Activity Full' : 'Unavailable'}
                           </button>
                         );

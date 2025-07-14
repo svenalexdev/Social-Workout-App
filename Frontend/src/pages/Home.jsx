@@ -8,9 +8,12 @@ function Home() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
   const [plans, setPlans] = useState([]);
+  const [recommendedPlans, setRecommendedPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [plansLoading, setPlansLoading] = useState(true);
+  const [recommendedLoading, setRecommendedLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedPlanDetails, setSelectedPlanDetails] = useState(null);
   const [activityForm, setActivityForm] = useState({
     gym: '',
     time: '',
@@ -58,12 +61,33 @@ function Home() {
       }
     };
 
+    const fetchRecommendedPlans = async () => {
+      try {
+        setRecommendedLoading(true);
+        const BACKEND_URL = import.meta.env.VITE_API_URL;
+        const response = await fetch(`${BACKEND_URL}/plans`);
+
+        if (response.ok) {
+          const data = await response.json();
+          // Filter for public plans and take first 6
+          const publicPlans = data.filter(plan => plan.isPublic);
+          setRecommendedPlans(publicPlans.slice(0, 6));
+        }
+      } catch (err) {
+        console.error('Error fetching recommended plans:', err);
+      } finally {
+        setRecommendedLoading(false);
+      }
+    };
+
     if (isAuthenticated) {
       fetchActivities();
       fetchPlans();
+      fetchRecommendedPlans();
     } else {
       setLoading(false);
       setPlansLoading(false);
+      setRecommendedLoading(false);
     }
   }, [isAuthenticated]);
 
@@ -114,6 +138,14 @@ function Home() {
       description: '',
       attendeessLimit: 5
     });
+  };
+
+  const handleViewPlanDetails = plan => {
+    setSelectedPlanDetails(plan);
+  };
+
+  const handleClosePlanDetailsModal = () => {
+    setSelectedPlanDetails(null);
   };
 
   const handleFormChange = (field, value) => {
@@ -194,11 +226,11 @@ function Home() {
 
       const createdActivity = await response.json();
       console.log('Activity created successfully:', createdActivity);
-      alert('✅ Activity created successfully! Others can now find and join your workout.');
+      alert(' Activity created successfully! Others can now find and join your workout.');
       handleCloseActivityForm();
     } catch (error) {
       console.error('Error creating activity:', error);
-      alert('❌ Failed to create activity: ' + error.message);
+      alert(' Failed to create activity: ' + error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -206,13 +238,13 @@ function Home() {
 
   const handleSignOut = async () => {
     await logout();
-    
+
     // Delete all cookies
     deleteCookie('userId');
     deleteCookie('sessionToken');
     deleteCookie('plan');
     deleteCookie('exercises');
-    
+
     navigate('/'); // Redirect to home after logout
   };
 
@@ -242,9 +274,9 @@ function Home() {
   }
 
   return (
-    <div className="bg-[#121212] text-white min-h-screen pt-safe pb-safe w-full">
-      {/* Enhanced Greeting Section */}
-      <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-none sm:rounded-2xl p-8 mb-6 mt-12 shadow-2xl border-none sm:border border-gray-700 backdrop-blur-sm mx-0 sm:mx-4">
+    <div className="bg-[#121212] text-white min-h-screen pt-safe pb-5 w-full max-w-md mx-auto">
+      <div className="p-8 pb-15">
+        {/* Enhanced Greeting Section */}
         <div className="flex flex-col items-center justify-center text-center">
           <div className="relative mb-4">
             <div className="w-24 h-24 bg-gradient-to-br from-[#F2AB40] to-[#e09b2d] rounded-full flex items-center justify-center text-black font-bold text-2xl shadow-lg ring-4 ring-[#F2AB40]/20">
@@ -271,9 +303,99 @@ function Home() {
         </div>
       </div>
 
-      {/* Posted Activities Section */}
-      <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-none sm:rounded-xl p-6 mb-20 shadow-lg border-none sm:border border-gray-600 mx-0 sm:mx-4">
-        <h3 className="text-lg font-semibold mb-4">Posted Activities</h3>
+      {/* Pinned Plans Section */}
+      <div className="p-6 pt-2">
+        <h3 className="text-2xl font-semibold mb-4">My Pinned Plans</h3>
+
+        {plansLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-pulse">
+              <p className="text-gray-400">Loading plans...</p>
+            </div>
+          </div>
+        ) : plans.length > 0 ? (
+          <div className="space-y-4">
+            {plans.slice(0, 3).map(plan => {
+              const hasExercises = plan.exercise && plan.exercise.length > 0;
+              let exerciseList = 'No exercises';
+
+              if (hasExercises) {
+                exerciseList = plan.exercise
+                  .slice(0, 2)
+                  .map(exercise => {
+                    const exerciseName =
+                      exercise.exerciseDetails?.[0]?.name || exercise.name || `Exercise ${exercise.exerciseId}`;
+                    const truncatedName =
+                      exerciseName.length > 20 ? exerciseName.substring(0, 20) + '...' : exerciseName;
+                    return `${truncatedName} (${exercise.sets} sets)`;
+                  })
+                  .join(', ');
+
+                if (plan.exercise.length > 2) {
+                  exerciseList += `, +${plan.exercise.length - 2} more`;
+                }
+              }
+
+              return (
+                <div
+                  key={plan._id}
+                  onClick={() => handleViewPlanDetails(plan)}
+                  className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-600 hover:border-[#F2AB40] transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
+                >
+                  <h4 className="font-semibold text-white mb-2">{plan.name}</h4>
+                  <p className="text-gray-400 text-sm mb-2">{exerciseList}</p>
+                  <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
+                    <span>{plan.exercise ? `${plan.exercise.length} exercises` : 'No exercises'}</span>
+                    <span>{new Date(plan.createdAt || Date.now()).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={e => {
+                        e.stopPropagation(); // Prevent card click event
+                        GoToStartRoutine(plan._id);
+                      }}
+                      className="text-xs bg-[#F2AB40] text-black px-2 py-1 rounded-full font-medium"
+                    >
+                      Start Routine
+                    </button>
+                    <button
+                      onClick={e => {
+                        e.stopPropagation(); // Prevent card click event
+                        handleCreateActivity(plan);
+                      }}
+                      className="text-xs bg-gray-600 text-white px-2 py-1 rounded-full font-medium hover:bg-[#F2AB40] hover:text-black transition-colors"
+                    >
+                      Create Activity
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+            {plans.length > 3 && (
+              <button
+                onClick={() => navigate('/plans')}
+                className="w-full text-center py-2 text-[#F2AB40] hover:text-[#e09b2d] transition-colors"
+              >
+                View all plans →
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-400 mb-4">No plans created yet</p>
+            <button
+              onClick={() => navigate('/plans')}
+              className="bg-[#F2AB40] text-black px-4 py-2 rounded-lg hover:bg-[#e09b2d] transition-colors font-semibold"
+            >
+              Create your first plan
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Community Workouts Section */}
+      <div className="p-6 pt-2">
+        <h3 className="text-2xl font-semibold mb-4">Community Workouts</h3>
 
         {loading ? (
           <div className="text-center py-8">
@@ -323,19 +445,19 @@ function Home() {
         )}
       </div>
 
-      {/* Pinned Plans Section */}
-      {/* <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-xl p-6 mb-20 shadow-lg border border-gray-600">
-        <h3 className="text-lg font-semibold mb-4">My Pinned Plans</h3>
+      {/* Recommended Plans Section */}
+      <div className="p-6 pt-2">
+        <h3 className="text-2xl font-semibold mb-4 text-center">Recommended Plans</h3>
 
-        {plansLoading ? (
+        {recommendedLoading ? (
           <div className="text-center py-8">
             <div className="animate-pulse">
-              <p className="text-gray-400">Loading plans...</p>
+              <p className="text-gray-400">Loading recommended plans...</p>
             </div>
           </div>
-        ) : plans.length > 0 ? (
+        ) : recommendedPlans.length > 0 ? (
           <div className="space-y-4">
-            {plans.slice(0, 3).map(plan => {
+            {recommendedPlans.slice(0, 3).map(plan => {
               const hasExercises = plan.exercise && plan.exercise.length > 0;
               let exerciseList = 'No exercises';
 
@@ -359,28 +481,21 @@ function Home() {
               return (
                 <div
                   key={plan._id}
+                  onClick={() => handleViewPlanDetails(plan)}
                   className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-600 hover:border-[#F2AB40] transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
                 >
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-semibold text-white text-lg">{plan.name}</h4>
+                    <span className="text-xs bg-green-600 text-white px-2 py-1 rounded-full">Public</span>
                   </div>
                   <p className="text-gray-400 text-sm mb-3">{exerciseList}</p>
                   <div className="flex gap-2">
                     <button
                       onClick={e => {
-                        e.stopPropagation(); // Prevent card click event
-                        GoToStartRoutine(plan._id);
-                      }}
-                      className="bg-[#F2AB40] text-black px-3 py-1 rounded text-xs hover:bg-[#e09b2d] transition-colors font-semibold"
-                    >
-                      Start Routine
-                    </button>
-                    <button
-                      onClick={e => {
-                        e.stopPropagation(); // Prevent card click event
+                        e.stopPropagation();
                         handleCreateActivity(plan);
                       }}
-                      className="bg-[#1a1a1a] border border-gray-600 text-white px-3 py-1 rounded text-xs hover:border-[#F2AB40] hover:bg-[#F2AB40] hover:text-black transition-colors font-semibold"
+                      className="bg-[#F2AB40] text-black px-3 py-1 rounded text-xs hover:bg-[#e09b2d] transition-colors font-semibold"
                     >
                       Create Activity
                     </button>
@@ -388,30 +503,131 @@ function Home() {
                 </div>
               );
             })}
-            {plans.length > 3 && (
+            {recommendedPlans.length > 3 && (
               <button
                 onClick={() => navigate('/plans')}
                 className="w-full text-center py-2 text-[#F2AB40] hover:text-[#e09b2d] transition-colors"
               >
-                View all plans →
+                View all recommended plans →
               </button>
             )}
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-gray-400 mb-4">No plans created yet</p>
-            <button
-              onClick={() => navigate('/plans')}
-              className="bg-[#F2AB40] text-black px-4 py-2 rounded-lg hover:bg-[#e09b2d] transition-colors font-semibold"
-            >
-              Create your first plan
-            </button>
+            <p className="text-gray-400 mb-4">No recommended plans available</p>
           </div>
         )}
-      </div> */}
+      </div>
+
+      {/* Plan Details Modal */}
+      {selectedPlanDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-xl p-6 w-full max-w-lg border border-gray-600 shadow-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-white">{selectedPlanDetails.name}</h2>
+              <button
+                onClick={handleClosePlanDetailsModal}
+                className="text-gray-400 hover:text-[#F2AB40] text-2xl transition-colors"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {selectedPlanDetails.exercise && selectedPlanDetails.exercise.length > 0 ? (
+                <>
+                  <div className="mb-4">
+                    <p className="text-gray-300 text-sm">
+                      <strong className="text-[#F2AB40]">Total Exercises:</strong> {selectedPlanDetails.exercise.length}
+                    </p>
+                    {selectedPlanDetails.isPublic && (
+                      <p className="text-green-400 text-sm mt-1">
+                        <strong>✓ Public Plan</strong> - Shared by the community
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    {selectedPlanDetails.exercise.map((exercise, index) => {
+                      const exerciseName =
+                        exercise.exerciseDetails?.[0]?.name || exercise.name || `Exercise ${exercise.exerciseId}`;
+                      const bodyPart = exercise.exerciseDetails?.[0]?.bodyPart || 'Unknown';
+
+                      return (
+                        <div key={index} className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-600">
+                          <h4 className="font-semibold text-white mb-2">{exerciseName}</h4>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-gray-400">Body Part:</span>
+                              <span className="text-[#F2AB40] ml-2 capitalize">{bodyPart}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Sets:</span>
+                              <span className="text-white ml-2">{exercise.sets || 0}</span>
+                            </div>
+                          </div>
+
+                          {exercise.setDetails && exercise.setDetails.length > 0 ? (
+                            <div className="mt-3">
+                              <p className="text-gray-400 text-xs mb-2">Set Details:</p>
+                              <div className="space-y-1">
+                                {exercise.setDetails.map((set, setIndex) => (
+                                  <div key={setIndex} className="text-xs text-gray-300 flex justify-between">
+                                    <span>Set {setIndex + 1}:</span>
+                                    <span>
+                                      {set.reps} reps × {set.weight}kg
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="text-gray-400">Reps:</span>
+                                <span className="text-white ml-2">{exercise.reps || 0}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-400">Weight:</span>
+                                <span className="text-white ml-2">{exercise.weight || 0}kg</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-400">No exercises found in this plan</p>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4 border-t border-gray-600">
+                <button
+                  onClick={handleClosePlanDetailsModal}
+                  className="flex-1 px-4 py-2 bg-[#1a1a1a] border border-gray-600 text-gray-300 rounded-lg hover:border-[#F2AB40] hover:text-white transition-all"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    handleClosePlanDetailsModal();
+                    handleCreateActivity(selectedPlanDetails);
+                  }}
+                  className="flex-1 px-4 py-2 bg-[#F2AB40] text-black rounded-lg hover:bg-[#e09b2d] transition-colors font-semibold"
+                >
+                  Create Activity
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Activity Creation Modal */}
-      {/* {selectedPlan && (
+      {selectedPlan && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
           <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-xl p-6 w-full max-w-md border border-gray-600 shadow-2xl">
             <div className="flex justify-between items-center mb-4">
@@ -505,7 +721,7 @@ function Home() {
             </form>
           </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 }

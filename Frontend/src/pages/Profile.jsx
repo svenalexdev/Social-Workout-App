@@ -1,4 +1,4 @@
-import { useState, useEffect,useContext  } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { toast } from 'react-toastify';
 import { useRef } from 'react';
 import { AuthContext } from '../context/index.js';
@@ -110,7 +110,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#121212] text-white">
+    <div className="flex flex-col min-h-[85vh] bg-[#121212] text-white">
       <div className="flex-1 flex flex-col gap-17 p-2 w-full pt-6">
         <div className="flex flex-col items-center">
           <div
