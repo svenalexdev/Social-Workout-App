@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import checkAuth from '../data/checkAuth';
 import { useNavigate } from 'react-router';
 import { setCookie, getCookie, deleteCookie } from '../utils/cookieUtils';
+import capitalizeWords from '../utils/helpers';
 
 function ExercisingPlan() {
   const navigate = useNavigate();
@@ -532,7 +533,7 @@ function ExercisingPlan() {
         throw new Error('Failed to update plan');
       }
 
-      alert('✅ Plan updated successfully with your workout results!');
+      // alert('✅ Plan updated successfully with your workout results!');
     } catch (error) {
       console.error('Error updating plan:', error);
       alert('❌ Failed to update plan. Your workout is still saved!');
@@ -558,7 +559,7 @@ function ExercisingPlan() {
         isActive: true,
         remainingTime: exercise.restTime,
         exerciseId: exerciseId,
-        exerciseName: exerciseDetails.name || `Exercise ${exerciseId}`
+        exerciseName: capitalizeWords(exerciseDetails.name) || `Exercise ${exerciseId}`
       });
     }
   };
@@ -589,11 +590,6 @@ function ExercisingPlan() {
     return <div className="flex justify-center items-center h-screen text-red-500">Error loading workout data</div>;
   }
 
-  const capitalizeWords = str => {
-    if (!str) return '';
-    return str.replace(/\b\w/g, char => char.toUpperCase());
-  };
-
   const currentExercise = workoutData.exercise[currentExerciseIndex];
   const currentExerciseDetails = getExerciseDetails(currentExercise);
   const currentExerciseName = currentExerciseDetails.name || `Exercise ${currentExercise.exerciseId}`;
@@ -607,21 +603,26 @@ function ExercisingPlan() {
         </div>
       </div>
 
-      {/* Fixed Timer & Date Bar */}
-      <div className="sticky top-15 z-1000 bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-lg p-4 mb-6 border border-gray-700 backdrop-blur-sm shadow-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 text-gray-300">
-            <span className="flex items-center gap-1">📅 {new Date().toLocaleDateString()}</span>
-            <span className="flex items-center gap-1">⏱️ {formatTime(timer)}</span>
+      {/* Fixed Timer & Date Bar - Hide when exercise details are shown */}
+      {!showDetailsFor && (
+        <div className="sticky top-15 z-1000 bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-lg p-4 mb-6 border border-gray-700 backdrop-blur-sm shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-gray-300">
+              <span className="flex items-center gap-1">{new Date().toLocaleDateString()}</span>
+              <div className="flex">
+                <img src="/time.png" alt="timer icon" className="w-4 h-4 inline-block mt-1 mr-2" />
+                <span className="flex items-center gap-1">{formatTime(timer)}</span>
+              </div>
+            </div>
+            <button
+              onClick={abortWorkout}
+              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors font-semibold"
+            >
+              Cancel
+            </button>
           </div>
-          <button
-            onClick={abortWorkout}
-            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors font-semibold"
-          >
-            Cancel
-          </button>
         </div>
-      </div>
+      )}
 
       {/* All Exercises in Order */}
       <div className="space-y-4">
@@ -785,40 +786,41 @@ function ExercisingPlan() {
 
       {/* Sticky Pause Timer - Bottom */}
       {pauseTimer.isActive && (
-        <div className="fixed bottom-12 left-0 right-0 z-40">
-          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-t-lg p-4 border border-gray-600 backdrop-blur-sm shadow-lg mx-4">
+        <div className="fixed bottom-20 -left-5 right-0 z-40 w-[110vw]">
+          <div className="bg-gradient-to-br from-[#F2AB40] to-[#e09c37] p-4 px-5 pb-5 backdrop-blur-sm shadow-lg mx-4">
+            {/* Skip Rest Button */}
+            <div className=" text-center absolute -top-5 ">
+              <button
+                onClick={stopPauseTimer}
+                className="bg-white  text-black px-5 py-2 rounded-lg transition-colors text-sm font-semibold"
+              >
+                Skip
+              </button>
+            </div>
             <div className="flex items-center justify-between">
               {/* Decrease Timer Button */}
               <button
                 onClick={() => adjustPauseTimer(-10)}
-                className="bg-[#1a1a1a] border border-gray-600 hover:border-[#F2AB40] hover:bg-[#F2AB40] hover:text-black text-white px-4 py-2 rounded-lg transition-colors font-bold"
+                className="bg-black/20 hover:text-[#F2AB40] text-white px-4 py-2 rounded-lg transition-colors font-bold"
               >
-                -10s
+                - 10s
               </button>
 
               {/* Timer Display */}
               <div className="flex-1 text-center">
-                <div className="text-white text-sm font-medium mb-1">Rest Time</div>
-                <div className="text-[#F2AB40] text-2xl font-bold">{formatTime(pauseTimer.remainingTime)}</div>
-                <div className="text-gray-300 text-xs">{pauseTimer.exerciseName}</div>
+                <div className="text-white text-sm font-medium ">Rest Time</div>
+                <div className="text-white text-3xl font-bold drop-shadow-lg">
+                  {formatTime(pauseTimer.remainingTime)}
+                </div>
+                {/* <div className="text-white/80 text-xs">{pauseTimer.exerciseName}</div> */}
               </div>
 
               {/* Increase Timer Button */}
               <button
                 onClick={() => adjustPauseTimer(10)}
-                className="bg-[#1a1a1a] border border-gray-600 hover:border-[#F2AB40] hover:bg-[#F2AB40] hover:text-black text-white px-4 py-2 rounded-lg transition-colors font-bold"
+                className="bg-black/20 hover:text-[#F2AB40] text-white px-4 py-2 rounded-lg transition-colors font-bold"
               >
-                +10s
-              </button>
-            </div>
-
-            {/* Skip Rest Button */}
-            <div className="mt-3 text-center">
-              <button
-                onClick={stopPauseTimer}
-                className="bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-6 py-2 rounded-lg transition-colors text-sm font-semibold"
-              >
-                Skip Rest
+                + 10s
               </button>
             </div>
           </div>
@@ -827,8 +829,8 @@ function ExercisingPlan() {
 
       {/* Exercise Details Popup Modal */}
       {showDetailsFor && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 mt-5 p-4">
+          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-xl max-w-2xl w-full max-h-[88vh] overflow-y-auto border border-gray-700 shadow-2xl">
             {(() => {
               const exercise = workoutData.exercise.find(ex => ex.exerciseId === showDetailsFor);
               if (!exercise) return null;
@@ -840,7 +842,7 @@ function ExercisingPlan() {
                   {/* Modal Header */}
                   <div className="flex items-center justify-between p-6 border-b border-gray-600">
                     <h2 className="text-2xl font-bold text-white">
-                      {exerciseDetails.name || `Exercise ${exercise.exerciseId}`}
+                      {capitalizeWords(exerciseDetails.name) || `Exercise ${exercise.exerciseId}`}
                     </h2>
                     <button
                       onClick={() => setShowDetailsFor(null)}
