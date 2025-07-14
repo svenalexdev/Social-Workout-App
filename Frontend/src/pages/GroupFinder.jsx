@@ -509,54 +509,48 @@ const GroupFinder = () => {
     <>
       {/* Main GroupFinder View */}
       {!selectedActivity && !managingActivity ? (
-        <div className="bg-[#121212] text-white min-h-screen pt-safe pb-safe w-full">
-          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-none sm:rounded-2xl shadow-2xl border-none sm:border border-gray-700 backdrop-blur-sm mx-0 sm:mx-4 p-6 mb-8">
-            <div className="flex items-center mb-8">
-              <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
-                X
-              </button>
-              <h1 className="flex-1 text-center font-bold text-2xl">Find A Group!</h1>
-              <div className="w-12" />
-            </div>
-            {/* My Posted Activities Section - Only show if user has posted activities */}
-            {myActivities.length > 0 && (
-              <>
-                <div className="mt-12 flex">
-                  <h2 className="font-bold text-xl">My Posted Activities</h2>
-                </div>
-                <div className="mt-4 space-y-4">
-                  {myActivities.map(activity => (
-                    <div
-                      key={activity._id}
-                      className="p-3 border border-blue-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden bg-blue-900/20"
-                    >
-                      <div className="flex items-center">
-                        <UserAvatar
-                          userId={activity.userId}
-                          name={activity.userId?.name}
-                          className=""
-                          size="h-20 w-20"
-                        />
-                        <div className="flex flex-col ml-2">
-                          <p>
-                            <span className="font-bold">Name: </span>
-                            {activity.name}
-                          </p>
-                          <p>
-                            <span className="font-bold">Created by: </span>
-                            {activity.userId?.name || 'You'}
-                          </p>
-                          <p>
-                            <span className="font-bold">Gym: </span>
-                            {activity.gym || 'Not specified'}
-                          </p>
-                          <p>
-                            <span className="font-bold">Time: </span>
-                            {activity.time || 'Not specified'}
-                          </p>
-                          <p className="text-blue-400 text-sm italic">Your activity</p>
-                        </div>
+        <div className="min-h-screen bg-black text-white p-4 pt-6">
+          <div className="flex items-center">
+            {/* <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
+              X
+            </button> */}
+            <h1 className="flex-1 text-center font-bold text-2xl">Find A Group!</h1>
+            <div className="w-12" />
+          </div>{' '}
+          {/* My Posted Activities Section - Only show if user has posted activities */}
+          {myActivities.length > 0 && (
+            <>
+              <div className="mt-10 flex">
+                <h2 className="font-bold text-xl">My Posted Activities</h2>
+              </div>
+              <div className="mt-4 space-y-4">
+                {myActivities.map(activity => (
+                  <div
+                    key={activity._id}
+                    className="p-3 border border-blue-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden bg-blue-900/20"
+                  >
+                    <div className="flex items-center">
+                      <UserAvatar userId={activity.userId} name={activity.userId?.name} className="" size="h-20 w-20" />
+                      <div className="flex flex-col ml-2">
+                        <p>
+                          <span className="font-bold">Name: </span>
+                          {activity.name}
+                        </p>
+                        <p>
+                          <span className="font-bold">Created by: </span>
+                          {activity.userId?.name || 'You'}
+                        </p>
+                        <p>
+                          <span className="font-bold">Gym: </span>
+                          {activity.gym || 'Not specified'}
+                        </p>
+                        <p>
+                          <span className="font-bold">Time: </span>
+                          {activity.time || 'Not specified'}
+                        </p>
+                        <p className="text-blue-400 text-sm italic">Your activity</p>
                       </div>
+                    </div>
 
                       {/* Attendees */}
                       {activity.attendess && activity.attendess.length > 0 && (
@@ -931,9 +925,9 @@ const GroupFinder = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Time</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date & Time</label>
                 <input
-                  type="time"
+                  type="datetime-local"
                   value={editForm.time}
                   onChange={e => handleEditFormChange('time', e.target.value)}
                   className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white"
@@ -969,7 +963,7 @@ const GroupFinder = () => {
                   {managingActivity.attendess?.filter(att => att.status === 'approved').length || 0} /{' '}
                   {managingActivity.attendeessLimit}
                 </p>
-                <p className="text-sm text-gray-300">
+                <p className="text-sm text-gray-600">
                   <strong>Total Requests:</strong> {managingActivity.attendess?.length || 0} (including pending)
                 </p>
                 <p className="text-sm text-gray-300">
@@ -1258,18 +1252,15 @@ const GroupFinder = () => {
                     <div className="flex flex-wrap gap-2">
                       {selectedActivity.bodyParts.map((bodyPartObj, index) => (
                         <div key={index}>
-                          {' '}
-                          {Object.entries(bodyPartObj).map(
-                            ([part, value]) =>
-                              value &&
-                              value.trim() !== '' && (
-                                <span
-                                  key={part}
-                                  className="inline-block bg-[#F2AB40] text-black px-3 py-1 rounded-full text-sm mr-2 mb-2 font-medium"
-                                >
-                                  {capitalizeWords(part)}
-                                </span>
-                              )
+                          {Object.entries(bodyPartObj).map(([part, value]) =>
+                            part !== '_id' && value && value.trim() !== '' ? (
+                              <span
+                                key={part}
+                                className="inline-block bg-blue-600 text-white px-3 py-1 rounded-full text-sm mr-2 mb-2"
+                              >
+                                {capitalizeWords(part)}
+                              </span>
+                            ) : null
                           )}
                         </div>
                       ))}
@@ -1279,11 +1270,9 @@ const GroupFinder = () => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3 justify-center">
-                  {selectedActivity.showWorkoutPlan && selectedActivity.workoutPlanId && (
-                    <button className="px-6 py-2 bg-[#1a1a1a] border border-gray-600 text-gray-300 rounded-lg hover:border-[#F2AB40] hover:text-white transition-all">
-                      View Workout Plan
-                    </button>
-                  )}
+                  {/* {selectedActivity.showWorkoutPlan && selectedActivity.workoutPlanId && (
+                    <button className="btn bg-gray-600 text-white px-6 py-2">View Workout Plan</button>
+                  )} */}
                   {(() => {
                     const activityUserId =
                       typeof selectedActivity.userId === 'object'
