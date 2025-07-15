@@ -110,7 +110,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-[85vh] bg-[#121212] text-white">
+    <div className="flex flex-col min-h-screen bg-[#121212] text-white">
       <div className="flex-1 flex flex-col gap-17 p-2 w-full pt-6">
         <div className="flex flex-col items-center">
           <div
@@ -124,7 +124,7 @@ const Profile = () => {
             )}
 
             {/* Camera icon bottom-right */}
-            <div className="absolute bottom-1 right-1 bg-[#F2AB40] rounded-full p-1">
+            <div className="absolute bottom-1 right-1 bg-[#F2AB40] rounded-full w-7 h-7 flex items-center justify-center shadow-md">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 text-white"
@@ -138,7 +138,7 @@ const Profile = () => {
                   strokeLinejoin="round"
                   d="M3 7h2l2-3h6l2 3h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V9a2 2 0 012-2z"
                 />
-                <circle cx="12" cy="13" r="3" stroke="currentColor" strokeWidth={2} />
+                <circle cx="12" cy="13" r="3" />
               </svg>
             </div>
           </div>

@@ -505,6 +505,28 @@ const GroupFinder = () => {
     return withSpaces.replace(/\b\w/g, char => char.toUpperCase());
   };
 
+  // Format date to German format (DD.MM.YYYY, HH:MM)
+  const formatGermanDateTime = dateString => {
+    if (!dateString) return 'Not specified';
+
+    try {
+      const date = new Date(dateString);
+
+      if (isNaN(date.getTime())) return 'Invalid date';
+
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid date';
+    }
+  };
+
   return (
     <>
       {/* Main GroupFinder View */}
@@ -546,340 +568,334 @@ const GroupFinder = () => {
                         </p>
                         <p>
                           <span className="font-bold">Time: </span>
-                          {activity.time || 'Not specified'}
+                          {formatGermanDateTime(activity.time)}
                         </p>
                         <p className="text-blue-400 text-sm italic">Your activity</p>
                       </div>
                     </div>
 
-                      {/* Attendees */}
-                      {activity.attendess && activity.attendess.length > 0 && (
-                        <div className="attendees flex mt-2">
-                          {activity.attendess.slice(0, 3).map((attendee, index) => {
-                            return (
-                              <UserAvatar
-                                key={index}
-                                userId={attendee.userId}
-                                name={attendee.userId?.name}
-                                status={attendee.status}
-                                className={`${index > 0 ? 'ml-2' : ''}`}
-                                size="h-8 w-8"
-                              />
-                            );
-                          })}
-                          {activity.attendess.length > 3 && (
-                            <div className="ml-2 h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
-                              +{activity.attendess.length - 3}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Attendee limit info */}
-                      {activity.attendeessLimit && (
-                        <p className="mt-2 text-sm text-gray-400">
-                          Spots: {activity.attendess?.filter(att => att.status === 'approved').length || 0}/
-                          {activity.attendeessLimit}
-                        </p>
-                      )}
-
-                      {/* Description */}
-                      {activity.description && (
-                        <p className="mt-4 max-h-16 overflow-hidden break-words">
-                          {activity.description.length > 90
-                            ? activity.description.slice(0, 90) + '...'
-                            : activity.description}
-                        </p>
-                      )}
-
-                      {/* Attendee Management Section - Show if there are attendees */}
-                      {activity.attendess && activity.attendess.length > 0 && (
-                        <div className="mt-3 border-t border-blue-400 pt-3">
-                          <h4 className="text-sm font-medium text-blue-200 mb-2">
-                            Manage Requests ({activity.attendess.filter(att => att.status === 'pending').length}{' '}
-                            pending)
-                          </h4>
-                          <div className="space-y-2 max-h-32 overflow-y-auto">
-                            {activity.attendess.map((attendee, index) => {
-                              return (
-                                <div
-                                  key={index}
-                                  className="flex items-center justify-between bg-black bg-opacity-30 p-2 rounded"
-                                >
-                                  <div className="flex items-center">
-                                    <UserAvatar
-                                      userId={attendee.userId}
-                                      name={attendee.userId?.name}
-                                      status={attendee.status}
-                                      className="mr-2"
-                                      size="h-6 w-6"
-                                    />
-                                    <div>
-                                      <p className="text-xs font-medium text-white">
-                                        {attendee.userId?.name || 'Unknown User'}
-                                      </p>
-                                      <p
-                                        className={`text-xs capitalize font-medium ${
-                                          attendee.status === 'approved'
-                                            ? 'text-green-400'
-                                            : attendee.status === 'pending'
-                                            ? 'text-yellow-400'
-                                            : 'text-gray-400'
-                                        }`}
-                                      >
-                                        {attendee.status}
-                                        {attendee.status === 'pending' && ' ⏳'}
-                                        {attendee.status === 'approved' && ' ✅'}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  {attendee.status === 'pending' && (
-                                    <div className="flex gap-1">
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const attendeeUserId =
-                                            typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
-                                          handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'approved');
-                                        }}
-                                        className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
-                                        disabled={isUpdating}
-                                      >
-                                        ✓
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const attendeeUserId =
-                                            typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
-                                          handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'declined');
-                                        }}
-                                        className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
-                                        disabled={isUpdating}
-                                      >
-                                        ✗
-                                      </button>
-                                    </div>
-                                  )}
-
-                                  {attendee.status === 'approved' && (
-                                    <div className="flex gap-1">
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const attendeeUserId =
-                                            typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
-                                          handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'declined');
-                                        }}
-                                        className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
-                                        disabled={isUpdating}
-                                      >
-                                        Remove
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
+                    {/* Attendees */}
+                    {activity.attendess && activity.attendess.length > 0 && (
+                      <div className="attendees flex mt-2">
+                        {activity.attendess.slice(0, 3).map((attendee, index) => {
+                          return (
+                            <UserAvatar
+                              key={index}
+                              userId={attendee.userId}
+                              name={attendee.userId?.name}
+                              status={attendee.status}
+                              className={`${index > 0 ? 'ml-2' : ''}`}
+                              size="h-8 w-8"
+                            />
+                          );
+                        })}
+                        {activity.attendess.length > 3 && (
+                          <div className="ml-2 h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
+                            +{activity.attendess.length - 3}
                           </div>
-                        </div>
-                      )}
-
-                      <div className="flex justify-center mt-5">
-                        <button
-                          onClick={() => handleActivityClick(activity)}
-                          className="bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-sm font-semibold transition-colors mr-2"
-                        >
-                          More Details
-                        </button>
-                        <button onClick={() => handleManageActivity(activity)} className="btn bg-blue-600 h-8 relative">
-                          Manage
-                          {activity.attendess?.some(att => att.status === 'pending') && (
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                              {activity.attendess.filter(att => att.status === 'pending').length}
-                            </span>
-                          )}
-                        </button>
+                        )}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-            {/* Filter UI */}
-            <BodypartFilter
-              selectedBodyparts={selectedBodyparts}
-              onSelect={handleSelect}
-              onRemove={handleRemove}
-              className="mt-16"
-            />
-            <div className="mt-6 flex">
-              <h2 className="font-bold text-2xl">Matching Activities</h2>
-            </div>
-            {/* Loading state */}
-            {loading && (
-              <div className="mt-4 text-center">
-                <p>Loading activities...</p>
-              </div>
-            )}
-            {/* Error state */}
-            {error && (
-              <div className="mt-4 text-center text-red-500">
-                <p>Error: {error}</p>
-              </div>
-            )}
-            {/* No activities */}
-            {!loading && !error && filteredOtherActivities.length === 0 && (
-              <div className="mt-4 text-center text-gray-400">
-                <p>No activities found matching your criteria.</p>
-              </div>
-            )}
-            {/* Activities list */}
-            {!loading && !error && filteredOtherActivities.length > 0 && (
-              <div className="mt-4 space-y-4">
-                {filteredOtherActivities.map(activity => {
-                  return (
-                    <div
-                      key={activity._id}
-                      className="p-3 border border-gray-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden"
-                    >
-                      <div className="flex items-center">
-                        <UserAvatar
-                          userId={activity.userId}
-                          name={activity.userId?.name}
-                          className=""
-                          size="h-20 w-20"
-                        />
-                        <div className="flex flex-col ml-2">
-                          <p>
-                            <span className="font-bold">Name: </span>
-                            {activity.name}
-                          </p>
-                          <p>
-                            <span className="font-bold">Created by: </span>
-                            {activity.userId?.name || 'Unknown User'}
-                          </p>
-                          <p>
-                            <span className="font-bold">Gym: </span>
-                            {activity.gym || 'Not specified'}
-                          </p>
-                          <p>
-                            <span className="font-bold">Time: </span>
-                            {activity.time || 'Not specified'}
-                          </p>
-                          {(() => {
-                            const userStatus = getUserStatusInActivity(activity);
-                            if (userStatus === 'pending') {
-                              return <p className="text-yellow-400 text-sm italic">Join request pending </p>;
-                            } else if (userStatus === 'approved') {
-                              return <p className="text-green-400 text-sm italic">You're joining this! </p>;
-                            }
-                            return null;
-                          })()}
-                        </div>
-                      </div>
+                    )}
 
-                      {/* Attendees */}
-                      {activity.attendess && activity.attendess.length > 0 && (
-                        <div className="attendees flex mt-2">
-                          {activity.attendess.slice(0, 3).map((attendee, index) => {
+                    {/* Attendee limit info */}
+                    {activity.attendeessLimit && (
+                      <p className="mt-2 text-sm text-gray-400">
+                        Spots: {activity.attendess?.filter(att => att.status === 'approved').length || 0}/
+                        {activity.attendeessLimit}
+                      </p>
+                    )}
+
+                    {/* Description */}
+                    {activity.description && (
+                      <p className="mt-4 max-h-16 overflow-hidden break-words">
+                        {activity.description.length > 90
+                          ? activity.description.slice(0, 90) + '...'
+                          : activity.description}
+                      </p>
+                    )}
+
+                    {/* Attendee Management Section - Show if there are attendees */}
+                    {activity.attendess && activity.attendess.length > 0 && (
+                      <div className="mt-3 border-t border-blue-400 pt-3">
+                        <h4 className="text-sm font-medium text-blue-200 mb-2">
+                          Manage Requests ({activity.attendess.filter(att => att.status === 'pending').length} pending)
+                        </h4>
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                          {activity.attendess.map((attendee, index) => {
                             return (
-                              <UserAvatar
+                              <div
                                 key={index}
-                                userId={attendee.userId}
-                                name={attendee.userId?.name}
-                                status={attendee.status}
-                                className={`${index > 0 ? 'ml-2' : ''}`}
-                                size="h-8 w-8"
-                              />
+                                className="flex items-center justify-between bg-black bg-opacity-30 p-2 rounded"
+                              >
+                                <div className="flex items-center">
+                                  <UserAvatar
+                                    userId={attendee.userId}
+                                    name={attendee.userId?.name}
+                                    status={attendee.status}
+                                    className="mr-2"
+                                    size="h-6 w-6"
+                                  />
+                                  <div>
+                                    <p className="text-xs font-medium text-white">
+                                      {attendee.userId?.name || 'Unknown User'}
+                                    </p>
+                                    <p
+                                      className={`text-xs capitalize font-medium ${
+                                        attendee.status === 'approved'
+                                          ? 'text-green-400'
+                                          : attendee.status === 'pending'
+                                          ? 'text-yellow-400'
+                                          : 'text-gray-400'
+                                      }`}
+                                    >
+                                      {attendee.status}
+                                      {attendee.status === 'pending' && ' ⏳'}
+                                      {attendee.status === 'approved' && ' ✅'}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {attendee.status === 'pending' && (
+                                  <div className="flex gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const attendeeUserId =
+                                          typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                        handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'approved');
+                                      }}
+                                      className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
+                                      disabled={isUpdating}
+                                    >
+                                      ✓
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const attendeeUserId =
+                                          typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                        handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'declined');
+                                      }}
+                                      className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                      disabled={isUpdating}
+                                    >
+                                      ✗
+                                    </button>
+                                  </div>
+                                )}
+
+                                {attendee.status === 'approved' && (
+                                  <div className="flex gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const attendeeUserId =
+                                          typeof attendee.userId === 'object' ? attendee.userId._id : attendee.userId;
+                                        handleUpdateAttendeeStatus(activity._id, attendeeUserId, 'declined');
+                                      }}
+                                      className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                      disabled={isUpdating}
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             );
                           })}
-                          {activity.attendess.length > 3 && (
-                            <div className="ml-2 h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
-                              +{activity.attendess.length - 3}
-                            </div>
-                          )}
                         </div>
-                      )}
+                      </div>
+                    )}
 
-                      {/* Attendee limit info */}
-                      {activity.attendeessLimit && (
-                        <p className="mt-2 text-sm text-gray-400">
-                          Spots: {activity.attendess?.filter(att => att.status === 'approved').length || 0}/
-                          {activity.attendeessLimit}
+                    <div className="flex justify-center mt-5">
+                      <button
+                        onClick={() => handleActivityClick(activity)}
+                        className="bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-sm font-semibold transition-colors mr-2"
+                      >
+                        More Details
+                      </button>
+                      <button onClick={() => handleManageActivity(activity)} className="btn bg-blue-600 h-8 relative">
+                        Manage
+                        {activity.attendess?.some(att => att.status === 'pending') && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                            {activity.attendess.filter(att => att.status === 'pending').length}
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          {/* Filter UI */}
+          <BodypartFilter
+            selectedBodyparts={selectedBodyparts}
+            onSelect={handleSelect}
+            onRemove={handleRemove}
+            className="mt-16"
+          />
+          <div className="mt-6 flex">
+            <h2 className="font-bold text-2xl">Matching Activities</h2>
+          </div>
+          {/* Loading state */}
+          {loading && (
+            <div className="mt-4 text-center">
+              <p>Loading activities...</p>
+            </div>
+          )}
+          {/* Error state */}
+          {error && (
+            <div className="mt-4 text-center text-red-500">
+              <p>Error: {error}</p>
+            </div>
+          )}
+          {/* No activities */}
+          {!loading && !error && filteredOtherActivities.length === 0 && (
+            <div className="mt-4 text-center text-gray-400">
+              <p>No activities found matching your criteria.</p>
+            </div>
+          )}
+          {/* Activities list */}
+          {!loading && !error && filteredOtherActivities.length > 0 && (
+            <div className="mt-4 space-y-4">
+              {filteredOtherActivities.map(activity => {
+                return (
+                  <div
+                    key={activity._id}
+                    className="p-3 border border-gray-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden"
+                  >
+                    <div className="flex items-center">
+                      <UserAvatar userId={activity.userId} name={activity.userId?.name} className="" size="h-20 w-20" />
+                      <div className="flex flex-col ml-2">
+                        <p>
+                          <span className="font-bold">Name: </span>
+                          {activity.name}
                         </p>
-                      )}
-
-                      {/* Description */}
-                      {activity.description && (
-                        <p className="mt-4 max-h-16 overflow-hidden break-words">
-                          {activity.description.length > 90
-                            ? activity.description.slice(0, 90) + '...'
-                            : activity.description}
+                        <p>
+                          <span className="font-bold">Created by: </span>
+                          {activity.userId?.name || 'Unknown User'}
                         </p>
-                      )}
-
-                      <div className="flex justify-center mt-5">
-                        <button
-                          onClick={() => handleActivityClick(activity)}
-                          className="bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-sm font-semibold transition-colors mr-2"
-                        >
-                          More Details
-                        </button>
-                        {/* {activity.showWorkoutPlan && activity.workoutPlanId && (
-                        <button className="btn bg-gray-500 h-8">See Workout Plan</button>
-                      )} */}
+                        <p>
+                          <span className="font-bold">Gym: </span>
+                          {activity.gym || 'Not specified'}
+                        </p>
+                        <p>
+                          <span className="font-bold">Time: </span>
+                          {formatGermanDateTime(activity.time)}
+                        </p>
                         {(() => {
                           const userStatus = getUserStatusInActivity(activity);
-                          const canJoin = canUserJoinActivity(activity);
-
                           if (userStatus === 'pending') {
-                            return (
-                              <button className="btn bg-yellow-600 ml-5 h-8" disabled>
-                                Pending
-                              </button>
-                            );
+                            return <p className="text-yellow-400 text-sm italic">Join request pending </p>;
                           } else if (userStatus === 'approved') {
-                            return (
-                              <button
-                                onClick={() => handleLeaveActivity(activity)}
-                                className="btn bg-red-600 ml-5 h-8"
-                                disabled={isJoining}
-                              >
-                                {isJoining ? 'Leaving...' : 'Leave'}
-                              </button>
-                            );
-                          } else if (canJoin) {
-                            return (
-                              <button
-                                onClick={() => handleJoinActivity(activity)}
-                                className="btn bg-green-600 ml-5 h-8"
-                                disabled={isJoining}
-                              >
-                                {isJoining ? 'Joining...' : 'Ask to Join'}
-                              </button>
-                            );
-                          } else {
-                            const approvedCount =
-                              activity.attendess?.filter(att => att.status === 'approved').length || 0;
-                            const isAtLimit = activity.attendeessLimit && approvedCount >= activity.attendeessLimit;
-                            return (
-                              <button className="btn bg-gray-500 ml-5 h-8" disabled>
-                                {isAtLimit ? 'Full' : 'Unavailable'}
-                              </button>
-                            );
+                            return <p className="text-green-400 text-sm italic">You're joining this! </p>;
                           }
+                          return null;
                         })()}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+
+                    {/* Attendees */}
+                    {activity.attendess && activity.attendess.length > 0 && (
+                      <div className="attendees flex mt-2">
+                        {activity.attendess.slice(0, 3).map((attendee, index) => {
+                          return (
+                            <UserAvatar
+                              key={index}
+                              userId={attendee.userId}
+                              name={attendee.userId?.name}
+                              status={attendee.status}
+                              className={`${index > 0 ? 'ml-2' : ''}`}
+                              size="h-8 w-8"
+                            />
+                          );
+                        })}
+                        {activity.attendess.length > 3 && (
+                          <div className="ml-2 h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
+                            +{activity.attendess.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Attendee limit info */}
+                    {activity.attendeessLimit && (
+                      <p className="mt-2 text-sm text-gray-400">
+                        Spots: {activity.attendess?.filter(att => att.status === 'approved').length || 0}/
+                        {activity.attendeessLimit}
+                      </p>
+                    )}
+
+                    {/* Description */}
+                    {activity.description && (
+                      <p className="mt-4 max-h-16 overflow-hidden break-words">
+                        {activity.description.length > 90
+                          ? activity.description.slice(0, 90) + '...'
+                          : activity.description}
+                      </p>
+                    )}
+
+                    <div className="flex justify-center mt-5">
+                      <button
+                        onClick={() => handleActivityClick(activity)}
+                        className="bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-sm font-semibold transition-colors mr-2"
+                      >
+                        More Details
+                      </button>
+                      {/* {activity.showWorkoutPlan && activity.workoutPlanId && (
+                        <button className="btn bg-gray-500 h-8">See Workout Plan</button>
+                      )} */}
+                      {(() => {
+                        const userStatus = getUserStatusInActivity(activity);
+                        const canJoin = canUserJoinActivity(activity);
+
+                        if (userStatus === 'pending') {
+                          return (
+                            <button className="btn bg-yellow-600 ml-5 h-8" disabled>
+                              Pending
+                            </button>
+                          );
+                        } else if (userStatus === 'approved') {
+                          return (
+                            <button
+                              onClick={() => handleLeaveActivity(activity)}
+                              className="btn bg-red-600 ml-5 h-8"
+                              disabled={isJoining}
+                            >
+                              {isJoining ? 'Leaving...' : 'Leave'}
+                            </button>
+                          );
+                        } else if (canJoin) {
+                          return (
+                            <button
+                              onClick={() => handleJoinActivity(activity)}
+                              className="btn bg-green-600 ml-5 h-8"
+                              disabled={isJoining}
+                            >
+                              {isJoining ? 'Joining...' : 'Ask to Join'}
+                            </button>
+                          );
+                        } else {
+                          const approvedCount =
+                            activity.attendess?.filter(att => att.status === 'approved').length || 0;
+                          const isAtLimit = activity.attendeessLimit && approvedCount >= activity.attendeessLimit;
+                          return (
+                            <button className="btn bg-gray-500 ml-5 h-8" disabled>
+                              {isAtLimit ? 'Full' : 'Unavailable'}
+                            </button>
+                          );
+                        }
+                      })()}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-      ) : managingActivity ? (
+      ) : // </div>
+      managingActivity ? (
         /* Manage Activity Modal */
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
           <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-600 shadow-2xl">
@@ -925,13 +941,17 @@ const GroupFinder = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date & Time</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Date & Time</label>
                 <input
                   type="datetime-local"
                   value={editForm.time}
                   onChange={e => handleEditFormChange('time', e.target.value)}
                   className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white"
+                  min={new Date().toISOString().slice(0, 16)}
                 />
+                <p className="text-xs text-gray-400 mt-1">
+                  Will be displayed as: {editForm.time ? formatGermanDateTime(editForm.time) : 'DD.MM.YYYY, HH:MM'}
+                </p>
               </div>
 
               <div>
@@ -1148,7 +1168,7 @@ const GroupFinder = () => {
                     </p>
                     <p className="text-gray-300">
                       <span className="font-semibold">Time: </span>
-                      {selectedActivity.time || 'Not specified'}
+                      {formatGermanDateTime(selectedActivity.time)}
                     </p>
                     {(() => {
                       const activityUserId =
