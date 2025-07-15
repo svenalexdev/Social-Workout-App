@@ -596,6 +596,28 @@ const GroupFinder = () => {
                         )}
                       </div>
                     )}
+                    {/* Attendees */}
+                    {activity.attendess && activity.attendess.length > 0 && (
+                      <div className="attendees flex mt-2">
+                        {activity.attendess.slice(0, 3).map((attendee, index) => {
+                          return (
+                            <UserAvatar
+                              key={index}
+                              userId={attendee.userId}
+                              name={attendee.userId?.name}
+                              status={attendee.status}
+                              className={`${index > 0 ? 'ml-2' : ''}`}
+                              size="h-8 w-8"
+                            />
+                          );
+                        })}
+                        {activity.attendess.length > 3 && (
+                          <div className="ml-2 h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
+                            +{activity.attendess.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Attendee limit info */}
                     {activity.attendeessLimit && (
@@ -607,11 +629,7 @@ const GroupFinder = () => {
 
                     {/* Description */}
                     {activity.description && (
-                      <p className="mt-4 max-h-16 overflow-hidden break-words">
-                        {activity.description.length > 90
-                          ? activity.description.slice(0, 90) + '...'
-                          : activity.description}
-                      </p>
+                      <p className="mt-4 max-h-16 break-words line-clamp-2">{activity.description}</p>
                     )}
 
                     {/* Attendee Management Section - Show if there are attendees */}
@@ -782,7 +800,7 @@ const GroupFinder = () => {
                         </p>
                         <p>
                           <span className="font-bold">Time: </span>
-                          {formatGermanDateTime(activity.time)}
+                          {activity.time || 'Not specified'}
                         </p>
                         {(() => {
                           const userStatus = getUserStatusInActivity(activity);
@@ -829,11 +847,7 @@ const GroupFinder = () => {
 
                     {/* Description */}
                     {activity.description && (
-                      <p className="mt-4 max-h-16 overflow-hidden break-words">
-                        {activity.description.length > 90
-                          ? activity.description.slice(0, 90) + '...'
-                          : activity.description}
-                      </p>
+                      <p className="mt-4 max-h-16 break-words line-clamp-2">{activity.description}</p>
                     )}
 
                     <div className="flex justify-center mt-5">
@@ -894,8 +908,7 @@ const GroupFinder = () => {
             </div>
           )}
         </div>
-      ) : // </div>
-      managingActivity ? (
+      ) : managingActivity ? (
         /* Manage Activity Modal */
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
           <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-600 shadow-2xl">

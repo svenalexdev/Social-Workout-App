@@ -111,19 +111,23 @@ const ChatApp = ({ onSuccess }) => {
   };
 
   return (
-    <div className="max-h-[85vh] max-w-[1200px] flex flex-col bg-slate-600 rounded-lg mx-auto px-2 sm:px-6">
+    <div className="w-full flex flex-col bg-[#1a1a1a]">
       {/* <Chat chatRef={chatRef} messages={messages} /> */}
 
-      <div className="w-full p-4 sm:p-6 bg-slate-600 rounded-lg shadow-md">
+      <div className="w-full">
         <form onSubmit={handleSubmit}>
           <textarea
             value={prompt}
             onChange={handleChange}
             rows="5"
             placeholder="Let me build a workout plan for you! What areas of your body would you like to train?..."
-            className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+            className="block w-full px-4 py-2 border border-gray-600 rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
           ></textarea>
-          <button type="submit" className="mt-4 w-full btn btn-primary" disabled={loading}>
+          <button
+            type="submit"
+            className="mt-4 w-full bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-lg font-semibold transition-colors"
+            disabled={loading}
+          >
             Submit
           </button>
         </form>
