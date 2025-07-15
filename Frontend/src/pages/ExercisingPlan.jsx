@@ -684,12 +684,15 @@ function ExercisingPlan() {
               {/* Exercise Details - Collapsible */}
               {!isCollapsed && (
                 <div className="px-4 pb-4">
-                  <div className="grid grid-cols-5 gap-2 mb-2 text-sm font-semibold text-gray-300">
-                    <span>Set</span>
-                    <span>Previous</span>
-                    <span>kg</span>
-                    <span>Reps</span>
-                    <span>✓</span>
+                  <div
+                    className="grid gap-2 mb-2 text-sm font-semibold text-gray-300"
+                    style={{ gridTemplateColumns: '2rem 1.2fr 4rem 4rem 4rem' }}
+                  >
+                    <span className="text-left">Set</span>
+                    <span className="text-left">Previous</span>
+                    <span className="text-left">kg</span>
+                    <span className="text-left">Reps</span>
+                    <span className="text-center">✓</span>
                   </div>
 
                   {[...Array(exercise.sets)].map((_, setIndex) => {
@@ -721,23 +724,26 @@ function ExercisingPlan() {
                     return (
                       <div
                         key={setNumber}
-                        className={`grid grid-cols-5 gap-2 p-2 rounded transition-colors ${
+                        className={`grid gap-1 p-2 rounded transition-colors ${
                           isLastCompletedSet
                             ? 'bg-[#2a2a2a]' // Lighter background for most recent completed set
                             : 'bg-[#1a1a1a]'
                         } ${isSetCompleted ? 'opacity-80' : ''}`}
+                        style={{ gridTemplateColumns: '2rem 1.2fr 4rem 4rem 4rem' }}
                       >
-                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#2a2a2a] border border-gray-600 text-white font-semibold">
-                          {setNumber}
-                        </span>
-                        <span className="text-gray-400 flex items-center text-sm">
+                        <div className="flex items-center -ml-2 justify-left">
+                          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#2a2a2a] border border-gray-600 text-white font-semibold">
+                            {setNumber}
+                          </span>
+                        </div>
+                        <div className="text-gray-400 flex items-center text-sm">
                           {previousWeight}kg × {previousReps}
-                        </span>
+                        </div>
                         <input
                           type="number"
                           value={setData.weight || setDefaults.weight}
                           onChange={e => handleInputChange(exercise.exerciseId, setNumber, 'weight', e.target.value)}
-                          className="bg-[#1a1a1a] border border-gray-600 rounded px-2 py-1 text-center text-white focus:border-[#F2AB40] focus:outline-none transition-colors"
+                          className="bg-[#1a1a1a] border border-gray-600 rounded px-2 py-1 text-left text-white focus:border-[#F2AB40] focus:outline-none transition-colors"
                           step="0.5"
                           min="0"
                         />
@@ -745,20 +751,22 @@ function ExercisingPlan() {
                           type="number"
                           value={setData.reps || setDefaults.reps}
                           onChange={e => handleInputChange(exercise.exerciseId, setNumber, 'reps', e.target.value)}
-                          className="bg-[#1a1a1a] border border-gray-600 rounded px-2 py-1 text-center text-white focus:border-[#F2AB40] focus:outline-none transition-colors"
+                          className="bg-[#1a1a1a] border border-gray-600 rounded px-2 py-1 text-left text-white focus:border-[#F2AB40] focus:outline-none transition-colors"
                           min="1"
                           max="99"
                         />
-                        <button
-                          onClick={() => toggleSetCompletion(exercise.exerciseId, setNumber)}
-                          className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors ${
-                            isSetCompleted
-                              ? 'bg-[#F2AB40] border-[#F2AB40] text-black'
-                              : 'border-gray-600 hover:border-[#F2AB40] hover:bg-[#F2AB40]/20'
-                          }`}
-                        >
-                          {isSetCompleted && '✓'}
-                        </button>
+                        <div className="flex justify-center ml-4 items-center">
+                          <button
+                            onClick={() => toggleSetCompletion(exercise.exerciseId, setNumber)}
+                            className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors ${
+                              isSetCompleted
+                                ? 'bg-[#F2AB40] border-[#F2AB40] text-black'
+                                : 'border-gray-600 hover:border-[#F2AB40] hover:bg-[#F2AB40]/20'
+                            }`}
+                          >
+                            {isSetCompleted && '✓'}
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

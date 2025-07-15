@@ -111,7 +111,7 @@ const ChatApp = ({ onSuccess }) => {
   };
 
   return (
-    <div className="w-full flex flex-col bg-[#1a1a1a]">
+    <div className="w-full flex flex-col ">
       {/* <Chat chatRef={chatRef} messages={messages} /> */}
 
       <div className="w-full">
@@ -121,14 +121,37 @@ const ChatApp = ({ onSuccess }) => {
             onChange={handleChange}
             rows="5"
             placeholder="Let me build a workout plan for you! What areas of your body would you like to train?..."
-            className="block w-full px-4 py-2 border border-gray-600 rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+            className="bg-[#1a1a1a] block w-full px-4 py-2 border border-gray-600 rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
           ></textarea>
           <button
             type="submit"
-            className="mt-4 w-full bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-lg font-semibold transition-colors active:bg-[#644f2c]"
+            className={`mt-4 w-full px-4 py-2 rounded-lg text-lg font-semibold transition-colors ${
+              loading
+                ? 'bg-gray-500 cursor-not-allowed text-gray-300'
+                : 'bg-[#F2AB40] hover:bg-[#e09b2d] text-black active:bg-[#644f2c]'
+            }`}
             disabled={loading}
           >
-            Submit
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-300"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Generating Plan...
+              </span>
+            ) : (
+              'Submit'
+            )}
           </button>
         </form>
       </div>

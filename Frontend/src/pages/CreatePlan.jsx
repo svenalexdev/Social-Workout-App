@@ -609,7 +609,7 @@ function CreatePlan() {
                   Create with AI
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="w-6 h-6 ml-2 text-white"
+                    className="w-6 h-6 mb-1 text-white"
                     fill="none"
                     viewBox="0 0 24 24"
                   >
@@ -730,7 +730,7 @@ function CreatePlan() {
                     Create with AI
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="w-6 h-6 ml-2 text-white"
+                      className="w-6 h-6 mb-1 text-white"
                       fill="none"
                       viewBox="0 0 24 24"
                     >
