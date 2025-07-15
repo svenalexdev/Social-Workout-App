@@ -17,7 +17,7 @@ function Navbar() {
           {/* Home */}
           <button
             onClick={() => navigate('/')}
-            className="flex flex-col items-center justify-center py-2 px-3 rounded-xl"
+            className="flex flex-col items-center justify-center pt-1 pb-3 px-3 rounded-xl"
           >
             <img src={currentPath === '/' ? '/HomeON.png' : '/HomeOFF.png'} alt="Home" className="w-6 h-6 mb-1" />
             <span className={`text-xs ${currentPath === '/' ? 'text-white' : 'text-gray-400'}`}>Home</span>
@@ -26,7 +26,7 @@ function Navbar() {
           {/* Plans */}
           <button
             onClick={() => navigate('/plans')}
-            className="flex flex-col items-center justify-center py-2 px-3 rounded-xl"
+            className="flex flex-col items-center justify-center pt-1 pb-3 px-3 rounded-xl"
           >
             <img
               src={currentPath.startsWith('/plans') ? '/PlansON.png' : '/PlansOFF.png'}
@@ -41,7 +41,7 @@ function Navbar() {
           {/* Groups */}
           <button
             onClick={() => navigate('/groupfinder')}
-            className="flex flex-col items-center justify-center py-2 px-3 rounded-xl"
+            className="flex flex-col items-center justify-center pt-1 pb-3 px-3 rounded-xl"
           >
             <img
               src={currentPath.startsWith('/groupfinder') ? '/GroupON.png' : '/GroupOFF.png'}
@@ -54,7 +54,7 @@ function Navbar() {
           </button>
 
           {/* Profile */}
-          <button onClick={goToProfile} className="flex flex-col items-center justify-center py-2 px-3 rounded-xl">
+          <button onClick={goToProfile} className="flex flex-col items-center justify-center pt-1 pb-3 px-3 rounded-xl">
             <img
               src={currentPath.startsWith('/profile') ? '/ProfileON.png' : '/ProfileOFF.png'}
               alt="Profile"

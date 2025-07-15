@@ -289,7 +289,7 @@ function Home() {
 
   return (
     <div className="bg-[#121212] text-white min-h-screen pt-safe pb-5 w-full max-w-md mx-auto">
-      <div className="p-8 pb-15">
+      <div className="p-8 pb-1">
         {/* Enhanced Greeting Section */}
         <div className="flex flex-col items-center justify-center text-center">
           <div className="relative mb-4">
@@ -318,7 +318,7 @@ function Home() {
       </div>
 
       {/* Pinned Plans Section */}
-      <div className="p-6 pt-2">
+      <div className="p-6">
         <h3 className="text-2xl font-semibold mb-4">My Pinned Plans</h3>
 
         {plansLoading ? (
@@ -360,7 +360,6 @@ function Home() {
                   <p className="text-gray-400 text-sm mb-2">{exerciseList}</p>
                   <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
                     <span>{plan.exercise ? `${plan.exercise.length} exercises` : 'No exercises'}</span>
-                    <span>{new Date(plan.createdAt || Date.now()).toLocaleDateString()}</span>
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -368,7 +367,7 @@ function Home() {
                         e.stopPropagation(); // Prevent card click event
                         GoToStartRoutine(plan._id);
                       }}
-                      className="text-xs bg-[#F2AB40] text-black px-2 py-1 rounded-full font-medium"
+                      className="flex-1 text-sm bg-[#F2AB40] text-black px-3 py-2 rounded-full font-medium hover:bg-[#e09b2d] transition-colors"
                     >
                       Start Routine
                     </button>
@@ -377,7 +376,7 @@ function Home() {
                         e.stopPropagation(); // Prevent card click event
                         handleCreateActivity(plan);
                       }}
-                      className="text-xs bg-gray-600 text-white px-2 py-1 rounded-full font-medium hover:bg-[#F2AB40] hover:text-black transition-colors"
+                      className="flex-1 text-sm bg-gray-600 text-white px-3 py-2 rounded-full font-medium hover:bg-[#F2AB40] hover:text-black transition-colors"
                     >
                       Create Activity
                     </button>
@@ -429,11 +428,12 @@ function Home() {
                 <p className="text-gray-400 text-sm mb-2">{activity.description}</p>
                 <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
                   <span>{activity.gym}</span>
-                  <span>{new Date(activity.time).toLocaleDateString()}</span>
                 </div>
-                <div className="text-xs bg-[#F2AB40] text-black px-2 py-1 rounded-full font-medium inline-block">
-                  {activity.attendees?.length || activity.attendess?.length || 0}/
-                  {activity.attendeesLimit || activity.attendeessLimit} attendees
+                <div className="flex gap-2">
+                  <div className="text-xs bg-[#F2AB40] text-black px-3 py-2 rounded-full font-medium">
+                    {activity.attendees?.length || activity.attendess?.length || 0}/
+                    {activity.attendeesLimit || activity.attendeessLimit} attendees
+                  </div>
                 </div>
               </div>
             ))}
@@ -461,7 +461,7 @@ function Home() {
 
       {/* Recommended Plans Section */}
       <div className="p-6 pt-2">
-        <h3 className="text-2xl font-semibold mb-4 text-center">Recommended Plans</h3>
+        <h3 className="text-2xl font-semibold mb-4">Recommended Plans</h3>
 
         {recommendedLoading ? (
           <div className="text-center py-8">
@@ -509,7 +509,7 @@ function Home() {
                         e.stopPropagation();
                         handleCreateActivity(plan);
                       }}
-                      className="bg-[#F2AB40] text-black px-3 py-1 rounded text-xs hover:bg-[#e09b2d] transition-colors font-semibold"
+                      className="bg-[#F2AB40] text-black px-4 py-2 rounded text-xs hover:bg-[#e09b2d] transition-colors font-semibold"
                     >
                       Create Activity
                     </button>
