@@ -421,8 +421,8 @@ function CreatePlan() {
     <div className="min-h-screen bg-[#121212] text-white p-4">
       {/* Modal / popup to show exercise list  */}
       {showExercises && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
-          <div className="bg-gray-800 rounded-2xl max-w-lg w-full h-[600px] min-h-full overflow-hidden relative flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 mt-5 p-4">
+          <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] border border-gray-700 rounded-xl max-w-2xl w-full h-[88vh] overflow-hidden relative flex flex-col">
             <div className="sticky top-0 z-10 pb-2 px-3">
               <div className="flex justify-between items-center py-3">
                 {/* Close Button */}
@@ -434,7 +434,7 @@ function CreatePlan() {
                     setVisibleCount(100);
                     setSelectedBodyparts([]);
                   }}
-                  className="btn text-lg bg-gray-500 border-none text-white"
+                  className="text-gray-400 hover:text-[#F2AB40] text-2xl font-bold transition-colors"
                 >
                   ×
                 </button>
@@ -446,7 +446,7 @@ function CreatePlan() {
                     setVisibleCount(100);
                     setSelectedBodyparts([]);
                   }}
-                  className="btn text-lg bg-gray-500 border-none text-white"
+                  className="bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
                 >
                   Add ({selectedExercise.length})
                 </button>
@@ -459,7 +459,7 @@ function CreatePlan() {
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   placeholder="Search exercises..."
-                  className="w-full max-w-xs p-2 mb-4 rounded bg-gray-700 placeholder-gray-400 mt-4"
+                  className="w-full p-2 mb-3 rounded bg-[#1a1a1a] border border-gray-600  placeholder-gray-500"
                 />
               </div>
               {/* Bodypart Filter UI */}
@@ -516,14 +516,20 @@ function CreatePlan() {
           {/* Conditional rendering branch 1 */}
           {!createPlan ? (
             <div className="p-3">
-              <div className="flex justify-between items-center ">
-                <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
-                  X
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={handleGoBack}
+                  className="text-gray-400 hover:text-[#F2AB40] text-2xl font-bold transition-colors"
+                >
+                  ×
                 </button>
                 <h1 className="flex-1 text-center font-bold text-lg mx-2 truncate overflow-hidden whitespace-nowrap">
                   {planName}
                 </h1>
-                <button onClick={handleSaveButton} className="btn text-lg bg-gray-500 border-none text-white">
+                <button
+                  onClick={handleSaveButton}
+                  className="bg-[#F2AB40] hover:bg-[#e09b2d] text-base font-semibold text-black py-2 px-6 rounded-lg"
+                >
                   Save
                 </button>
               </div>
@@ -581,28 +587,42 @@ function CreatePlan() {
                 </Switch>
                 <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
               </div>
-              <div className="mt-8 px-4">
-                <button onClick={handleAddExercise} className="btn text-lg bg-gray-500 border-none text-white w-full">
+              <div className="mt-8">
+                <button
+                  onClick={handleAddExercise}
+                  className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-[#e09b2d] transition-colors font-semibold relative text-lg w-full"
+                >
                   Add exercises
                 </button>
               </div>
 
               {/* Add AI button for initial state as well */}
-              <div className="mt-4 px-4">
+              <div className="mt-4">
                 <button
                   onClick={() => {
                     toggleChatOpen();
                     setCreatePlan(true);
                   }}
-                  className="btn text-lg bg-[#ffa622] border-none text-white w-full"
+                  className="px-6 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 text-white rounded-lg shadow-lg hover:shadow-xl transition-all font-semibold relative text-lg w-full flex items-center justify-center gap-2
+      hover:animate-pulse"
                 >
                   Create with AI
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-6 h-6 ml-2 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z" fill="white" />
+                    <path d="M5 19l.75 2.25L8 22l-2.25.75L5 25l-.75-2.25L2 22l2.25-.75L5 19z" fill="white" />
+                    <path d="M19 15l.5 1.5L22 17l-1.5.5L19 19l-.5-1.5L16 17l1.5-.5L19 15z" fill="white" />
+                  </svg>
                 </button>
               </div>
 
               {/* AI Chat Form for initial state */}
               {chatOpen && (
-                <div className="mt-6 mx-4">
+                <div className="mt-6">
                   <ChatApp
                     onSuccess={() => {
                       setTimeout(() => {
@@ -617,13 +637,19 @@ function CreatePlan() {
             <div className="p-3">
               {/* Conditional rendering branch 2 */}
               <div className="flex justify-between items-center">
-                <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
-                  X
+                <button
+                  onClick={handleGoBack}
+                  className="text-gray-400 hover:text-[#F2AB40] text-2xl font-bold transition-colors"
+                >
+                  ×
                 </button>
                 <h1 className="flex-1 text-center font-bold text-lg mx-2 truncate overflow-hidden whitespace-nowrap">
                   {planName}
                 </h1>
-                <button onClick={handleSaveButton} className="btn text-lg bg-gray-500 border-none text-white">
+                <button
+                  onClick={handleSaveButton}
+                  className="bg-[#F2AB40] hover:bg-[#e09b2d] text-base font-semibold text-black py-2 px-6 rounded-lg"
+                >
                   Save
                 </button>
               </div>
@@ -681,10 +707,10 @@ function CreatePlan() {
                 </Switch>
                 <span className="text-sm font-medium">{isPublic ? 'Share Plan with Others' : 'Keep Plan Private'}</span>
               </div>
-              <div className="mt-8 px-4">
+              <div className="mt-8">
                 <button
                   onClick={() => setShowExercises(true)}
-                  className="btn text-lg bg-gray-500 border-none text-white w-full"
+                  className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-[#e09b2d] transition-colors font-semibold relative text-lg w-full"
                 >
                   Add exercises
                 </button>
@@ -692,16 +718,33 @@ function CreatePlan() {
 
               {/* AI Button - show below Add exercises when no exercises, or below exercises when they exist */}
               {editableExercises.length === 0 && (
-                <div className="mt-4 px-4">
-                  <button onClick={toggleChatOpen} className="btn text-lg bg-[#ffa622] border-none text-white w-full">
+                <div className="mt-4">
+                  <button
+                    onClick={() => {
+                      toggleChatOpen();
+                      setCreatePlan(true);
+                    }}
+                    className="px-6 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 text-white rounded-lg shadow-lg hover:shadow-xl transition-all font-semibold relative text-lg w-full flex items-center justify-center gap-2
+      hover:animate-pulse"
+                  >
                     Create with AI
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-6 h-6 ml-2 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z" fill="white" />
+                      <path d="M5 19l.75 2.25L8 22l-2.25.75L5 25l-.75-2.25L2 22l2.25-.75L5 19z" fill="white" />
+                      <path d="M19 15l.5 1.5L22 17l-1.5.5L19 19l-.5-1.5L16 17l1.5-.5L19 15z" fill="white" />
+                    </svg>
                   </button>
                 </div>
               )}
 
               {/* AI Chat Form - integrated into the main flow */}
               {chatOpen && (
-                <div className="mt-6 mx-4">
+                <div className="mt-6">
                   <ChatApp
                     onSuccess={() => {
                       setTimeout(() => {
@@ -713,14 +756,12 @@ function CreatePlan() {
               )}
               <div className="mt-8">
                 {editableExercises.map((exercise, idx) => (
-                  <div key={idx} className="mt-5 mb-6 p-3 rounded-lg bg-gray-800">
+                  <div key={idx} className="mt-5 mb-6 p-3 rounded-lg bg-[#1a1a1a] border border-gray-600">
                     <div className="flex items-center">
                       {exercise.gifUrl ? (
                         <img src={exercise.gifUrl} className="w-11 h-11 rounded object-cover" alt={exercise.name} />
                       ) : (
-                        <div className="w-11 h-11 rounded bg-gray-600 flex items-center justify-center text-xs text-gray-300">
-                          💪
-                        </div>
+                        <div className="w-11 h-11 rounded bg-gray-600 flex items-center justify-center text-xs text-gray-300"></div>
                       )}
                       <div className="font-bold text-lg ml-4 mr-4">{capitalizeWords(exercise.name)}</div>
                       <button
@@ -745,7 +786,7 @@ function CreatePlan() {
                         </svg>
                       </button>
                     </div>
-                    <div className="grid grid-cols-4 gap-2 text-xs font-semibold mt-4 mb-1">
+                    <div className="grid grid-cols-4 gap-2 text-xs font-semibold mt-4 mb-1 text-center">
                       <span>Sets</span>
                       <span>Reps</span>
                       <span>Weight</span>
@@ -758,7 +799,7 @@ function CreatePlan() {
                         placeholder="0"
                         value={exercise.sets?.toString() ?? ''}
                         onChange={e => handleExerciseChange(idx, 'sets', e.target.value)}
-                        className="bg-gray-700 rounded px-2 py-1 text-center"
+                        className="bg-[#1a1a1a] border border-gray-600 rounded px-2 py-1 text-center"
                         min={0}
                       />
                       <input
@@ -767,7 +808,7 @@ function CreatePlan() {
                         placeholder="0"
                         value={exercise.reps?.toString() ?? ''}
                         onChange={e => handleExerciseChange(idx, 'reps', e.target.value)}
-                        className="bg-gray-700 rounded px-2 py-1 text-center"
+                        className="bg-[#1a1a1a] border border-gray-600 rounded px-2 py-1 text-center"
                         min={0}
                       />
                       <input
@@ -776,7 +817,7 @@ function CreatePlan() {
                         placeholder="0"
                         value={exercise.weight?.toString() ?? ''}
                         onChange={e => handleExerciseChange(idx, 'weight', e.target.value)}
-                        className="bg-gray-700 rounded px-2 py-1 text-center"
+                        className="bg-[#1a1a1a] border border-gray-600 rounded px-2 py-1 text-center"
                         min={0}
                       />
                       <input
@@ -785,7 +826,7 @@ function CreatePlan() {
                         placeholder="0"
                         value={exercise.restTime?.toString() ?? ''}
                         onChange={e => handleExerciseChange(idx, 'restTime', e.target.value)}
-                        className="bg-gray-700 rounded px-2 py-1 text-center"
+                        className="bg-[#1a1a1a] border border-gray-600 rounded px-2 py-1 text-center"
                         min={0}
                       />
                     </div>
@@ -795,16 +836,33 @@ function CreatePlan() {
 
               {/* AI Button - show below exercises when they exist */}
               {editableExercises.length > 0 && (
-                <div className="mt-6 px-4 mb-4">
-                  <button onClick={toggleChatOpen} className="btn text-lg bg-[#ffa622] border-none text-white w-full">
+                <div className="mt-6 mb-4 pb-8">
+                  <button
+                    onClick={() => {
+                      toggleChatOpen();
+                      setCreatePlan(true);
+                    }}
+                    className="px-6 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 text-white rounded-lg shadow-lg hover:shadow-xl transition-all font-semibold relative text-lg w-full flex items-center justify-center gap-2
+      hover:animate-pulse"
+                  >
                     New Plan with AI
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-6 h-6 ml-2 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z" fill="white" />
+                      <path d="M5 19l.75 2.25L8 22l-2.25.75L5 25l-.75-2.25L2 22l2.25-.75L5 19z" fill="white" />
+                      <path d="M19 15l.5 1.5L22 17l-1.5.5L19 19l-.5-1.5L16 17l1.5-.5L19 15z" fill="white" />
+                    </svg>
                   </button>
                 </div>
               )}
 
               {/* AI Chat Form - show below everything when exercises exist */}
               {chatOpen && editableExercises.length > 0 && (
-                <div className="mt-6 mx-4">
+                <div className="mt-6">
                   <ChatApp
                     onSuccess={() => {
                       setTimeout(() => {

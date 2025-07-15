@@ -1,4 +1,4 @@
-import { useState, useEffect,useContext  } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { toast } from 'react-toastify';
 import { useRef } from 'react';
 import { AuthContext } from '../context/index.js';
@@ -110,24 +110,24 @@ const Profile = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#121212] text-white">
-      <div className="flex-1 flex flex-col gap-17 p-2 w-full pt-6">
-        <div className="flex flex-col items-center">
+    <div className="bg-[#121212] text-white min-h-screen pt-safe pb-5 w-full max-w-md mx-auto">
+      <div className="p-6">
+        <div className="flex flex-col items-center justify-center text-center mb-8">
           <div
-            className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-[#575757] cursor-pointer"
+            className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#F2AB40] to-[#e09b2d] cursor-pointer shadow-lg ring-4 ring-[#F2AB40]/20"
             onClick={handleImageClick}
           >
             {user?.image ? (
               <img src={user.image} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-4xl font-bold text-white">{user?.name?.[0] || '?'}</span>
+              <span className="text-2xl font-bold text-black">{user?.name?.[0] || '?'}</span>
             )}
 
             {/* Camera icon bottom-right */}
-            <div className="absolute bottom-1 right-1 bg-[#F2AB40] rounded-full p-1">
+            <div className="absolute bottom-1 right-1 bg-[#F2AB40] rounded-full w-7 h-7 flex items-center justify-center shadow-md">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-white"
+                className="h-4 w-4 text-black"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -138,28 +138,31 @@ const Profile = () => {
                   strokeLinejoin="round"
                   d="M3 7h2l2-3h6l2 3h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V9a2 2 0 012-2z"
                 />
-                <circle cx="12" cy="13" r="3" stroke="currentColor" strokeWidth={2} />
+                <circle cx="12" cy="13" r="3" />
               </svg>
             </div>
           </div>
 
           <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
-          <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
-          <h2 className="text-2xl font-bold mt-2">{user?.name || 'User'}</h2>
-          <p className="text-gray-400">{user?.email}</p>
+          <h2 className="text-3xl font-bold mt-4 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+            {user?.name || 'User'}
+          </h2>
+          <p className="text-gray-400 text-base font-medium">{user?.email}</p>
         </div>
 
         <div>
-          <h3 className="text-center text-2xl font-bold mb-4">Recent Workouts</h3>
-          <div className="flex flex-col gap-4 w-full">
+          <h3 className="text-2xl font-semibold mb-4">Recent Workouts</h3>
+          <div className="space-y-4">
             {isLoading ? (
-              <div className="text-center text-gray-400 py-8">
-                <div className="animate-pulse">Loading workouts...</div>
+              <div className="text-center py-8">
+                <div className="animate-pulse">
+                  <p className="text-gray-400">Loading workouts...</p>
+                </div>
               </div>
             ) : recentWorkouts.length === 0 ? (
-              <div className="text-center text-gray-400 py-8">
-                <p className="text-lg">No recent workouts</p>
-                <p className="text-sm mt-1">Start your fitness journey!</p>
+              <div className="text-center py-8">
+                <p className="text-gray-400 mb-4">No recent workouts</p>
+                <p className="text-gray-400 text-sm">Start your fitness journey!</p>
               </div>
             ) : (
               recentWorkouts.map((workout, idx) => {
@@ -171,14 +174,11 @@ const Profile = () => {
                   <div
                     key={workout._id || idx}
                     onClick={() => openWorkoutModal(workout)}
-                    className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] p-4 rounded-xl shadow-lg border border-gray-600 hover:border-[#F2AB40] transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
+                    className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-600 hover:border-[#F2AB40] transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
                   >
-                    {/* Header with date badge */}
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-bold text-white text-sm truncate flex-1 mr-2">
-                        {workout.planName || 'Workout'}
-                      </h4>
-                      <span className="text-xs bg-[#F2AB40] text-black px-2 py-1 rounded-full font-medium shrink-0">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-white text-lg">{workout.planName || 'Workout'}</h4>
+                      <span className="text-xs bg-[#F2AB40] text-black px-2 py-1 rounded-full font-medium">
                         {new Date(workout.completedAt || workout.createdAt).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric'
@@ -186,45 +186,23 @@ const Profile = () => {
                       </span>
                     </div>
 
-                    {/* Stats row */}
-                    <div className="grid grid-cols-3 gap-3 mb-3">
-                      <div className="text-center bg-[#1a1a1a] rounded-lg py-2">
-                        <p className="text-lg font-bold text-[#F2AB40]">{totalExercises}</p>
-                        <p className="text-xs text-gray-400">Exercises</p>
-                      </div>
-                      <div className="text-center bg-[#1a1a1a] rounded-lg py-2">
-                        <p className="text-lg font-bold text-[#F2AB40]">{totalSets}</p>
-                        <p className="text-xs text-gray-400">Sets</p>
-                      </div>
-                      <div className="text-center bg-[#1a1a1a] rounded-lg py-2">
-                        <p className="text-lg font-bold text-[#F2AB40]">{duration || '--'}</p>
-                        <p className="text-xs text-gray-400">Minutes</p>
-                      </div>
+                    <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
+                      <span>{totalExercises} exercises</span>
+                      <span>{totalSets} sets</span>
+                      <span>{duration ? `${duration} min` : '--'}</span>
                     </div>
 
-                    {/* Exercise preview */}
-                    <div className="text-center">
-                      {workout.exercises?.length > 0 ? (
-                        <div>
-                          {/* Show first 2 exercises */}
-                          {workout.exercises.slice(0, 2).map((exercise, exerciseIdx) => (
-                            <div key={exerciseIdx} className="mb-1">
-                              <p className="text-sm text-gray-300 font-medium truncate">
-                                {capitalizeWords(exercise.name)}
-                              </p>
-                              <p className="text-xs text-gray-500">{capitalizeWords(exercise.target)}</p>
-                            </div>
-                          ))}
-                          {workout.exercises.length > 2 && (
-                            <p className="text-xs text-[#F2AB40] mt-1">
-                              +{workout.exercises.length - 2} more exercises
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-gray-500">No exercises</p>
-                      )}
-                    </div>
+                    {workout.exercises?.length > 0 && (
+                      <div>
+                        <p className="text-gray-400 text-sm mb-1">
+                          {workout.exercises
+                            .slice(0, 2)
+                            .map(ex => capitalizeWords(ex.name))
+                            .join(', ')}
+                          {workout.exercises.length > 2 && `, +${workout.exercises.length - 2} more`}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -232,6 +210,7 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
       <div className="flex justify-center mb-15">
         <button
           onClick={handleLogout}
@@ -256,7 +235,7 @@ const Profile = () => {
               <h3 className="text-xl font-bold text-white">{selectedWorkout.planName || 'Workout Details'}</h3>
               <button
                 onClick={closeWorkoutModal}
-                className="text-gray-400 hover:text-white text-2xl w-8 h-8 flex items-center justify-center"
+                className="text-gray-400 hover:text-[#F2AB40] text-2xl transition-colors"
               >
                 ×
               </button>

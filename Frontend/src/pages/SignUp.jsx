@@ -62,124 +62,127 @@ const SignUp = () => {
 
   if (isAuthenticated) return <Navigate to="/" />;
   return (
-    <div className="min-h-screen bg-[#121212] text-white p-4">
-      {step === 1 ? (
-        <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-2xl p-8 mx-auto mt-12 max-w-md shadow-2xl border border-gray-700 backdrop-blur-sm">
-          <h2 className="text-center text-3xl font-bold text-white mb-8">Sign Up</h2>
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">User Name</label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                onChange={handleChange}
-                required
-                className="block w-full bg-[#1a1a1a] rounded-lg p-3 text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
-                placeholder="Enter your username"
-              />
-            </div>
+    <div className="bg-[#121212] text-white min-h-screen pt-safe pb-5 w-full max-w-md mx-auto">
+      <div className="p-6">
+        {step === 1 ? (
+          <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-600 shadow-xl">
+            <h2 className="text-center text-3xl font-bold text-white mb-8">Sign Up</h2>
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">User Name</label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  onChange={handleChange}
+                  required
+                  className="block w-full bg-[#1a1a1a] rounded-lg p-3 text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
+                  placeholder="Enter your username"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Email address</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                onChange={handleChange}
-                value={email}
-                required
-                className="block w-full bg-[#1a1a1a] rounded-lg p-3 text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
-                placeholder="Enter your email"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Email address</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  onChange={handleChange}
+                  value={email}
+                  required
+                  className="block w-full bg-[#1a1a1a] rounded-lg p-3 text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
+                  placeholder="Enter your email"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                onChange={handleChange}
-                value={password}
-                required
-                className="block w-full bg-[#1a1a1a] rounded-lg p-3 text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
-                placeholder="Enter your password (min 8 characters)"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  onChange={handleChange}
+                  value={password}
+                  required
+                  className="block w-full bg-[#1a1a1a] rounded-lg p-3 text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
+                  placeholder="Enter your password (min 8 characters)"
+                />
+              </div>
 
-            <div>
+              <div>
+                <button
+                  type="submit"
+                  className="flex w-full justify-center rounded-lg bg-[#F2AB40] text-black p-3 text-sm font-semibold shadow-lg hover:bg-[#e09b2d] transition-colors"
+                >
+                  Next Page
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-600 shadow-xl">
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="bg-gray-600 hover:bg-[#F2AB40] hover:text-black border border-gray-600 hover:border-[#F2AB40] px-4 py-2 rounded-lg transition-colors text-sm mb-6 text-white font-medium"
+            >
+              ← Back
+            </button>
+
+            <h2 className="text-center text-3xl font-bold text-white mb-8">Complete Profile</h2>
+
+            <form className="space-y-6" onSubmit={handleSubmitProfile}>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Height (cm)</label>
+                <input
+                  type="number"
+                  value={height}
+                  onChange={e => setHeight(e.target.value)}
+                  required
+                  className="w-full bg-[#1a1a1a] p-3 rounded-lg text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
+                  placeholder="Enter your height"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Weight (kg)</label>
+                <input
+                  type="number"
+                  value={weight}
+                  onChange={e => setWeight(e.target.value)}
+                  required
+                  className="w-full bg-[#1a1a1a] p-3 rounded-lg text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
+                  placeholder="Enter your weight"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Age</label>
+                <input
+                  type="number"
+                  value={age}
+                  onChange={e => setAge(e.target.value)}
+                  required
+                  className="w-full bg-[#1a1a1a] p-3 rounded-lg text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
+                  placeholder="Enter your age"
+                />
+              </div>
               <button
                 type="submit"
-                className="flex w-full justify-center rounded-lg bg-[#F2AB40] text-black p-3 text-sm font-semibold shadow-lg hover:bg-[#e09b2d] transition-colors"
+                className="w-full bg-[#F2AB40] text-black hover:bg-[#e09b2d] p-3 rounded-lg font-semibold shadow-lg transition-colors disabled:opacity-50"
+                disabled={loading}
               >
-                Next Page
+                {loading ? 'Creating Account...' : 'Submit Profile'}
               </button>
-            </div>
-          </form>
-        </div>
-      ) : (
-        <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-2xl p-8 mx-auto mt-12 max-w-md shadow-2xl border border-gray-700 backdrop-blur-sm">
-          <button
-            type="button"
-            onClick={() => setStep(1)}
-            className="bg-[#1a1a1a] hover:bg-gray-600 border border-gray-600 hover:border-[#F2AB40] px-4 py-2 rounded-lg transition-colors text-sm mb-6 text-gray-300 hover:text-white"
-          >
-            ← Back
-          </button>
+            </form>
+          </div>
+        )}
 
-          <h2 className="text-center text-3xl font-bold text-white mb-8">Complete Profile</h2>
-
-          <form className="space-y-6" onSubmit={handleSubmitProfile}>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Height (cm)</label>
-              <input
-                type="number"
-                value={height}
-                onChange={e => setHeight(e.target.value)}
-                required
-                className="w-full bg-[#1a1a1a] p-3 rounded-lg text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
-                placeholder="Enter your height"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Weight (kg)</label>
-              <input
-                type="number"
-                value={weight}
-                onChange={e => setWeight(e.target.value)}
-                required
-                className="w-full bg-[#1a1a1a] p-3 rounded-lg text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
-                placeholder="Enter your weight"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Age</label>
-              <input
-                type="number"
-                value={age}
-                onChange={e => setAge(e.target.value)}
-                required
-                className="w-full bg-[#1a1a1a] p-3 rounded-lg text-white border border-gray-600 placeholder-gray-500 focus:border-[#F2AB40] focus:outline-none transition-colors"
-                placeholder="Enter your age"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-[#F2AB40] text-black hover:bg-[#e09b2d] p-3 rounded-lg font-semibold shadow-lg transition-colors disabled:opacity-50"
-              disabled={loading}
-            >
-              {loading ? 'Creating Account...' : 'Submit Profile'}
-            </button>
-          </form>
-        </div>
-      )}
-      <p className="mt-6 text-center text-sm text-gray-400">
-        Already have an account?{' '}
-        <Link to="/signin" className="text-[#F2AB40] hover:text-[#e09b2d] font-medium transition-colors">
-          Log in!
-        </Link>
-      </p>
+        <p className="mt-6 text-center text-sm text-gray-400">
+          Already have an account?{' '}
+          <Link to="/signin" className="text-[#F2AB40] hover:text-[#e09b2d] font-medium transition-colors">
+            Log in!
+          </Link>
+        </p>
+      </div>
     </div>
   );
 };

@@ -6,9 +6,9 @@ import { AuthContextProvider } from '../context/index.js';
 function MainLayout() {
   return (
     <AuthContextProvider>
-      <div className=" text-gray-300 flex flex-col min-h-screen pb-15">
-        <div className="bg-black h-[70px] fixed top-0 left-0 right-0 z-50"></div>
-        <main className="grow flex flex-col justify-between pt-[70px]">
+      <div className=" text-gray-300 flex flex-col min-h-[90vh] pb-10">
+        <div className="bg-[#121212] h-[60px] fixed top-0 left-0 right-0 z-50"></div>
+        <main className="grow flex flex-col justify-between pt-[45px]">
           <Outlet />
           <ToastContainer
             position="top-center"
