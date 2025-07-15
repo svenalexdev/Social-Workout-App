@@ -505,6 +505,28 @@ const GroupFinder = () => {
     return withSpaces.replace(/\b\w/g, char => char.toUpperCase());
   };
 
+  // Format date to German format (DD.MM.YYYY, HH:MM)
+  const formatGermanDateTime = dateString => {
+    if (!dateString) return 'Not specified';
+
+    try {
+      const date = new Date(dateString);
+
+      if (isNaN(date.getTime())) return 'Invalid date';
+
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid date';
+    }
+  };
+
   return (
     <>
       {/* Main GroupFinder View */}
@@ -546,12 +568,34 @@ const GroupFinder = () => {
                         </p>
                         <p>
                           <span className="font-bold">Time: </span>
-                          {activity.time || 'Not specified'}
+                          {formatGermanDateTime(activity.time)}
                         </p>
                         <p className="text-blue-400 text-sm italic">Your activity</p>
                       </div>
                     </div>
 
+                    {/* Attendees */}
+                    {activity.attendess && activity.attendess.length > 0 && (
+                      <div className="attendees flex mt-2">
+                        {activity.attendess.slice(0, 3).map((attendee, index) => {
+                          return (
+                            <UserAvatar
+                              key={index}
+                              userId={attendee.userId}
+                              name={attendee.userId?.name}
+                              status={attendee.status}
+                              className={`${index > 0 ? 'ml-2' : ''}`}
+                              size="h-8 w-8"
+                            />
+                          );
+                        })}
+                        {activity.attendess.length > 3 && (
+                          <div className="ml-2 h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
+                            +{activity.attendess.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     {/* Attendees */}
                     {activity.attendess && activity.attendess.length > 0 && (
                       <div className="attendees flex mt-2">
@@ -910,13 +954,17 @@ const GroupFinder = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date & Time</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Date & Time</label>
                 <input
                   type="datetime-local"
                   value={editForm.time}
                   onChange={e => handleEditFormChange('time', e.target.value)}
                   className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white"
+                  min={new Date().toISOString().slice(0, 16)}
                 />
+                <p className="text-xs text-gray-400 mt-1">
+                  Will be displayed as: {editForm.time ? formatGermanDateTime(editForm.time) : 'DD.MM.YYYY, HH:MM'}
+                </p>
               </div>
 
               <div>
@@ -1133,7 +1181,7 @@ const GroupFinder = () => {
                     </p>
                     <p className="text-gray-300">
                       <span className="font-semibold">Time: </span>
-                      {selectedActivity.time || 'Not specified'}
+                      {formatGermanDateTime(selectedActivity.time)}
                     </p>
                     {(() => {
                       const activityUserId =
