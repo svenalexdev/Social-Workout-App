@@ -258,12 +258,12 @@ function Home() {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
         }}
-        className="bg-[#121212] text-white"
+        className="bg-[#121212] text-white fixed inset-0"
       >
-        <div className="flex flex-col justify-between items-center  h-screen w-full py-30">
+        <div className="flex flex-col justify-center items-center w-full h-screen gap-y-80">
           <div>
             <p className="font-semibold mb-2 text-xl text-center">Welcome to</p>
-            <h1 className="text-4xl font-semibold mb-10">Workout Tracker</h1>
+            <h1 className="text-4xl font-semibold mb-5">Workout Tracker</h1>
           </div>
           <div>
             <div className="flex flex-col gap-4 w-full max-w-sm">
@@ -280,7 +280,7 @@ function Home() {
                 Sign In
               </button>
             </div>
-            <h2 className="mt-5 font-semibold text-xl">Plan It. Share It. Sweat Together.</h2>
+            <h2 className="mt-5 mb-5 font-semibold text-xl">Plan It. Share It. Sweat Together.</h2>
           </div>
         </div>
       </div>
