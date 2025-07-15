@@ -394,7 +394,7 @@ function CreatePlan() {
         body: JSON.stringify(plan)
       });
       if (response.ok) {
-        alert('Plan saved successfully!');
+        // alert('Plan saved successfully!');
         deleteCookie('plan');
         setTimeout(() => {
           navigate('/plans');
@@ -603,7 +603,7 @@ function CreatePlan() {
                     toggleChatOpen();
                     setCreatePlan(true);
                   }}
-                  className="px-6 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 text-white rounded-lg shadow-lg hover:shadow-xl transition-all font-semibold relative text-lg w-full flex items-center justify-center gap-2
+                  className="px-6 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 text-white rounded-lg shadow-lg hover:shadow-xl transition-all font-semibold relative text-lg w-full flex items-center justify-center gap-2 
       hover:animate-pulse"
                 >
                   Create with AI

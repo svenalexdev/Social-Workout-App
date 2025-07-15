@@ -49,7 +49,7 @@ const SignUp = () => {
         stats: [{ height: parseInt(height), weight: parseInt(weight), age: parseInt(age) }]
       });
 
-      toast.success(message || 'Account created successfully! Please log in.');
+      // toast.success(message || 'Account created successfully! Please log in.');
       navigate('/');
 
       setCheckSession(true);
@@ -63,9 +63,9 @@ const SignUp = () => {
   if (isAuthenticated) return <Navigate to="/" />;
   return (
     <div className="bg-[#121212] text-white min-h-screen pt-safe pb-5 w-full max-w-md mx-auto">
-      <div className="p-6">
+      <div className="pt-6">
         {step === 1 ? (
-          <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-600 shadow-xl">
+          <div className="bg-[#121212] rounded-lg p-6">
             <h2 className="text-center text-3xl font-bold text-white mb-8">Sign Up</h2>
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
@@ -120,7 +120,7 @@ const SignUp = () => {
             </form>
           </div>
         ) : (
-          <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-600 shadow-xl">
+          <div className="bg-[#121212] rounded-lg px-6 ">
             <button
               type="button"
               onClick={() => setStep(1)}

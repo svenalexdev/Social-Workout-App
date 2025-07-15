@@ -159,7 +159,7 @@ const AllPlans = () => {
 
       const createdActivity = await response.json();
       console.log('Activity created successfully:', createdActivity);
-      alert('Activity created successfully! Others can now find and join your workout.');
+      // alert('Activity created successfully! Others can now find and join your workout.');
       handleCloseActivityForm();
     } catch (error) {
       console.error('Error creating activity:', error);

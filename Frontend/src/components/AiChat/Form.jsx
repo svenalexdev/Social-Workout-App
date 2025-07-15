@@ -125,7 +125,7 @@ const ChatApp = ({ onSuccess }) => {
           ></textarea>
           <button
             type="submit"
-            className="mt-4 w-full bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-lg font-semibold transition-colors"
+            className="mt-4 w-full bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-4 py-2 rounded-lg text-lg font-semibold transition-colors active:bg-[#644f2c]"
             disabled={loading}
           >
             Submit

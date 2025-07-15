@@ -27,7 +27,7 @@ const GroupFinder = () => {
 
   // Default fallback image
   const defaultImage =
-    'https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg';
+    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMwMDAwMDAiLz4KPC9zdmc+';
 
   // Function to fetch user data and cache the image
   const fetchUserImage = async userId => {
@@ -236,7 +236,7 @@ const GroupFinder = () => {
       // Update the activities list
       setActivities(prev => prev.map(activity => (activity._id === managingActivity._id ? updatedActivity : activity)));
 
-      alert('✅ Activity updated successfully!');
+      // alert('✅ Activity updated successfully!');
       handleCloseManage();
     } catch (error) {
       console.error('Error updating activity:', error);
@@ -274,7 +274,7 @@ const GroupFinder = () => {
       // Remove the activity from the activities list
       setActivities(prev => prev.filter(activity => activity._id !== managingActivity._id));
 
-      alert('✅ Activity deleted successfully!');
+      // alert('✅ Activity deleted successfully!');
       handleCloseManage();
     } catch (error) {
       console.error('Error deleting activity:', error);
@@ -311,7 +311,7 @@ const GroupFinder = () => {
         setSelectedActivity(result.activity);
       }
 
-      alert('✅ Join request sent successfully! The activity owner will review your request.');
+      // alert('✅ Join request sent successfully! The activity owner will review your request.');
     } catch (error) {
       console.error('Error joining activity:', error);
       alert('❌ Failed to join activity: ' + error.message);
@@ -350,7 +350,7 @@ const GroupFinder = () => {
         setSelectedActivity(result.activity);
       }
 
-      alert('✅ Successfully left the activity.');
+      // alert('✅ Successfully left the activity.');
     } catch (error) {
       console.error('Error leaving activity:', error);
       alert('❌ Failed to leave activity: ' + error.message);
@@ -396,7 +396,7 @@ const GroupFinder = () => {
       }
 
       const statusText = newStatus === 'approved' ? 'approved' : 'removed';
-      alert(`✅ ${newStatus === 'approved' ? 'Join request approved' : 'Attendee removed'} successfully!`);
+      // alert(`✅ ${newStatus === 'approved' ? 'Join request approved' : 'Attendee removed'} successfully!`);
     } catch (error) {
       console.error('Error updating attendee status:', error);
       alert('❌ Failed to update attendee status: ' + error.message);
@@ -537,20 +537,20 @@ const GroupFinder = () => {
               {/* <button onClick={handleGoBack} className="btn text-lg bg-gray-500 border-none text-white">
               X
             </button> */}
-              <h1 className="flex-1 text-center font-bold text-2xl">Find A Group!</h1>
+              <h1 className="flex-1 mb-3 font-bold text-2xl">Find A Group!</h1>
               <div className="w-12" />
             </div>{' '}
             {/* My Posted Activities Section - Only show if user has posted activities */}
             {myActivities.length > 0 && (
               <>
-                <div className="mt-10 flex">
-                  <h2 className="font-bold text-xl">My Posted Activities</h2>
+                <div className="mt-1  flex">
+                  <h2 className="font-bold mb-3 text-2xl">My Posted Activities</h2>
                 </div>
-                <div className="mt-4 space-y-4">
+                <div className="mb-4 space-y-4">
                   {myActivities.map(activity => (
                     <div
                       key={activity._id}
-                      className="p-3 border border-blue-500 rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden bg-blue-900/20"
+                      className="p-3 border border-[#F2AB40] rounded-2xl max-w-md mx-auto flex flex-col overflow-hidden bg-gradient-to-br from-[#F2AB40]/20 to-[#e09b2d]/10"
                     >
                       <div className="flex items-center">
                         <UserAvatar
@@ -735,11 +735,14 @@ const GroupFinder = () => {
                       <div className="flex justify-center mt-5">
                         <button
                           onClick={() => handleActivityClick(activity)}
-                          className="flex-1 bg-[#F2AB40] hover:bg-[#e09b2d] text-black px-3 py-2 rounded-full text-sm font-medium transition-colors mr-2"
+                          className="flex-1 bg-white hover:bg-[#e09b2d] text-black px-3 py-2 rounded-full text-sm font-medium transition-colors mr-2"
                         >
                           More Details
                         </button>
-                        <button onClick={() => handleManageActivity(activity)} className="btn bg-blue-600 h-8 relative">
+                        <button
+                          onClick={() => handleManageActivity(activity)}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-full text-sm font-medium transition-colors ml-2 relative"
+                        >
                           Manage
                           {activity.attendess?.some(att => att.status === 'pending') && (
                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
@@ -760,7 +763,7 @@ const GroupFinder = () => {
               onRemove={handleRemove}
               className="mt-16"
             />
-            <div className="mt-6 flex">
+            <div className="mt-1 flex">
               <h2 className="font-bold text-2xl">Matching Activities</h2>
             </div>
             {/* Loading state */}
@@ -929,8 +932,8 @@ const GroupFinder = () => {
         </div>
       ) : managingActivity ? (
         /* Manage Activity Modal */
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a1a] rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-600 shadow-2xl">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center  justify-center z-50 p-4">
+          <div className="bg-[#1a1a1a] rounded-xl p-6 w-full max-w-lg max-h-[87vh] mt-8 overflow-y-auto border border-gray-600 shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-white">Manage Activity</h2>
               <button
@@ -941,11 +944,11 @@ const GroupFinder = () => {
               </button>
             </div>
 
-            <div className="mb-4">
+            {/* <div className="mb-4">
               <p className="text-sm text-gray-300">
                 <strong>Activity ID:</strong> {managingActivity._id}
               </p>
-            </div>
+            </div> */}
 
             <form className="space-y-4">
               <div>
@@ -1163,8 +1166,8 @@ const GroupFinder = () => {
         </div>
       ) : (
         /* Full-Screen Activity Details Modal */
-        <div className="bg-[#121212] text-white min-h-screen pt-safe pb-5 w-full max-w-md mx-auto overflow-y-auto">
-          <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-600 shadow-xl m-4">
+        <div className="bg-[#121212] text-white min-h-screen pt-safe pb-5 p-2 w-full max-w-md mx-auto overflow-y-auto">
+          <div className="bg-[#121212] rounded-lg shadow-xl m-4">
             {/* Header with close button */}
             <div className="flex items-center mb-6">
               <button

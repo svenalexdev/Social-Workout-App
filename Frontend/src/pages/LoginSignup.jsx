@@ -50,8 +50,8 @@ const LoginSignup = () => {
 
   return (
     <div className="bg-[#121212] text-white min-h-screen pt-safe pb-5 w-full max-w-md mx-auto">
-      <div className="p-6">
-        <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-600 shadow-xl">
+      <div className="pt-6">
+        <div className="bg-[#121212] rounded-lg p-6 ">
           <h2 className="text-center text-3xl font-bold text-white mb-8">Sign in</h2>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>

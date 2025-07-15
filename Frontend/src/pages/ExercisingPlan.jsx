@@ -100,7 +100,7 @@ function ExercisingPlan() {
     const verifyUser = async () => {
       const login = await checkAuth();
       if (!login) {
-        alert('User not login');
+        alert('User not logged in');
         navigate('/signin');
       }
     };
@@ -382,7 +382,7 @@ function ExercisingPlan() {
     if (shouldUpdatePlan) {
       await updatePlanFromWorkout();
     } else {
-      alert('🎉 Workout completed! Great job!');
+      // alert('🎉 Workout completed! Great job!');
     }
 
     // Clean up storage
@@ -536,7 +536,7 @@ function ExercisingPlan() {
       // alert('✅ Plan updated successfully with your workout results!');
     } catch (error) {
       console.error('Error updating plan:', error);
-      alert('❌ Failed to update plan. Your workout is still saved!');
+      alert('Failed to update plan. Your workout is still saved!');
     }
   };
 
@@ -605,7 +605,7 @@ function ExercisingPlan() {
 
       {/* Fixed Timer & Date Bar - Hide when exercise details are shown */}
       {!showDetailsFor && (
-        <div className="sticky top-15 z-1000 bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-lg p-4 mb-6 border border-gray-700 backdrop-blur-sm shadow-lg">
+        <div className="sticky top-13 z-1000 bg-gradient-to-br from-[#2a2a2a] to-[#1e1e1e] rounded-lg p-4 mb-6 border border-gray-700 backdrop-blur-sm shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 text-gray-300">
               <span className="flex items-center gap-1">{new Date().toLocaleDateString()}</span>
@@ -770,7 +770,7 @@ function ExercisingPlan() {
       </div>
 
       {/* Finish Workout Button */}
-      <div className={`mt-8 mb-6 ${pauseTimer.isActive ? 'pb-24' : ''}`}>
+      <div className={`mt-8 mb-14 ${pauseTimer.isActive ? 'pb-24' : ''}`}>
         <button
           onClick={finishWorkout}
           disabled={!canFinishWorkout}
