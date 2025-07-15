@@ -574,9 +574,9 @@ const GroupFinder = () => {
                           </p>
                           <p>
                             <span className="font-bold">Time: </span>
-                            {activity.time || 'Not specified'}
+                            {formatGermanDateTime(activity.time) || 'Not specified'}
                           </p>
-                          <p className="text-blue-400 text-sm italic">Your activity</p>
+                          {/* <p className="text-blue-400 text-sm italic">Your activity</p> */}
                         </div>
                       </div>
 
@@ -602,7 +602,7 @@ const GroupFinder = () => {
                           )}
                         </div>
                       )}
-                      {/* Attendees */}
+                      {/* Attendees
                       {activity.attendess && activity.attendess.length > 0 && (
                         <div className="attendees flex mt-2">
                           {activity.attendess.slice(0, 3).map((attendee, index) => {
@@ -623,7 +623,7 @@ const GroupFinder = () => {
                             </div>
                           )}
                         </div>
-                      )}
+                      )} */}
 
                       {/* Attendee limit info */}
                       {activity.attendeessLimit && (
@@ -674,8 +674,8 @@ const GroupFinder = () => {
                                         }`}
                                       >
                                         {attendee.status}
-                                        {attendee.status === 'pending' && ' ⏳'}
-                                        {attendee.status === 'approved' && ' ✅'}
+                                        {attendee.status === 'pending' && ' '}
+                                        {attendee.status === 'approved' && ' '}
                                       </p>
                                     </div>
                                   </div>
@@ -815,7 +815,7 @@ const GroupFinder = () => {
                           </p>
                           <p>
                             <span className="font-bold">Time: </span>
-                            {activity.time || 'Not specified'}
+                            {formatGermanDateTime(activity.time) || 'Not specified'}
                           </p>
                           {(() => {
                             const userStatus = getUserStatusInActivity(activity);
@@ -1070,8 +1070,8 @@ const GroupFinder = () => {
                                 }`}
                               >
                                 {attendee.status}
-                                {attendee.status === 'pending' && ' ⏳'}
-                                {attendee.status === 'approved' && ' ✅'}
+                                {attendee.status === 'pending' && ' '}
+                                {attendee.status === 'approved' && ' '}
                               </p>
                             </div>
                           </div>
@@ -1211,7 +1211,7 @@ const GroupFinder = () => {
                           ? selectedActivity.userId._id
                           : selectedActivity.userId;
                       return activityUserId === getCookie('userId');
-                    })() && <p className="text-blue-400 text-sm italic mt-1">Your activity</p>}
+                    })() && <p className="text-blue-400 text-sm italic mt-1"></p>}
                   </div>
                 </div>
 
@@ -1233,7 +1233,6 @@ const GroupFinder = () => {
                   <p className="text-gray-300 mb-3 text-sm">
                     Total requests: {selectedActivity.attendess?.length || 0} (including pending)
                   </p>
-
                   {selectedActivity.attendess && selectedActivity.attendess.length > 0 && (
                     <div className="space-y-2">
                       {selectedActivity.attendess.map((attendee, index) => {
@@ -1278,8 +1277,8 @@ const GroupFinder = () => {
                               </p>
                               <p className={`text-sm capitalize font-medium ${statusColor}`}>
                                 {attendee.status}
-                                {attendee.status === 'pending' && ' ⏳'}
-                                {attendee.status === 'approved' && ' ✅'}
+                                {attendee.status === 'pending' && ' '}
+                                {attendee.status === 'approved' && ' '}
                               </p>
                             </div>
                           </div>
@@ -1287,8 +1286,7 @@ const GroupFinder = () => {
                       })}
                     </div>
                   )}
-
-                  {/* Visual Legend */}
+                  {/* Visual Legend
                   {selectedActivity.attendess && selectedActivity.attendess.length > 0 && (
                     <div className="mt-3 text-xs text-gray-400">
                       <p className="mb-1">Avatar status indicators:</p>
@@ -1297,7 +1295,7 @@ const GroupFinder = () => {
                         <span>⏳ Pending: 50% opacity</span>
                       </div>
                     </div>
-                  )}
+                  )} */}
                 </div>
 
                 {/* Body Parts */}

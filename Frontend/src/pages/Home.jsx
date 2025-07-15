@@ -258,11 +258,11 @@ function Home() {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
         }}
-        className="bg-[#121212] text-white fixed inset-0"
+        className="bg-[#121212] text-white fixed inset-0 "
       >
         <div className="flex flex-col justify-center items-center w-full h-screen gap-y-80">
           <div>
-            <p className="font-semibold mb-2 text-xl text-center">Welcome to</p>
+            <p className="font-semibold text-xl text-center">Welcome to</p>
             <h1 className="text-4xl font-semibold mb-5">Workout Tracker</h1>
           </div>
           <div>
@@ -407,7 +407,7 @@ function Home() {
       </div>
 
       {/* Community Workouts Section */}
-      <div className="p-6 pt-2">
+      <div className="p-6 pb-15 pt-2">
         <h3 className="text-2xl font-semibold mb-4">Community Workouts</h3>
 
         {loading ? (
@@ -460,7 +460,7 @@ function Home() {
       </div>
 
       {/* Recommended Plans Section */}
-      <div className="p-6 pt-2">
+      {/* <div className="p-6 pt-2">
         <h3 className="text-2xl font-semibold mb-4">Recommended Plans</h3>
 
         {recommendedLoading ? (
@@ -531,7 +531,7 @@ function Home() {
             <p className="text-gray-400 mb-4">No recommended plans available</p>
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Plan Details Modal */}
       {selectedPlanDetails && (

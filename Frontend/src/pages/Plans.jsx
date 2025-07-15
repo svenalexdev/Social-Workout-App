@@ -329,7 +329,7 @@ const Plans = () => {
           </div>
 
           {/* Recommended Plans Section */}
-          <div className="p-6 pt-2">
+          {/* <div className="p-6 pt-2">
             <h3 className="text-2xl font-semibold mb-4">Recommended Plans</h3>
 
             <div className="space-y-4">
@@ -400,7 +400,7 @@ const Plans = () => {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
         </div>
       ) : selectedPlan ? (
         /* Create Activity Modal */

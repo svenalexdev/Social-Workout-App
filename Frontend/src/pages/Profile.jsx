@@ -112,7 +112,28 @@ const Profile = () => {
   return (
     <div className="bg-[#121212] text-white min-h-screen pt-safe pb-5 w-full max-w-md mx-auto">
       <div className="p-6">
-        <div className="flex flex-col items-center justify-center text-center mb-8">
+        <div className="flex flex-col relative items-center justify-center text-center mb-8">
+          {/* Camera icon bottom-right */}
+          <div
+            className="absolute top-17 z-5 right-30 bg-[#F2AB40] rounded-full w-7 h-7 flex items-center pl-1 justify-center shadow-md"
+            onClick={handleImageClick}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 text-black"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 7h2l2-3h6l2 3h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V9a2 2 0 012-2z"
+              />
+              <circle cx="12" cy="13" r="3" />
+            </svg>
+          </div>
           <div
             className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#F2AB40] to-[#e09b2d] cursor-pointer shadow-lg ring-4 ring-[#F2AB40]/20"
             onClick={handleImageClick}
@@ -122,25 +143,6 @@ const Profile = () => {
             ) : (
               <span className="text-2xl font-bold text-black">{user?.name?.[0] || '?'}</span>
             )}
-
-            {/* Camera icon bottom-right */}
-            <div className="absolute bottom-1 right-1 bg-[#F2AB40] rounded-full w-7 h-7 flex items-center justify-center shadow-md">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-black"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 7h2l2-3h6l2 3h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V9a2 2 0 012-2z"
-                />
-                <circle cx="12" cy="13" r="3" />
-              </svg>
-            </div>
           </div>
 
           <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
