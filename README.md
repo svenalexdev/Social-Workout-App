@@ -32,8 +32,6 @@ A mobile-first fullstack application that empowers fitness enthusiasts to plan a
 
 ---
 
-## ⚙️ Tech Stack
-
 ## 🖼️ Frontend
 
 - [React](https://reactjs.org/)
@@ -50,7 +48,7 @@ A mobile-first fullstack application that empowers fitness enthusiasts to plan a
 - [bcrypt](https://github.com/kelektiv/node.bcrypt.js)
 - [zod](https://github.com/colinhacks/zod)
 
-**AI**
+## 🤖 AI
 - Gemini AI (Google)
 
 ---
